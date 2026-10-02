@@ -245,6 +245,9 @@ migrations differ.
 - Every commit that changes what the project can do also updates the section "Where the
   project is" of `README.md` (phases, the steps of the phase in progress, the date), so
   that the README always says where the work has arrived. Commit and push them together.
+  When a weakness recorded for an earlier phase stops being true, say so in the column
+  "What changed since" of the table "Where each phase stands"; the first two columns of
+  a closed phase are kept as written.
 - Before closing a working session, or when the owner writes "chiudiamo": follow the
   closing steps under "Codespaces hygiene".
 - No automated test and no CI job may depend on a real model. A test that calls a real

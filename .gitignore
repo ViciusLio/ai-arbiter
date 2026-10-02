@@ -35,3 +35,6 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Output of long local check runs: kept on disk because /tmp does not survive a restart
+.check-logs/
