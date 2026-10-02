@@ -110,6 +110,7 @@ app.add_typer(operations_commands.retention_app, name="retention")
 app.command(name="classify")(systems_commands.classify)
 app.command(name="scan")(findings_commands.scan)
 app.command(name="worker")(operations_commands.worker)
+app.command(name="ingest")(operations_commands.ingest)
 app.command(name="serve")(serve_command.serve)
 
 

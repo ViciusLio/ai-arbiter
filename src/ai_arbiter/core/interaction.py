@@ -5,12 +5,14 @@ read by FinOps and by the compliance toolkit; hence its place in the shared kern
 holds metadata only: no prompt and no completion text (ADR-0018).
 """
 
+from collections.abc import Mapping
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from enum import StrEnum
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Protocol
 from uuid import UUID
 
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import JSON, Boolean, ForeignKey, Index, Integer, String, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -78,3 +80,73 @@ class InteractionRecorded(Event):
     event_type: ClassVar[str] = "interaction.recorded"
 
     interaction_id: UUID
+
+
+class InteractionRecord(BaseModel):
+    """An interaction as a source outside Arbiter's gateway reports it (ADR-0019).
+
+    This is also the canonical JSONL format of ``arbiter ingest``: one such object per
+    line. It has no field for prompt or completion text: a source adapter drops content
+    before a record exists. Missing fields stay missing.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    source: str = Field(pattern=r"^[a-z][a-z0-9_-]{0,49}$")
+    source_record_id: str = Field(min_length=1, max_length=100)
+    started_at: AwareDatetime
+    duration_ms: int | None = Field(default=None, ge=0)
+    operation: str = Field(default="chat", max_length=30)
+    requested_model: str | None = Field(default=None, max_length=200)
+    provider: str | None = Field(default=None, max_length=100)
+    model: str | None = Field(default=None, max_length=200)
+    region: str | None = Field(default=None, max_length=100)
+    status: InteractionStatus = InteractionStatus.OK
+    streamed: bool = False
+    input_tokens: int | None = Field(default=None, ge=0)
+    output_tokens: int | None = Field(default=None, ge=0)
+    cached_input_tokens: int | None = Field(default=None, ge=0)
+    usage_estimated: bool = False
+    # A decimal written as a string, as the source computed it, with its currency.
+    cost_estimate: str | None = None
+    currency: str | None = Field(default=None, pattern=r"^[A-Z]{3}$")
+    pii_categories: list[str] = Field(default_factory=list)
+    # Key of the declared AI system the record belongs to, when the source says so.
+    system: str | None = None
+    # What a configured mapping can match on, for example the alias of the key or of
+    # the team at the source. Used to attribute the record, then discarded.
+    labels: dict[str, str] = Field(default_factory=dict)
+
+    @field_validator("source")
+    @classmethod
+    def _not_native(cls, value: str) -> str:
+        if value == NATIVE_SOURCE:
+            raise ValueError("'native' is reserved for Arbiter's own gateway")
+        return value
+
+    @field_validator("cost_estimate")
+    @classmethod
+    def _decimal(cls, value: str | None) -> str | None:
+        if value is not None:
+            try:
+                amount = Decimal(value)
+            except InvalidOperation:
+                amount = Decimal("NaN")
+            if not amount.is_finite() or amount < 0:
+                raise ValueError("cost_estimate must be a decimal number, zero or more")
+        return value
+
+
+class TelemetrySource(Protocol):
+    """Turns one record of an external gateway into the canonical record.
+
+    Implemented by source plugins, registered under ``ai_arbiter.telemetry_sources``.
+    ``parse`` performs the minimisation: content is dropped, personal identifiers are
+    not carried over. It raises ``ValueError`` for a record it cannot read.
+    """
+
+    name: str
+    # What the mapping was written and checked against.
+    tested_against: str
+
+    def parse(self, payload: Mapping[str, Any]) -> InteractionRecord: ...

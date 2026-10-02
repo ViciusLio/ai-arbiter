@@ -6,6 +6,7 @@ from ai_arbiter.core.plugins.registry import (
     LLM_PROVIDERS,
     PII_DETECTORS,
     SECRET_STORES,
+    TELEMETRY_SOURCES,
     PluginRegistry,
 )
 
@@ -15,5 +16,6 @@ __all__ = [
     "LLM_PROVIDERS",
     "PII_DETECTORS",
     "SECRET_STORES",
+    "TELEMETRY_SOURCES",
     "PluginRegistry",
 ]

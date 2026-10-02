@@ -1,0 +1,2 @@
+{"source": "other-gateway", "source_record_id": "r-1", "started_at": "2026-10-01T09:00:00Z", "duration_ms": 850, "model": "gpt-4o", "requested_model": "gpt-4o", "provider": "azure_openai", "region": "westeurope", "input_tokens": 300, "output_tokens": 80, "cost_estimate": "0.00155", "currency": "USD", "system": "cv-screening"}
+{"source": "other-gateway", "source_record_id": "r-2", "started_at": "2026-10-01T09:05:00Z", "model": "vendor-ranker-2", "status": "ok", "pii_categories": ["email"], "labels": {"application": "careers-site"}}

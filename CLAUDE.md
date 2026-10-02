@@ -30,7 +30,7 @@ Update this list at every commit of the phase.
 
 | # | Item | State |
 |---|---|---|
-| 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` | Not started |
+| 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` (`compliance/ingest`) | Done. The LiteLLM mapping was written from its documented specification, not checked against output of a running LiteLLM |
 | 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Not started |
 | 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Not started |
 | 4 | Discovery of systems from traffic | Waits for the owner's decision on what identifies a discovered system |
@@ -140,6 +140,8 @@ Set by the owner on 2026-10-02. These hold in every session.
   `git status`, the test database and what was running before going on.
 - Billing and account settings are out of reach. When usage needs checking, ask the
   owner to look at <https://github.com/settings/billing>.
+- For one-off scripts use `uv run python`, never `python3` or `python3.12`: after a
+  restart those may resolve to a system interpreter that lacks the standard library.
 - Never create another codespace or change the machine type without asking.
 - A local model server, when one is needed for a manual check, runs as a container and
   is removed afterwards with its image and its model; report the space freed (ADR-0033).

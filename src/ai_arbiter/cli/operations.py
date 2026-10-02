@@ -18,6 +18,7 @@ from ai_arbiter.cli.common import (
 from ai_arbiter.cli.systems import TenantSlug
 from ai_arbiter.compliance.digest.model import build_digest, record_digest_run
 from ai_arbiter.compliance.digest.render import DigestFormat, render_digest
+from ai_arbiter.compliance.ingest.service import IngestReport, IngestService
 from ai_arbiter.compliance.retention import PurgeReport, purge
 from ai_arbiter.compliance.worker import register_handlers
 from ai_arbiter.core.config.settings import Settings
@@ -27,6 +28,60 @@ from ai_arbiter.core.errors import ArbiterError
 from ai_arbiter.core.events.bus import InProcessEventBus
 from ai_arbiter.core.i18n import SUPPORTED_LOCALES
 from ai_arbiter.core.persistence.tenant import Tenant
+from ai_arbiter.core.plugins.registry import PII_DETECTORS, TELEMETRY_SOURCES, PluginRegistry
+from ai_arbiter.gateway.finops.catalogue import load_catalogue
+from ai_arbiter.gateway.finops.metering import UsageMeter
+
+
+async def _ingest(
+    settings: Settings, tenant: str, path: Path, source_name: str, strict: bool
+) -> IngestReport:
+    registry = PluginRegistry()
+    detector = registry.load(PII_DETECTORS, settings.plugins.pii_detector)()
+    source = registry.load(TELEMETRY_SOURCES, source_name)(detector)
+    compliance = compliance_for(settings)
+    # Imported records are counted in the usage roll-ups like the gateway's own.
+    meter = UsageMeter(load_catalogue(settings.finops))
+    service = IngestService(compliance.audit, settings.ingest.mappings, sink=meter.record)
+    async with open_database(settings) as database:
+        row = await tenant_for(database, tenant)
+        async with database.transaction() as session:
+            with path.open(encoding="utf-8") as lines:
+                return await service.ingest(session, row.id, lines, source, strict=strict)
+
+
+def ingest(
+    ctx: typer.Context,
+    file: Annotated[Path, typer.Argument(help="File with one JSON record per line.")],
+    source: Annotated[str, typer.Option(help="Format of the file: jsonl or litellm.")] = "jsonl",
+    strict: Annotated[
+        bool, typer.Option("--strict", help="Stop at the first record that cannot be read.")
+    ] = False,
+    tenant: TenantSlug = LOCAL_TENANT_SLUG,
+) -> None:
+    """Import interaction records of another gateway. Content is dropped on the way in.
+
+    Safe to repeat: records already imported are skipped. A record is attributed to a
+    declared system by a tag of the source, or by a mapping in the configuration.
+    """
+    if not file.is_file():
+        raise fail(ArbiterError(f"file not found: {file}"))
+    report = run(_ingest(settings_from(ctx), tenant, file, source, strict))
+    typer.echo(
+        f"Read {report.read} records from {report.source}: {report.imported} imported, "
+        f"{report.duplicates} already imported, {report.invalid} not readable."
+    )
+    for key, count in sorted(report.attributed.items()):
+        typer.echo(f"  {count} attributed to {key}")
+    if report.unattributed:
+        typer.echo(f"  {report.unattributed} attributed to no declared system")
+    for key in sorted(report.unknown_systems):
+        typer.echo(f"  system '{key}' is named by records and is not declared")
+    if report.invalid_lines:
+        lines = ", ".join(str(number) for number in report.invalid_lines)
+        more = " and more" if report.invalid > len(report.invalid_lines) else ""
+        typer.echo(f"  not readable: lines {lines}{more}")
+
 
 digest_app = typer.Typer(help="Build the daily digest.", no_args_is_help=True)
 retention_app = typer.Typer(help="Apply the retention periods.", no_args_is_help=True)

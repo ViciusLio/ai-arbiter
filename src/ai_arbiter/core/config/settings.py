@@ -242,6 +242,22 @@ class AuditSettings(_Section):
     fail_mode: Literal["closed", "open"] = "closed"
 
 
+class IngestMapping(_Section):
+    """Attribute imported records to a declared system (ADR-0019).
+
+    A record matches when every label named here has the given value. Labels depend on
+    the source; LiteLLM records carry ``key_alias`` and ``team_alias``.
+    """
+
+    source: str | None = None
+    labels: dict[str, str] = {}
+    system: str
+
+
+class IngestSettings(_Section):
+    mappings: tuple[IngestMapping, ...] = ()
+
+
 class ComplianceSettings(_Section):
     # Rule pack files to use instead of the ones shipped with the package.
     ai_act_pack: Path | None = None
@@ -287,6 +303,7 @@ class Settings(BaseSettings):
     policy: PolicySettings = PolicySettings()
     audit: AuditSettings = AuditSettings()
     compliance: ComplianceSettings = ComplianceSettings()
+    ingest: IngestSettings = IngestSettings()
     retention: RetentionSettings = RetentionSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()

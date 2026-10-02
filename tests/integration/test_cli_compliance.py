@@ -324,3 +324,35 @@ def test_a_key_can_be_tied_to_a_declared_system(tmp_path: Path) -> None:
     finally:
         connection.close()
     assert linked == [("cv-screening",)]
+
+
+def test_ingest_imports_a_litellm_file_and_shows_up_in_usage() -> None:
+    workspace()
+    logs = str(Path(EXAMPLES).parent / "litellm-logs.jsonl")
+
+    first = arbiter("ingest", logs, "--source", "litellm")
+    again = arbiter("ingest", logs, "--source", "litellm")
+    usage = arbiter("usage", "report", "--scope", "tenant", "--from", "2026-01-01")
+
+    assert "Read 3 records from litellm: 3 imported, 0 already imported, 0 not readable." in first
+    assert "1 attributed to invoice-data-extraction" in first
+    assert "2 attributed to no declared system" in first
+    assert "0 imported, 3 already imported" in again
+    assert "| Local workspace | 3 | 0 | 1 | 360 | 90 | 0.001260 |" in usage
+
+
+def test_ingest_reports_problems_without_a_traceback(tmp_path: Path) -> None:
+    arbiter("init")
+    bad = tmp_path / "bad.jsonl"
+    bad.write_text('{"source": "x"}\n', encoding="utf-8")
+
+    lenient = arbiter("ingest", str(bad))
+    strict = arbiter("ingest", str(bad), "--strict", ok=False)
+    missing = arbiter("ingest", str(tmp_path / "absent.jsonl"), ok=False)
+    unknown = arbiter("ingest", str(bad), "--source", "nope", ok=False)
+
+    assert "0 imported, 0 already imported, 1 not readable" in lenient
+    assert "not readable: lines 1" in lenient
+    assert "Error: line 1: invalid fields:" in strict
+    assert "Error: file not found" in missing
+    assert "Error: unknown plugin 'nope' for 'telemetry_sources'" in unknown

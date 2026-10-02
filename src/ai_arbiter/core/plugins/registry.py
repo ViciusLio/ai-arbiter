@@ -18,9 +18,16 @@ SECRET_STORES = "secret_stores"  # noqa: S105 - a group name, not a secret
 EVENT_BUSES = "event_buses"
 LLM_PROVIDERS = "llm_providers"
 PII_DETECTORS = "pii_detectors"
+TELEMETRY_SOURCES = "telemetry_sources"
 
 # Port groups known to this version, in display order.
-GROUPS: tuple[str, ...] = (SECRET_STORES, EVENT_BUSES, LLM_PROVIDERS, PII_DETECTORS)
+GROUPS: tuple[str, ...] = (
+    SECRET_STORES,
+    EVENT_BUSES,
+    LLM_PROVIDERS,
+    PII_DETECTORS,
+    TELEMETRY_SOURCES,
+)
 
 EntryPointSource = Callable[[str], Iterable[EntryPoint]]
 

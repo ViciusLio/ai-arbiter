@@ -78,6 +78,10 @@ azure_openai = "ai_arbiter.adapters.azure.openai:AzureOpenAIProvider"
 [project.entry-points."ai_arbiter.pii_detectors"]
 builtin = "ai_arbiter.core.redaction.builtin:BuiltinDetector"
 
+[project.entry-points."ai_arbiter.telemetry_sources"]
+jsonl = "ai_arbiter.compliance.ingest.sources:JsonlSource"
+litellm = "ai_arbiter.compliance.ingest.sources:LiteLLMSource"
+
 [dependency-groups]
 dev = [
     "import-linter>=2.1",
