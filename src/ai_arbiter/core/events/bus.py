@@ -59,7 +59,8 @@ class InProcessEventBus:
     async def dispatch_pending(self, database: Database, *, limit: int = 100) -> DispatchResult:
         """Deliver up to ``limit`` undelivered events, oldest first.
 
-        Each event is handled in its own transaction. Events that failed
+        Handlers run with no transaction of the dispatcher open; the outcome of each
+        event is then recorded in its own transaction. Events that failed
         ``max_attempts`` times are left in the outbox and skipped.
         """
         async with database.session() as session:
@@ -75,14 +76,22 @@ class InProcessEventBus:
 
         delivered = failed = 0
         for event_id in pending:
+            # No transaction is open while handlers run: a handler opens its own, and on
+            # SQLite, which has one writer, a transaction held here would block it.
+            async with database.session() as session:
+                row = await session.get(OutboxEvent, event_id)
+            # The session is closed here, and with it the transaction a read opens.
+            if row is None or row.dispatched_at is not None:
+                continue
+            error = await self._deliver(row)
             async with database.transaction() as session:
-                # Another worker may hold the row: skip it instead of waiting.
+                # Two workers may both have delivered the event: delivery is at least
+                # once, which is why handlers are idempotent.
                 row = await session.get(
                     OutboxEvent, event_id, with_for_update={"skip_locked": True}
                 )
                 if row is None or row.dispatched_at is not None:
                     continue
-                error = await self._deliver(row)
                 if error is None:
                     row.dispatched_at = utcnow()
                     delivered += 1

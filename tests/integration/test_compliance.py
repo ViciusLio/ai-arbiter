@@ -17,9 +17,11 @@ from ai_arbiter.compliance.findings.model import (
 )
 from ai_arbiter.compliance.inventory.declarations import SystemDeclaration, load_declarations
 from ai_arbiter.compliance.inventory.model import Lifecycle
+from ai_arbiter.compliance.retention import PurgeReport, months_before, purge
 from ai_arbiter.compliance.runtime import ComplianceRuntime, build_compliance
+from ai_arbiter.compliance.worker import register_handlers
 from ai_arbiter.core.audit import AuditEntry, DatabaseAuditLog
-from ai_arbiter.core.config import load_settings
+from ai_arbiter.core.config import RetentionSettings, load_settings
 from ai_arbiter.core.domain.ids import new_id
 from ai_arbiter.core.domain.risk import RiskTier
 from ai_arbiter.core.errors import ConflictError, NotFoundError
@@ -1037,3 +1039,127 @@ async def test_reviewer_feedback_per_rule_is_in_the_digest(
 
     assert "How reviewers judged each rule" in text
     assert "| `SCAN-SYSTEM-WITHOUT-OWNER` | 0 | 1 |" in text
+
+
+# --- retention and worker ----------------------------------------------------------------
+
+
+def test_months_are_subtracted_on_the_calendar() -> None:
+    assert months_before(datetime(2026, 10, 15, 9, 0, tzinfo=UTC), 13) == datetime(
+        2025, 9, 15, 9, 0, tzinfo=UTC
+    )
+    assert months_before(datetime(2026, 3, 31, tzinfo=UTC), 1) == datetime(2026, 2, 28, tzinfo=UTC)
+    assert months_before(datetime(2026, 1, 10, tzinfo=UTC), 1) == datetime(2025, 12, 10, tzinfo=UTC)
+
+
+async def run_purge(
+    compliance: ComplianceRuntime, database: Database, tenant_id: UUID, **values: Any
+) -> PurgeReport:
+    async with database.transaction() as session:
+        tenant = await session.get_one(Tenant, tenant_id)
+        return await purge(
+            session,
+            tenant,
+            settings=values.pop("settings", RetentionSettings()),
+            classifier=compliance.classifier,
+            audit=compliance.audit,
+            now=NOW,
+            **values,
+        )
+
+
+async def count(database: Database, model: Any) -> int:
+    async with database.session() as session:
+        return len((await session.scalars(select(model))).all())
+
+
+async def test_interactions_past_their_period_are_purged_and_the_purge_is_audited(
+    compliance: ComplianceRuntime, database: Database, tenant_id: UUID
+) -> None:
+    await interactions(database, tenant_id, None, count=2, at=NOW - timedelta(days=30))
+    await interactions(database, tenant_id, None, count=3, at=NOW - timedelta(days=400))
+
+    preview = await run_purge(compliance, database, tenant_id, dry_run=True)
+    untouched = await count(database, Interaction)
+    report = await run_purge(compliance, database, tenant_id, actor_id=REVIEWER)
+
+    assert (preview.interactions, preview.dry_run, untouched) == (3, True, 5)
+    assert (report.interactions, report.interaction_months) == (3, 13)
+    assert await count(database, Interaction) == 2
+    async with database.session() as session:
+        entry = (await session.scalars(select(AuditEntry))).one()
+    assert (entry.action, entry.outcome) == ("retention.purged", "interactions:3;outbox_events:0")
+    assert entry.actor_id == REVIEWER
+    assert entry.decision is not None
+    assert entry.decision["interaction_cutoff"] == "2025-09-15T09:00:00+00:00"
+
+
+async def test_a_high_risk_system_keeps_its_interactions_for_at_least_six_months(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    await declare(
+        compliance, database, tenant_id, declarations, "cv-screening", "invoice-data-extraction"
+    )
+    async with database.transaction() as session:
+        high_risk = await compliance.inventory.get(session, tenant_id, "cv-screening")
+        minimal = await compliance.inventory.get(session, tenant_id, "invoice-data-extraction")
+        tenant = await session.get_one(Tenant, tenant_id)
+        tenant.settings = {"retention": {"interaction_months": 1}}
+    for system_id in (high_risk.id, minimal.id):
+        await interactions(database, tenant_id, system_id, at=NOW - timedelta(days=10))
+        await interactions(database, tenant_id, system_id, at=NOW - timedelta(days=90))
+        await interactions(database, tenant_id, system_id, at=NOW - timedelta(days=200))
+
+    report = await run_purge(compliance, database, tenant_id)
+
+    async with database.session() as session:
+        left = (await session.scalars(select(Interaction))).all()
+    kept = sorted(((NOW - i.started_at).days, i.ai_system_id == high_risk.id) for i in left)
+    assert (report.interaction_months, report.high_risk_systems, report.interactions) == (1, 1, 3)
+    assert kept == [(10, False), (10, True), (90, True)]
+
+
+async def test_dispatched_outbox_events_are_purged_after_their_period(
+    compliance: ComplianceRuntime, database: Database, tenant_id: UUID
+) -> None:
+    async with database.transaction() as session:
+        for dispatched in (NOW - timedelta(days=30), NOW - timedelta(days=1), None):
+            session.add(
+                OutboxEvent(
+                    id=new_id(), tenant_id=tenant_id, type="x", payload={}, dispatched_at=dispatched
+                )
+            )
+
+    report = await run_purge(compliance, database, tenant_id)
+
+    assert report.outbox_events == 1
+    assert await count(database, OutboxEvent) == 2
+
+
+async def test_the_worker_classifies_a_system_when_it_is_declared_and_when_it_changes(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    bus = compliance.bus
+    assert isinstance(bus, InProcessEventBus)
+    register_handlers(bus, database, compliance)
+    await declare(compliance, database, tenant_id, declarations, "cv-screening", classify=False)
+
+    first = await bus.dispatch_pending(database)
+    again = await bus.dispatch_pending(database)
+
+    async with database.session() as session:
+        system = await compliance.inventory.get(session, tenant_id, "cv-screening")
+        current = await compliance.classifier.current(session, tenant_id, system.id)
+    assert current is not None
+    assert current.tier is RiskTier.HIGH_RISK
+    # The declaration, then the classification the handler published: both delivered.
+    assert (first.delivered, first.failed) == (1, 0)
+    assert (again.delivered, again.failed) == (1, 0)
+    assert (await bus.dispatch_pending(database)).delivered == 0
+    assert await count(database, Classification) == 1
