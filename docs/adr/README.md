@@ -106,7 +106,7 @@ Decided by the project owner on 2026-10-02:
 | Q1 | In ADR-0009 the owner named the core and three deferrable examples; the placement of the items not named (policy and PII detection in the core; reports, local agent, traffic discovery, anchoring among the deferrable) follows the same rule and can be corrected | Phase 3 planning |
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
 | Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
-| Q4 | Dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the GitHub Actions workflows have never run. Verify them in Codespaces and on the first push (checklist in `CLAUDE.md`) | Phase 3 |
+| Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
 
 ## Deferred decisions
 

@@ -1,8 +1,9 @@
 # Phase 2 — Scaffolding
 
-- **Status**: implemented; ADR-0024 and ADR-0025 accepted on 2026-10-02. Approval of the
-  phase waits for the verification in Codespaces of the items listed under "Not verified"
-  (ADR-0026)
+- **Status**: implemented and verified in Codespaces on 2026-10-02:
+  `scripts/check.sh --containers` passes to the end (ADR-0026). ADR-0024 and ADR-0025
+  accepted on 2026-10-02. The owner gave the go-ahead for Phase 3 the same day. Still
+  not run: the release workflow
 - **Date**: 2026-10-02
 - **Inputs**: Phase 1 decisions (ADR-0010 to ADR-0023), the constraint that Docker is not
   available on the development machine
@@ -74,8 +75,7 @@ written on a machine that cannot run them. First run in Codespaces, 2026-10-02:
 | Item | Outcome |
 |---|---|
 | Dev container | Builds and starts |
-| `scripts/check.sh` | Failed at the step "Tests without extras"; see below. Not yet run to the end |
-| `scripts/check.sh --containers` | Not run yet |
+| `scripts/check.sh` | Failed at the step "Tests without extras"; see below |
 
 The failure was a defect, not an environment problem. The dev container sets
 `ARBITER_TEST_DATABASE_URL`, so the PostgreSQL variants of the database tests ran in the
@@ -86,6 +86,42 @@ its base-install job does not set that variable. Two fixes:
 - a PostgreSQL URL on an install without the `gateway` extra now raises
   `MissingExtraError` naming the extra, and the CLI prints it as an error instead of a
   traceback. This was a real gap for users, independent of the tests.
+
+### Full run in Codespaces
+
+`scripts/check.sh --containers` run to the end in the dev container on 2026-10-02, at
+commit `c8ccce3`, with exit status 0 and no change needed:
+
+| Check | Result |
+|---|---|
+| Tools in the dev container | uv 0.12.22; Python 3.12.15, 3.13.16, 3.14.8 installed by uv; Docker 29.8.2 client and server; the `postgres` sidecar accepts connections; `ARBITER_TEST_DATABASE_URL` is set |
+| Lock file, install with all extras | Up to date; installs on Python 3.12 |
+| `ruff check`, `ruff format --check` | Clean |
+| `mypy` strict | No issues in 53 source files |
+| `lint-imports` | 4 contracts kept |
+| Test suite on Python 3.12, with coverage | 121 passed, none skipped; coverage 98% (gate: 80%) |
+| Test suite on Python 3.13 | 121 passed |
+| Test suite on Python 3.14 | 121 passed |
+| Database tests on PostgreSQL | The 23 database tests passed on SQLite and on PostgreSQL in the same run |
+| Test suite without extras | 90 passed, 23 skipped: 19 PostgreSQL variants, 4 that need the web stack or OpenTelemetry |
+| Image build | `ai-arbiter:dev` built, 316 MB |
+| Image user | Runs as uid 10001 |
+| Compose stack | Arbiter and PostgreSQL reach the healthy state; Mailpit starts |
+| Health endpoints of the stack | `/healthz` returns `ok` with version `0.0.1`; `/readyz` returns `ready` with the database check `ok` |
+| CI at commit `c8ccce3` | Every job passed, CodeQL included |
+
+Not verified in this run:
+
+| Item | Why |
+|---|---|
+| Release workflow and Trusted Publishing | Runs on a version tag; the owner publishes `0.0.1` |
+| CodeQL alerts | The workflow passed, but the alert list is not readable with the Codespaces token; the owner checks the Security tab |
+| Mailpit beyond starting | Nothing sends mail before Phase 4 |
+| Dev container outside Codespaces | Only Codespaces was used |
+
+Two harmless warnings appear in the run: uv cannot inspect the system `python3` of the
+dev container image, which the project does not use, and uv notes that `VIRTUAL_ENV`
+differs from the per-version environments the script selects.
 
 ## Decisions made in this phase
 
@@ -129,7 +165,8 @@ ADR-0024 and ADR-0025 were applied before acceptance and accepted afterwards.
 See the [ADR index](../adr/README.md). The ones that matter next:
 
 1. Azure subscription and budget (ADR-0008): the owner decides by Phase 6.
-2. Everything under "Not verified" has to be checked in Codespaces before Phase 3.
+2. Everything under "Not verified" was checked in Codespaces on 2026-10-02, except the
+   release workflow and the CodeQL alert list.
 
 The v0.1 scope (ADR-0009) was accepted after this phase, split into a core and components
 that may follow in v0.1.x.
