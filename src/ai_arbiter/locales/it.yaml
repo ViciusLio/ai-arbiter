@@ -5,6 +5,7 @@ disclaimer: "Arbiter è uno strumento di supporto. Non fornisce consulenza legal
 policy.model_not_allowed: "Il modello richiesto non è tra quelli ammessi in questa installazione."
 policy.budget_exceeded: "Un budget rigido che copre questa richiesta è esaurito."
 policy.pii_redacted: "I dati personali o le credenziali trovati nel prompt sono stati oscurati prima che lasciasse il gateway."
+policy.system_prohibited: "Il sistema di IA a cui appartiene questa chiave è classificato come pratica vietata ai sensi dell'AI Act. La classificazione è indicativa e può essere rivista."
 policy.allowed: "Nessuna regola di policy ha fermato la richiesta."
 
 usage.title: "Report dei consumi"

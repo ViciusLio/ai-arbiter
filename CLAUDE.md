@@ -30,14 +30,14 @@ Update this list at every commit of the phase.
 | # | Item | State |
 |---|---|---|
 | 0 | Rule engine: three-valued evaluation, staged facts, legal sources; `SystemDirectory` port | Done, committed |
-| 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Done, with CLI; HTTP missing |
-| 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Done, with CLI; HTTP missing |
-| 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Done, with CLI; HTTP missing |
-| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Done, with CLI; HTTP missing |
+| 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Done |
+| 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Done |
+| 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Done |
+| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Done |
 | 5 | `arbiter worker`: outbox dispatcher; systems classified when declared or changed | Done |
 | 6 | Retention: `arbiter retention purge` (ADR-0038) | Done |
-| 7 | CLI (`cli/systems.py`, `findings.py`, `operations.py`): done. HTTP under `/api/v1`, wired in `gateway.api` (the import contract needs an exception for `gateway.api -> compliance`) | HTTP not started |
-| 8 | Routing constraints by risk class, through `SystemDirectory`; policy facts `system.tier` | Not started |
+| 7 | CLI (`cli/systems.py`, `findings.py`, `operations.py`) and HTTP (`gateway/api/compliance.py`) | Done |
+| 8 | Routing constraints by risk class (`router.constraints`), policy facts `system.tier` and `system.reviewed`, policy pack 2026.10.1 | Done |
 | 9 | Guide `docs/compliance.md`, phase summary, README tracking, changelog; `scripts/check.sh --containers` | Not started |
 
 The AI Act rule pack is written only from the three texts listed in the preparation

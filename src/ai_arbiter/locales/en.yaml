@@ -5,6 +5,7 @@ disclaimer: "Arbiter is a support tool. It does not provide legal advice."
 policy.model_not_allowed: "The requested model is not on the allowlist of this deployment."
 policy.budget_exceeded: "A hard budget that covers this request is used up."
 policy.pii_redacted: "Personal data or credentials found in the prompt were redacted before it left the gateway."
+policy.system_prohibited: "The AI system this key belongs to is classified as a prohibited practice under the AI Act. The classification is indicative and can be reviewed."
 policy.allowed: "No policy rule stopped the request."
 
 usage.title: "Usage report"

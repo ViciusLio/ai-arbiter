@@ -4,7 +4,7 @@ Plugins are loaded by name through the registry, so this module wires adapters w
 importing them (ADR-0010, ADR-0011).
 """
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -19,7 +19,14 @@ from ai_arbiter.core.plugins.registry import (
     SECRET_STORES,
     PluginRegistry,
 )
-from ai_arbiter.core.ports import EventBus, LLMProvider, PIIDetector, SecretStore
+from ai_arbiter.core.ports import (
+    AuditLog,
+    EventBus,
+    LLMProvider,
+    PIIDetector,
+    SecretStore,
+    SystemDirectory,
+)
 from ai_arbiter.gateway.chat import ChatService
 from ai_arbiter.gateway.finops.budgets import BudgetService
 from ai_arbiter.gateway.finops.catalogue import PriceCatalogue, load_catalogue
@@ -28,6 +35,8 @@ from ai_arbiter.gateway.identity.service import IdentityService, PepperRing
 from ai_arbiter.gateway.llm_router.deployments import build_targets
 from ai_arbiter.gateway.llm_router.router import Router
 from ai_arbiter.gateway.policy.engine import RulePolicyEngine, load_policy_pack
+
+SystemDirectoryFactory = Callable[[AuditLog, EventBus, Clock], SystemDirectory]
 
 
 @dataclass
@@ -62,6 +71,7 @@ async def build_runtime(
     registry: PluginRegistry | None = None,
     provider_options: dict[str, dict[str, Any]] | None = None,
     clock: Clock | None = None,
+    systems: SystemDirectoryFactory | None = None,
 ) -> GatewayRuntime:
     """Validate the configuration against the installed plugins and build the services.
 
@@ -89,6 +99,9 @@ async def build_runtime(
     budgets = BudgetService(catalogue.currency, settings.finops.reporting, clock)
     audit = DatabaseAuditLog(clock)
     policy = RulePolicyEngine(load_policy_pack(settings.policy))
+    # The inventory belongs to the compliance toolkit, which the gateway does not import:
+    # whoever composes the process passes a factory for the directory.
+    directory = systems(audit, bus, clock) if systems is not None else None
     chat = ChatService(
         database=database,
         router=router,
@@ -103,6 +116,7 @@ async def build_runtime(
         bus=bus,
         default_fail_mode=settings.audit.fail_mode,
         clock=clock,
+        systems=directory,
     )
     return GatewayRuntime(
         settings=settings,

@@ -128,7 +128,35 @@ class Router:
         """Every model name clients may ask for, sorted."""
         return sorted({model for target in self._targets for model in target.config.served_models})
 
-    def plan(self, model: str, *, allowed: Collection[str] | None = None) -> RoutePlan:
+    def allowed_for(self, tier: str) -> tuple[frozenset[str] | None, str]:
+        """Deployment names a system of this risk tier may use, and how to say why not.
+
+        ``None`` means no constraint is configured for the tier.
+        """
+        constraint = self._settings.constraints.get(tier)  # type: ignore[call-overload]
+        if constraint is None:
+            return None, ""
+        names = frozenset(
+            target.name
+            for target in self._targets
+            if (
+                constraint.allowed_deployments is None
+                or target.name in constraint.allowed_deployments
+            )
+            and (
+                constraint.allowed_regions is None
+                or target.deployment.region in constraint.allowed_regions
+            )
+        )
+        return names, f"not allowed for the risk tier {tier}"
+
+    def plan(
+        self,
+        model: str,
+        *,
+        allowed: Collection[str] | None = None,
+        exclusion_reason: str = "excluded by policy",
+    ) -> RoutePlan:
         """Order the deployments that serve ``model``.
 
         ``allowed``, when given, restricts the plan to those deployment names; the others
@@ -140,7 +168,7 @@ class Router:
         kept = 0
         for target in ordered:
             if allowed is not None and target.name not in allowed:
-                candidates.append(Candidate(target, False, "excluded by policy"))
+                candidates.append(Candidate(target, False, exclusion_reason))
             elif kept >= self._settings.max_attempts:
                 candidates.append(
                     Candidate(target, False, f"beyond the limit of {self._settings.max_attempts}")
@@ -175,6 +203,12 @@ class Router:
     ) -> Any:
         """Try each target in order, each up to ``1 + retries`` times."""
         if not plan.targets:
+            if plan.candidates:
+                reasons = sorted({candidate.reason for candidate in plan.candidates})
+                raise NoRouteError(
+                    f"no deployment may serve the model '{plan.requested_model}' for this "
+                    f"request: {'; '.join(reasons)}"
+                )
             raise NoRouteError(f"no deployment serves the model '{plan.requested_model}'")
         for target in plan.targets:
             for attempt in range(1 + self._settings.retries):

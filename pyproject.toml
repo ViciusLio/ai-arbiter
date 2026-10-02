@@ -180,6 +180,10 @@ forbidden_modules = [
 name = "gateway and compliance never import each other"
 type = "independence"
 modules = ["ai_arbiter.gateway", "ai_arbiter.compliance"]
+# The HTTP application is a composition root: it serves both halves (architecture
+# overview, section 2). Nothing else in the gateway may import the compliance toolkit.
+ignore_imports = ["ai_arbiter.gateway.api.** -> ai_arbiter.compliance.**"]
+unmatched_ignore_imports_alerting = "none"
 
 [[tool.importlinter.contracts]]
 name = "adapters are wired only at the composition roots"

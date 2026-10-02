@@ -129,6 +129,15 @@ class DeploymentSettings(_Section):
         return self.priced_as or self.model
 
 
+class RiskConstraint(_Section):
+    """Where the requests of systems of one risk tier may go."""
+
+    # Deployment names. ``None`` puts no limit on names.
+    allowed_deployments: tuple[str, ...] | None = None
+    # Regions, as written on the deployments. ``None`` puts no limit on regions.
+    allowed_regions: tuple[str, ...] | None = None
+
+
 class RouterSettings(_Section):
     strategy: Literal["priority", "cost"] = "priority"
     # How many deployments are tried for one request before giving up.
@@ -136,6 +145,15 @@ class RouterSettings(_Section):
     # Extra calls to the same deployment after a failure that may be transient.
     retries: int = Field(default=1, ge=0)
     retry_backoff_ms: int = Field(default=200, ge=0)
+    # Routing constraints by risk tier (prohibited, high_risk, transparency, minimal,
+    # out_of_scope, undetermined), applied to requests whose API key is tied to a
+    # declared system.
+    constraints: dict[
+        Literal[
+            "prohibited", "high_risk", "transparency", "minimal", "out_of_scope", "undetermined"
+        ],
+        RiskConstraint,
+    ] = {}
 
 
 def parse_decimal(value: str, *, positive: bool = False) -> Decimal:

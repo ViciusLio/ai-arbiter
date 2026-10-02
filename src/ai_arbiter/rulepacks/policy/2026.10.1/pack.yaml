@@ -1,0 +1,67 @@
+# Default gateway policy, evaluated before a request reaches a model provider.
+#
+# The facts are computed by the gateway (ai_arbiter.gateway.policy). A rule can only
+# compare them with values written here: there is no expression language (ADR-0012).
+# When several rules match, the strongest outcome wins: deny, then redact, then allow.
+#
+# To change the policy, copy this file, edit it and point `policy.pack` at the copy.
+
+pack: policy
+version: "2026.10.1"
+description: >-
+  Model allowlist, hard budgets, redaction of personal data in prompts, and no traffic
+  for systems classified as a prohibited practice.
+
+facts:
+  request.model: string
+  request.model_allowed: boolean
+  request.stream: boolean
+  budget.hard_exceeded: boolean
+  budget.soft_exceeded: boolean
+  pii.detected: boolean
+  pii.categories: list
+  system.declared: boolean
+  # From the inventory, when the API key is tied to a declared system: the effective
+  # tier of its classification and whether a person reviewed it (ADR-0037).
+  system.tier: string
+  system.reviewed: boolean
+
+rules:
+  - id: POL-MODEL-NOT-ALLOWED
+    kind: policy
+    description: The requested model is not on the allowlist of this deployment.
+    when: { fact: request.model_allowed, eq: false }
+    then:
+      outcome: deny
+      message_key: policy.model_not_allowed
+
+  - id: POL-SYSTEM-PROHIBITED
+    kind: policy
+    description: The system behind the request is classified as a prohibited practice.
+    when: { fact: system.tier, eq: prohibited }
+    then:
+      outcome: deny
+      legal_refs:
+        - { regulation: EU-AI-ACT, article: "5" }
+      applies_from: 2025-02-02
+      message_key: policy.system_prohibited
+
+  - id: POL-BUDGET-EXCEEDED
+    kind: policy
+    description: A hard budget that covers this request is used up.
+    when: { fact: budget.hard_exceeded, eq: true }
+    then:
+      outcome: deny
+      message_key: policy.budget_exceeded
+
+  - id: POL-PII-REDACT
+    kind: policy
+    description: >-
+      The prompt contains personal data or credentials recognised by the active
+      detectors. They are redacted before the prompt leaves the gateway.
+    when: { fact: pii.detected, eq: true }
+    then:
+      outcome: redact
+      legal_refs:
+        - { regulation: EU-GDPR, article: "5(1)(c)" }
+      message_key: policy.pii_redacted

@@ -7,11 +7,13 @@ from typing import Any
 from fastapi import FastAPI
 
 from ai_arbiter import __version__
+from ai_arbiter.compliance.runtime import ComplianceRuntime, build_compliance
 from ai_arbiter.core.config.settings import Role, Settings, load_settings
 from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.persistence.database import Database
+from ai_arbiter.core.ports import AuditLog, EventBus, SystemDirectory
 from ai_arbiter.core.telemetry import configure_logging, setup_telemetry
-from ai_arbiter.gateway.api import admin, chat, errors, health
+from ai_arbiter.gateway.api import admin, chat, compliance, errors, health
 from ai_arbiter.gateway.runtime import build_runtime
 
 DESCRIPTION = """
@@ -21,7 +23,9 @@ Arbiter is an AI governance gateway and EU AI Act compliance toolkit.
 checked by policy, routed, metered and written to a hash-chained audit log. Prompt and
 completion text is not stored.
 
-**Control plane** (`/api/v1`): identity, budgets, usage and the audit log.
+**Control plane** (`/api/v1`): identity, budgets, usage and the audit log; the inventory
+of AI systems with their indicative classification under the EU AI Act, findings and the
+daily digest. Classifications and findings are indicative until a person reviews them.
 
 Authenticate with `Authorization: Bearer <API key>`. Errors follow RFC 9457 (problem
 details) and include the decision that caused them, where there is one.
@@ -34,6 +38,12 @@ OPENAPI_TAGS = [
     {"name": "identity", "description": "Teams, projects, principals, roles and API keys."},
     {"name": "finops", "description": "Budgets, usage and estimated cost."},
     {"name": "audit", "description": "The hash-chained audit log: read, verify, export."},
+    {
+        "name": "inventory",
+        "description": "Declared AI systems and their indicative AI Act classification.",
+    },
+    {"name": "findings", "description": "Scans, findings and their review, suppressions."},
+    {"name": "digest", "description": "The daily digest."},
     {"name": "health", "description": "Liveness and readiness of this process."},
 ]
 
@@ -56,9 +66,17 @@ def create_app(
         configure_logging(resolved.logging)
         telemetry = setup_telemetry(resolved.telemetry, service_version=__version__)
         database = Database(resolved.database.url, echo=resolved.database.echo)
+        toolkit: list[ComplianceRuntime] = []
+
+        def systems(audit: AuditLog, bus: EventBus, used_clock: Clock) -> SystemDirectory:
+            # The compliance toolkit shares the audit log and the event bus of the
+            # gateway, and gives it the directory of classified systems.
+            toolkit.append(build_compliance(resolved, audit=audit, bus=bus, clock=used_clock))
+            return toolkit[0].directory
+
         try:
             runtime = await build_runtime(
-                resolved, database, provider_options=provider_options, clock=clock
+                resolved, database, provider_options=provider_options, clock=clock, systems=systems
             )
         except BaseException:
             await database.dispose()
@@ -67,6 +85,7 @@ def create_app(
         app.state.settings = resolved
         app.state.database = database
         app.state.runtime = runtime
+        app.state.compliance = toolkit[0]
         try:
             yield
         finally:
@@ -90,4 +109,5 @@ def create_app(
         app.include_router(chat.router)
     if Role.ADMIN in resolved.server.roles:
         app.include_router(admin.router)
+        app.include_router(compliance.router)
     return app

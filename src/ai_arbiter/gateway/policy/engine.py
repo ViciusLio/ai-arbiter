@@ -8,6 +8,7 @@ from collections.abc import Collection, Sequence
 from enum import StrEnum
 
 from ai_arbiter.core.config.settings import PolicySettings
+from ai_arbiter.core.domain.risk import SystemRiskProfile
 from ai_arbiter.core.ports.llm import ChatRequest
 from ai_arbiter.core.rules import (
     Decision,
@@ -47,7 +48,7 @@ def collect_facts(
     allowed_models: Collection[str] | None,
     budget: BudgetStatus,
     pii_categories: Sequence[str],
-    system_declared: bool,
+    system: SystemRiskProfile,
 ) -> Facts:
     """Facts for the pre-call evaluation. Names and types match the policy pack."""
     return {
@@ -58,7 +59,9 @@ def collect_facts(
         "budget.soft_exceeded": budget.soft_exceeded,
         "pii.detected": bool(pii_categories),
         "pii.categories": list(pii_categories),
-        "system.declared": system_declared,
+        "system.declared": system.ai_system_id is not None,
+        "system.tier": system.tier.value if system.ai_system_id is not None else None,
+        "system.reviewed": system.reviewed if system.ai_system_id is not None else None,
     }
 
 

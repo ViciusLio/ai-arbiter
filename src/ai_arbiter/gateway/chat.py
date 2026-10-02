@@ -22,13 +22,20 @@ from sqlalchemy.exc import SQLAlchemyError
 from ai_arbiter.core.audit import AuditRecord, DatabaseAuditLog, FailMode, tenant_fail_mode
 from ai_arbiter.core.config.settings import PolicySettings, RedactionSettings
 from ai_arbiter.core.domain.ids import new_id
+from ai_arbiter.core.domain.risk import SystemRiskProfile
 from ai_arbiter.core.domain.tenancy import TenantContext
 from ai_arbiter.core.domain.time import Clock, SystemClock
 from ai_arbiter.core.errors import ArbiterError
 from ai_arbiter.core.interaction import Interaction, InteractionRecorded, InteractionStatus
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.persistence.tenant import Tenant
-from ai_arbiter.core.ports import EventBus, PIIDetector, PolicyEngine
+from ai_arbiter.core.ports import (
+    EventBus,
+    NoSystemDirectory,
+    PIIDetector,
+    PolicyEngine,
+    SystemDirectory,
+)
 from ai_arbiter.core.ports.llm import ChatChunk, ChatRequest, ProviderError, Usage
 from ai_arbiter.core.redaction import (
     RedactionStrategy,
@@ -41,7 +48,13 @@ from ai_arbiter.core.rules import Decision
 from ai_arbiter.gateway.finops.budgets import BudgetService, BudgetStatus
 from ai_arbiter.gateway.finops.metering import UsageMeter, estimate_usage
 from ai_arbiter.gateway.llm_router.deployments import Target
-from ai_arbiter.gateway.llm_router.router import NoRouteError, RouteOutcome, Router, UpstreamError
+from ai_arbiter.gateway.llm_router.router import (
+    NoRouteError,
+    RouteOutcome,
+    RoutePlan,
+    Router,
+    UpstreamError,
+)
 from ai_arbiter.gateway.policy.engine import PolicyOutcome, collect_facts
 
 logger = logging.getLogger(__name__)
@@ -90,6 +103,7 @@ class _Prepared:
     pii_categories: list[str]
     fingerprint: str | None
     prompt_characters: int
+    system: SystemRiskProfile
     include_usage: bool = False
     decisions: list[tuple[str, Decision]] = field(default_factory=list)
 
@@ -111,6 +125,7 @@ class ChatService:
         bus: EventBus,
         default_fail_mode: FailMode = "closed",
         clock: Clock | None = None,
+        systems: SystemDirectory | None = None,
     ) -> None:
         self._database = database
         self._router = router
@@ -123,6 +138,7 @@ class ChatService:
         self._redaction_key = redaction_key
         self._audit = audit
         self._bus = bus
+        self._systems: SystemDirectory = systems if systems is not None else NoSystemDirectory()
         self._default_fail_mode: FailMode = default_fail_mode
         self._clock = clock if clock is not None else SystemClock()
         self._pending: set[asyncio.Future[bool]] = set()
@@ -170,6 +186,7 @@ class ChatService:
             tenant = await session.get_one(Tenant, context.tenant_id)
             fail_mode = tenant_fail_mode(tenant, self._default_fail_mode)
             budget = await self._budgets.status(session, context)
+            system = await self._systems.resolve(session, context.tenant_id, context.ai_system_id)
 
         found = categories(
             [span for text in request.texts() for span in self._detector.detect(text)]
@@ -179,7 +196,7 @@ class ChatService:
             allowed_models=self._policy_settings.allowed_models,
             budget=budget,
             pii_categories=found,
-            system_declared=context.ai_system_id is not None,
+            system=system,
         )
         decision = await self._policy.evaluate("pre_call", facts)
         if decision.outcome == PolicyOutcome.REDACT.value:
@@ -205,6 +222,7 @@ class ChatService:
             pii_categories=found,
             fingerprint=fingerprint,
             prompt_characters=sum(len(text) for text in texts),
+            system=system,
             include_usage=isinstance(options, Mapping) and bool(options.get("include_usage")),
             decisions=[("chat.policy", decision)],
         )
@@ -315,6 +333,13 @@ class ChatService:
         prepared.decisions.append(("chat.routing", routing))
         await self._record(prepared, self._interaction(prepared, InteractionStatus.ERROR))
 
+    def _plan(self, prepared: _Prepared) -> RoutePlan:
+        """Order the deployments, within what the system's risk tier allows."""
+        if prepared.system.ai_system_id is None:
+            return self._router.plan(prepared.request.model)
+        allowed, reason = self._router.allowed_for(prepared.system.tier.value)
+        return self._router.plan(prepared.request.model, allowed=allowed, exclusion_reason=reason)
+
     async def complete(self, context: TenantContext, request: ChatRequest) -> ChatResult:
         """Handle a request that is not streamed.
 
@@ -322,7 +347,7 @@ class ChatService:
         ``AuditUnavailableError``.
         """
         prepared = await self._start(context, request)
-        plan = self._router.plan(prepared.request.model)
+        plan = self._plan(prepared)
         try:
             response, outcome = await self._router.complete(plan, prepared.request)
         except NoRouteError:
@@ -362,7 +387,7 @@ class ChatService:
         interaction is recorded when the stream ends or is abandoned.
         """
         prepared = await self._start(context, request)
-        plan = self._router.plan(prepared.request.model)
+        plan = self._plan(prepared)
         try:
             chunks, outcome = await self._router.open_stream(plan, prepared.request)
         except NoRouteError:
