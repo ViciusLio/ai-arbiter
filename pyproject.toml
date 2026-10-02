@@ -1,0 +1,192 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ai-arbiter"
+version = "0.0.1"
+description = "Arbiter: an AI governance gateway and EU AI Act compliance toolkit"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "The Arbiter authors" }]
+keywords = ["ai-governance", "ai-act", "compliance", "llm-gateway", "finops", "audit"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Security",
+    "Topic :: System :: Monitoring",
+    "Typing :: Typed",
+]
+# Base install: core + compliance toolkit + CLI on SQLite. No web framework, no cloud SDK
+# (ADR-0010).
+dependencies = [
+    "aiosqlite>=0.20",
+    "alembic>=1.14",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "pyyaml>=6.0.2",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "typer>=0.15",
+]
+
+[project.optional-dependencies]
+gateway = [
+    "asyncpg>=0.30",
+    "fastapi>=0.115",
+    "httpx>=0.28",
+    "uvicorn>=0.32",
+]
+otel = [
+    "opentelemetry-exporter-otlp-proto-http>=1.28",
+    "opentelemetry-sdk>=1.28",
+]
+all = ["ai-arbiter[gateway,otel]"]
+
+[project.scripts]
+arbiter = "ai_arbiter.cli.main:app"
+ai-arbiter = "ai_arbiter.cli.main:app"
+
+# Plugins are discovered through entry points and activated only by configuration
+# (ADR-0011). Built-in implementations are registered the same way as third-party ones.
+[project.entry-points."ai_arbiter.secret_stores"]
+env = "ai_arbiter.adapters.local.secrets:EnvSecretStore"
+
+[project.entry-points."ai_arbiter.event_buses"]
+in_process = "ai_arbiter.core.events.bus:InProcessEventBus"
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.1",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "types-pyyaml>=6.0.12",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ai_arbiter"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/README.md", "/LICENSE", "/NOTICE", "/CHANGELOG.md", "/alembic.ini"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "A",     # builtins shadowing
+    "ASYNC", # async pitfalls
+    "B",     # bugbear
+    "C4",    # comprehensions
+    "DTZ",   # naive datetimes
+    "E",
+    "F",
+    "I",     # import order
+    "N",     # naming
+    "PT",    # pytest style
+    "PTH",   # pathlib
+    "RUF",
+    "S",     # security (bandit rule set)
+    "SIM",
+    "T20",   # no print
+    "TID",   # tidy imports
+    "UP",
+    "W",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+"src/ai_arbiter/migrations/versions/*" = ["N999"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra --strict-markers --strict-config"
+
+[tool.coverage.run]
+# A directory, not a package name: Alembic loads migrations/env.py under another module
+# name, and matching by path is what gets it measured.
+source = ["src/ai_arbiter"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "\\.\\.\\.$",
+]
+
+# Module boundaries of ADR-0010. `lint-imports` runs in CI.
+[tool.importlinter]
+root_package = "ai_arbiter"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "core is the shared kernel and depends on no other Arbiter package"
+type = "forbidden"
+source_modules = ["ai_arbiter.core"]
+forbidden_modules = [
+    "ai_arbiter.adapters",
+    "ai_arbiter.cli",
+    "ai_arbiter.compliance",
+    "ai_arbiter.gateway",
+    "ai_arbiter.migrations",
+]
+
+[[tool.importlinter.contracts]]
+name = "gateway and compliance never import each other"
+type = "independence"
+modules = ["ai_arbiter.gateway", "ai_arbiter.compliance"]
+
+[[tool.importlinter.contracts]]
+name = "adapters are wired only at the composition roots"
+type = "forbidden"
+source_modules = ["ai_arbiter.core", "ai_arbiter.compliance", "ai_arbiter.gateway"]
+forbidden_modules = ["ai_arbiter.adapters"]
+ignore_imports = ["ai_arbiter.gateway.api.** -> ai_arbiter.adapters.**"]
+unmatched_ignore_imports_alerting = "none"
+
+[[tool.importlinter.contracts]]
+name = "the web framework is imported only by gateway.api"
+type = "forbidden"
+source_modules = [
+    "ai_arbiter.adapters",
+    "ai_arbiter.cli",
+    "ai_arbiter.compliance",
+    "ai_arbiter.core",
+    "ai_arbiter.gateway",
+]
+forbidden_modules = ["fastapi", "starlette", "uvicorn"]
+ignore_imports = [
+    "ai_arbiter.gateway.api.** -> fastapi",
+    "ai_arbiter.gateway.api.** -> starlette",
+    "ai_arbiter.cli.serve -> uvicorn",
+]
+allow_indirect_imports = true
+unmatched_ignore_imports_alerting = "none"

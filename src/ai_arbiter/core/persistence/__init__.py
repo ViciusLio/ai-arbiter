@@ -1,0 +1,8 @@
+"""Persistence: one portable schema for PostgreSQL and SQLite (ADR-0015)."""
+
+from ai_arbiter.core.persistence.base import Base
+from ai_arbiter.core.persistence.database import Database, ensure_sqlite_directory
+from ai_arbiter.core.persistence.tenant import Tenant, ensure_tenant
+from ai_arbiter.core.persistence.types import UTCDateTime
+
+__all__ = ["Base", "Database", "Tenant", "UTCDateTime", "ensure_sqlite_directory", "ensure_tenant"]

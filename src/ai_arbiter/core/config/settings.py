@@ -1,0 +1,149 @@
+"""Settings tree.
+
+Precedence, highest first: explicit overrides, environment variables (``ARBITER_`` prefix,
+``__`` between nested keys), the YAML configuration file, built-in defaults.
+"""
+
+import os
+from contextvars import ContextVar
+from enum import StrEnum
+from pathlib import Path
+from typing import Any, Literal
+
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+    YamlConfigSettingsSource,
+)
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError
+
+from ai_arbiter.core.errors import ConfigurationError
+
+DEFAULT_CONFIG_FILE = Path("arbiter.yaml")
+DEFAULT_DATABASE_URL = "sqlite+aiosqlite:///./.arbiter/arbiter.db"
+CONFIG_ENV_VAR = "ARBITER_CONFIG"
+
+# Set by ``load_settings`` for the duration of one load, so that the YAML source knows
+# which file to read without the path being part of the settings themselves.
+_config_file: ContextVar[Path | None] = ContextVar("arbiter_config_file", default=None)
+
+
+class Role(StrEnum):
+    """What a server process does (ADR-0020)."""
+
+    GATEWAY = "gateway"
+    ADMIN = "admin"
+    WORKER = "worker"
+
+
+class _Section(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class DatabaseSettings(_Section):
+    url: str = DEFAULT_DATABASE_URL
+    echo: bool = False
+
+
+class ServerSettings(_Section):
+    host: str = "127.0.0.1"
+    port: int = Field(default=8080, ge=1, le=65535)
+    roles: frozenset[Role] = frozenset(Role)
+
+
+class PluginSettings(_Section):
+    """Which implementation is active for each port (ADR-0011).
+
+    A plugin runs only if it is named here; being installed is not enough.
+    """
+
+    secret_store: str = "env"  # noqa: S105 - a plugin name, not a secret
+    event_bus: str = "in_process"
+
+
+class TelemetrySettings(_Section):
+    enabled: bool = False
+    service_name: str = "arbiter"
+    otlp_endpoint: str | None = None
+
+
+class LoggingSettings(_Section):
+    level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="ARBITER_",
+        env_nested_delimiter="__",
+        extra="forbid",
+    )
+
+    environment: str = "local"
+    database: DatabaseSettings = DatabaseSettings()
+    server: ServerSettings = ServerSettings()
+    plugins: PluginSettings = PluginSettings()
+    telemetry: TelemetrySettings = TelemetrySettings()
+    logging: LoggingSettings = LoggingSettings()
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        sources: list[PydanticBaseSettingsSource] = [init_settings, env_settings]
+        config_file = _config_file.get()
+        if config_file is not None:
+            sources.append(YamlConfigSettingsSource(settings_cls, yaml_file=config_file))
+        return tuple(sources)
+
+    def redacted(self) -> dict[str, Any]:
+        """Settings as plain data, safe to print: credentials in URLs are masked."""
+        data = self.model_dump(mode="json")
+        data["database"]["url"] = _mask_url(self.database.url)
+        data["server"]["roles"] = sorted(data["server"]["roles"])
+        return data
+
+
+def _mask_url(url: str) -> str:
+    try:
+        return make_url(url).render_as_string(hide_password=True)
+    except ArgumentError:
+        return "<unparseable url>"
+
+
+def _resolve_config_file(explicit: Path | None) -> Path | None:
+    """Pick the configuration file.
+
+    A file named explicitly (argument or ``ARBITER_CONFIG``) must exist. The default
+    file is optional: without it, defaults and environment variables apply.
+    """
+    named = explicit
+    if named is None and (from_env := os.environ.get(CONFIG_ENV_VAR)):
+        named = Path(from_env)
+    if named is not None:
+        if not named.is_file():
+            raise ConfigurationError(f"configuration file not found: {named}")
+        return named
+    return DEFAULT_CONFIG_FILE if DEFAULT_CONFIG_FILE.is_file() else None
+
+
+def load_settings(config_file: Path | None = None, **overrides: Any) -> Settings:
+    """Load and validate settings. Raises ``ConfigurationError`` with a readable message."""
+    token = _config_file.set(_resolve_config_file(config_file))
+    try:
+        return Settings(**overrides)
+    except ValidationError as exc:
+        problems = "; ".join(
+            f"{'.'.join(str(part) for part in error['loc'])}: {error['msg']}"
+            for error in exc.errors(include_input=False, include_url=False)
+        )
+        raise ConfigurationError(f"invalid configuration: {problems}") from exc
+    finally:
+        _config_file.reset(token)
