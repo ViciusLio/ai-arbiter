@@ -8,57 +8,59 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0, 1 and 2 are done. **The core of Phase 3 (gateway MVP)
-is implemented and waits for the owner's approval.** Do not start Phase 4, and do not
-start the deferrable items of Phase 3, until the owner says so.
+**State on 2026-10-02.** Phases 0 to 3 are done and approved; the version is `0.1.0a1`,
+not published (ADR-0032). **Phase 4 (compliance MVP) is being prepared: no rule and no
+code is written until the owner answers the decisions P4-1 to P4-6.** They were presented
+on 2026-10-02; if the answers are not in this file, present them again from
+`docs/phases/phase-4-preparation.md`.
 
-Read first: `docs/phases/phase-3-gateway.md` (what was built, verified and not verified),
-then `docs/gateway.md` and `docs/audit.md` (how it works).
+Read first: `docs/phases/phase-4-preparation.md` (legal text verified, decisions to
+take), then `docs/phases/phase-3-gateway.md` (what exists).
 
 ### Step 1: quick check in a new codespace
 
 `git config user.email` (must be `viciuslios@gmail.com`, local config),
-`pg_isready -h postgres -U arbiter -d arbiter_test`, then `scripts/check.sh`.
+`pg_isready -h postgres -U arbiter -d arbiter_test`, then `uv run pytest -q`.
 
 Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
 the test suite is running: the tests migrate and drop its tables.
 
 ### Step 2: decisions waiting for the owner
 
-| # | Decision | Needed by |
+| # | Decision | Recommended |
 |---|---|---|
-| 1 | Approval of Phase 3 and the go-ahead for Phase 4 | Phase 4 |
-| 2 | Q6: version number for this state of the code (`0.1.0a1` now, or after `0.0.1` reserved the name on PyPI) | The alpha release |
-| 3 | Q5: credentials for one OpenAI-compatible endpoint, to run the provider adapters against a real provider | `0.1.0` |
-| 4 | Publish `0.0.1` to reserve the name on PyPI (`docs/releasing.md`) | Before the alpha |
-| 5 | Whether to do deferrable items of Phase 3 before Phase 4, and which | Planning |
-| 6 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+| P4-1 | Which source counts as the official AI Act text, since the EUR-Lex website refuses automated access | 3: Publications Office for the work, owner spot-checks on EUR-Lex |
+| P4-2 | The facts the classifier asks for | 3: staged, coarse areas then detailed facts |
+| P4-3 | Who may claim the Art. 6(3) derogation | 1: the deployer records the provider's claim |
+| P4-4 | Review and override of a classification | 3: a proposal until a named person confirms |
+| P4-5 | Retention defaults | 2: defaults, six-month floor for high-risk, purge command |
+| P4-6 | A real provider for demos (GitHub Models is retired) | 1 now (Ollama on demand), 3 in Phase 6 (Azure AI Foundry) |
 
-Decided at the start of Phase 3 (ADR-0027 to ADR-0031): the v0.1 split with the PII
-detectors divided between core and v0.1.x; API keys as HMAC with a pepper; in-house
-canonical JSON; prices in a YAML catalogue; token counts unknown by default.
+Also for the owner, not blocking: read the CodeQL alerts in the Security tab (the
+Codespace token gets a 403); decide whether to enable Dependabot alerts; publish
+`0.1.0a1` when ready (`docs/releasing.md`); Azure subscription and budget by Phase 6.
 
-### Step 3: what is not done
+### Step 3: after the answers
 
-Deferrable, only when the owner asks (ADR-0009, ADR-0027): routing constraints by risk
-class (needs Phase 4), post-call policy evaluation, external anchoring of the audit head,
-opt-in store of redacted content, the remaining PII detectors and the measurement of
-their precision and recall.
+Record one ADR per decision, update the ADR index and `CHANGELOG.md`, then build the core
+of Phase 4 in the order of section 4 of the preparation document: inventory and
+`SystemDirectory`; the AI Act rule pack and the classifier; the review workflow;
+scanner; findings; daily digest in English and Italian; `arbiter worker`; retention. Then
+routing constraints by risk class. Stop at the end of the phase.
 
-Not verified: the `openai_compat` and `azure_openai` adapters against a real provider,
-the release workflow, the CodeQL alert list. The README table "Release improvement
-tracking" lists every open improvement (I-01 to I-21).
+The AI Act rule pack is written only from the three texts listed in the preparation
+document (CELEX 32024R1689, 32026R1744, consolidated 02024R1689-20260727). It stays
+`verified_against: secondary` until the owner has done the spot check of P4-1.
 
-### Step 4: Phase 4 (compliance MVP), when the owner gives the go-ahead
+### Step 4: what is not done from Phase 3
 
-Open the phase by bringing the decisions first, as numbered option tables: the fact
-schema of the AI Act rule pack; how a person reviews and overrides a classification; the
-retention defaults. Before writing any rule, verify the AI Act text and calendar on
-EUR-Lex (Q3).
+Deferrable, only when the owner asks (ADR-0009, ADR-0027): post-call policy evaluation,
+external anchoring of the audit head, opt-in store of redacted content, the remaining PII
+detectors and the measurement of their precision and recall.
 
-Then, core first: inventory and the `SystemDirectory` port; classifier with the AI Act
-rule pack; scanner; findings with review; daily digest in English and Italian; the outbox
-dispatcher (`arbiter worker`). Then routing constraints by risk class.
+Not verified: the `azure_openai` adapter against a real endpoint (Phase 6), hosted
+OpenAI-compatible services, the release workflow. The README table "Release improvement
+tracking" lists every open improvement.
 
 Target release at the end of Phase 4: `0.1.0`.
 

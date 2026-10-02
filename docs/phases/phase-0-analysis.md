@@ -6,6 +6,9 @@
 - **Data**: 2026-10-02
 - **Input**: [PROJECT_BRIEF.md](../PROJECT_BRIEF.md)
 - **Output atteso**: decisioni D1–D7 (§8) e approvazione dello scope v0.1 (§6)
+- **Verifica**: le date del §2.1 e il numero del regolamento modificativo sono stati
+  confermati sul testo della Gazzetta ufficiale il 2026-10-02: vedi
+  [phase-4-preparation.md](phase-4-preparation.md)
 - **Nota**: documento storico in italiano; dalla Fase 1 la documentazione è in inglese
   (ADR-0004). L'orientamento "workspace multi-pacchetto" del §9 è stato rivisto in
   ADR-0010

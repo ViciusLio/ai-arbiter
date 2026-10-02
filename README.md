@@ -170,7 +170,7 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 
 | ID | Phase | Improvement | Why | Target | Status |
 |---|---|---|---|---|---|
-| I-01 | 0 | Verify AI Act dates and the amending regulation on EUR-Lex, article by article | The rule pack must rest on the official text | Before Phase 4 | Open |
+| I-01 | 0 | Verify AI Act dates and the amending regulation on EUR-Lex, article by article | The rule pack must rest on the official text | Before Phase 4 | Done against the Official Journal texts from the Publications Office: dates and act number confirmed. A spot check on EUR-Lex itself is pending with the owner |
 | I-02 | 0 | Add an English summary of the Phase 0 analysis | One language across the documentation | 1.0 | Open |
 | I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Done: both documents list where the code differs |
 | I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Open |

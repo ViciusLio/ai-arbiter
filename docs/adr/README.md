@@ -140,7 +140,9 @@ Decided by the project owner on 2026-10-02, at the end of the phase:
 |---|---|---|
 | Q1 | Closed on 2026-10-02 by ADR-0027 | - |
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
-| Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
+| Q3 | The AI Act text and calendar were verified on 2026-10-02 against the Official Journal texts retrieved from the Publications Office: the dates of the Phase 0 analysis and the number of the amending act, Regulation (EU) 2026/1744, are confirmed ([Phase 4 preparation](../phases/phase-4-preparation.md)). Open: whether that source satisfies the rule that names EUR-Lex, whose website refuses automated access (decision P4-1) | The AI Act rule pack |
+| Q7 | Decisions P4-1 to P4-6 of the [Phase 4 preparation](../phases/phase-4-preparation.md): source of the legal text, fact schema, Art. 6(3) derogation, review and override, retention, a real provider for demos | Phase 4 |
+| Q8 | The CodeQL alert list cannot be read with the Codespace token; Dependabot alerts are disabled for the repository. Both are for the owner to look at | - |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
 | Q5 | Closed on 2026-10-02 by ADR-0033 for the OpenAI-compatible adapter. The Azure OpenAI adapter is checked against a real endpoint in Phase 6 | Phase 6 |
 | Q6 | Closed on 2026-10-02 by ADR-0032 | - |
