@@ -1,7 +1,7 @@
 # Architecture overview
 
-Status: **accepted** on 2026-10-02 with ADR-0010 to ADR-0023. The v0.1 scope (ADR-0009)
-is still to be confirmed. Parts already implemented are listed in the
+Status: **accepted** on 2026-10-02 with ADR-0010 to ADR-0023. What v0.1 implements of it,
+and in which order, is set by ADR-0009. Parts already implemented are listed in the
 [Phase 2 summary](../phases/phase-2-scaffolding.md).
 
 - [Flows](flows.md) — sequence and state diagrams

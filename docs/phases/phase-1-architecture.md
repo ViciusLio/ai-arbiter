@@ -1,8 +1,8 @@
 # Phase 1 — Architecture
 
 - **Status**: closed on 2026-10-02. ADR-0010 to ADR-0021 accepted, four of them amended;
-  the three deviations approved (ADR-0010, ADR-0022, ADR-0023). ADR-0009 still to be
-  confirmed. Details in the [ADR index](../adr/README.md)
+  the three deviations approved (ADR-0010, ADR-0022, ADR-0023). ADR-0009 was accepted
+  later the same day, amended. Details in the [ADR index](../adr/README.md)
 - **Date**: 2026-10-02
 - **Inputs**: [project brief](../PROJECT_BRIEF.md), [Phase 0 analysis](phase-0-analysis.md),
   ADR-0001 to ADR-0008

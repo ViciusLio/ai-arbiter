@@ -18,7 +18,7 @@ supersedes the old one.
 | [0006](0006-no-web-ui-in-v0-1.md) | Ship no web UI in v0.1; HTML outputs and OpenAPI docs are the visible surface | Accepted | 0 |
 | [0007](0007-ai-act-role-explicit-deployer-first.md) | Model the AI Act role explicitly; cover the deployer first | Accepted | 0 |
 | [0008](0008-local-only-until-phase-6.md) | Develop locally only until Phase 6; estimate costs and set budget alerts then | Accepted | 0 |
-| [0009](0009-v0-1-scope.md) | Scope v0.1 as one complete vertical slice | **Proposed** | 0 |
+| [0009](0009-v0-1-scope.md) | Scope v0.1 as one vertical slice, split into a core and deferrable components | Accepted, amended | 0 |
 | [0010](0010-single-distribution-with-enforced-boundaries.md) | One distribution with extras; module boundaries enforced by tooling | Accepted | 1 |
 | [0011](0011-plugins-via-entry-points-and-config.md) | Discover plugins through entry points, activate them only from configuration | Accepted | 1 |
 | [0012](0012-unified-declarative-rule-engine.md) | One declarative rule engine in Python for policy, classification and scanning | Accepted | 1 |
@@ -94,12 +94,16 @@ Decided by the project owner on 2026-10-02:
 - Azure subscription and budget (ADR-0008) stay open until Phase 6.
 - Phase 3 does not start yet. It will start in Codespaces, after the environment and the
   unverified parts of Phase 2 have been checked there.
+- ADR-0009 (v0.1 scope) accepted with one change: v0.1 is split into a core that `0.1.0`
+  cannot ship without (proxy with FinOps and audit, classifier, findings, digest, CLI, and
+  what they depend on) and components that may slip to v0.1.x (among them routing by risk
+  class, the LiteLLM importer and the simulation scenarios).
 
 ## Open questions
 
 | # | Question | Blocks |
 |---|---|---|
-| Q1 | Confirm the v0.1 scope and its amendments (ADR-0009). A ten-line summary was sent to the owner for explicit confirmation | Before Phase 3 is closed |
+| Q1 | In ADR-0009 the owner named the core and three deferrable examples; the placement of the items not named (policy and PII detection in the core; reports, local agent, traffic discovery, anchoring among the deferrable) follows the same rule and can be corrected | Phase 3 planning |
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
 | Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
 | Q4 | Dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the GitHub Actions workflows have never run. Verify them in Codespaces and on the first push (checklist in `CLAUDE.md`) | Phase 3 |

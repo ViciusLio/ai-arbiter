@@ -69,7 +69,8 @@ Entries link to the decision record that motivated them, where one exists.
     [ADR-0022](docs/adr/0022-ai-act-roles-one-to-many.md));
   - local-only development until Phase 6
     ([ADR-0008](docs/adr/0008-local-only-until-phase-6.md));
-  - v0.1 scope, proposed ([ADR-0009](docs/adr/0009-v0-1-scope.md));
+  - v0.1 scope: a core required for `0.1.0` and components that may follow in v0.1.x
+    ([ADR-0009](docs/adr/0009-v0-1-scope.md));
   - one declarative rule engine for policy, classification and scanning
     ([ADR-0012](docs/adr/0012-unified-declarative-rule-engine.md));
   - own provider adapters, Azure OpenAI included from v0.1

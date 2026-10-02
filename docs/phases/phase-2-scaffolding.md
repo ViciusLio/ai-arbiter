@@ -111,9 +111,11 @@ ADR-0024 and ADR-0025 were applied before acceptance and accepted afterwards.
 
 See the [ADR index](../adr/README.md). The ones that matter next:
 
-1. ADR-0009 (v0.1 scope) is still unconfirmed.
-2. Azure subscription and budget (ADR-0008): the owner decides by Phase 6.
-3. Everything under "Not verified" has to be checked in Codespaces before Phase 3.
+1. Azure subscription and budget (ADR-0008): the owner decides by Phase 6.
+2. Everything under "Not verified" has to be checked in Codespaces before Phase 3.
+
+The v0.1 scope (ADR-0009) was accepted after this phase, split into a core and components
+that may follow in v0.1.x.
 
 ## Proposed Phase 3 task list
 

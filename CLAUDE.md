@@ -35,9 +35,13 @@ Actions workflow were written but **have never run**. Treat them as unverified d
 
 | # | Decision | Needed by |
 |---|---|---|
-| 1 | Confirm the v0.1 scope (ADR-0009, still `proposed`). A ten-line summary was given to the owner; on confirmation set the ADR to `accepted` | Before Phase 3 is closed |
-| 2 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
-| 3 | Approval of Phase 2 once Step 1 is done, and the go-ahead for Phase 3 | Phase 3 |
+| 1 | Approval of Phase 2 once Step 1 is done, and the go-ahead for Phase 3 | Phase 3 |
+| 2 | Placement of the scope items the owner did not name explicitly (ADR-0009, question Q1 in the ADR index) | Phase 3 planning |
+| 3 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+
+The v0.1 scope is accepted (ADR-0009). It has a **core** that `0.1.0` cannot ship without
+and **deferrable** components that may follow in v0.1.x. Plan Phases 3 and 4 core first;
+start a deferrable item only when the core of that phase is done.
 
 ### Step 3 — Phase 3: four decisions to bring first
 
@@ -70,16 +74,22 @@ Also deferred to Phase 3: anchoring sink details for the audit chain (ADR-0017).
 
 ### Step 4 — Phase 3 task list (gateway MVP)
 
+Core (ADR-0009), in this order:
+
 1. Identity: teams, projects, principals, API keys, three roles.
 2. Rule engine (`core.rules`): rule pack schema, condition evaluator, match trace.
-3. Redaction: built-in detectors with EU and Italian formats (ADR-0014).
-4. Audit: hash chain, verification, export, external anchoring (ADR-0017, ADR-0023).
-5. Policy: fact collection, pre- and post-call evaluation, default policy pack.
-6. Providers: mock, OpenAI-compatible, Azure OpenAI; plugin settings models (ADR-0013).
-7. Router: candidates, constraints, priority and cost strategies, fallback and retry.
-8. FinOps: versioned price catalogue, metering, roll-ups, budgets.
+3. Audit: hash chain, verification, export (ADR-0017, ADR-0023).
+4. Providers: mock, OpenAI-compatible, Azure OpenAI; plugin settings models (ADR-0013).
+5. Router: candidates, priority and cost strategies, fallback and retry.
+6. FinOps: versioned price catalogue, metering, roll-ups, budgets.
+7. Redaction: built-in detectors with EU and Italian formats (ADR-0014).
+8. Policy: fact collection, pre-call evaluation, default policy pack.
 9. HTTP: `/v1/chat/completions` with streaming, `/v1/models`, admin endpoints.
 10. Request-path latency measured against the mock provider.
+
+Deferrable to v0.1.x, only after the core above: routing constraints by risk class,
+post-call policy evaluation, external anchoring of the audit head, opt-in store of
+redacted content.
 
 Target release at the end of Phase 3: `0.1.0-alpha`.
 
