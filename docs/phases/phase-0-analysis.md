@@ -1,4 +1,4 @@
-# Fase 0 — Analisi dei requisiti e proposta di scope MVP
+# Fase 0: Analisi dei requisiti e proposta di scope MVP
 
 - **Stato**: chiusa il 2026-10-02. D1–D7 decise e registrate in
   [ADR-0002 … ADR-0008](../adr/README.md); lo scope v0.1 (§6) è in
@@ -41,7 +41,7 @@ scenari simulati. A2A/MCP, Azure e packaging seguono come v0.2, v0.3 e v1.0.
 
 ## 2. Stato verificato al 2026-10-02
 
-### 2.1 AI Act — Reg. (UE) 2024/1689 come modificato dal Digital Omnibus on AI
+### 2.1 AI Act: Reg. (UE) 2024/1689 come modificato dal Digital Omnibus on AI
 
 Il Digital Omnibus è stato adottato dal Consiglio il 29 giugno 2026, pubblicato in
 Gazzetta Ufficiale a luglio ed è in vigore dal 27 luglio 2026.
@@ -53,8 +53,8 @@ Gazzetta Ufficiale a luglio ed è in vigore dal 27 luglio 2026.
 | 2 ago 2026 | Art. 50 obblighi di trasparenza | **Applicabile da due mesi** (non rinviato). Linee guida della Commissione adottate il 20 lug 2026 |
 | 2 dic 2026 | Fine del periodo transitorio art. 50(2) (marcatura machine-readable) per sistemi generativi già sul mercato prima del 2 ago 2026; nuovi divieti art. 5 (immagini intime non consensuali, CSAM generati da AI) | Tra due mesi |
 | 2 ago 2027 | Modelli GPAI immessi sul mercato prima del 2 ago 2025; termine per le sandbox nazionali | Futuro |
-| 2 dic 2027 | Alto rischio — Allegato III (sistemi stand-alone) | **Rinviato** (era 2 ago 2026) |
-| 2 ago 2028 | Alto rischio — Allegato I (AI integrata in prodotti regolati) | **Rinviato** (era 2 ago 2027) |
+| 2 dic 2027 | Alto rischio: Allegato III (sistemi stand-alone) | **Rinviato** (era 2 ago 2026) |
+| 2 ago 2028 | Alto rischio: Allegato I (AI integrata in prodotti regolati) | **Rinviato** (era 2 ago 2027) |
 
 Altre modifiche rilevanti dell'Omnibus: base giuridica per trattare categorie particolari
 di dati a fini di rilevazione dei bias estesa a tutti i sistemi AI e ai modelli GPAI;
@@ -99,21 +99,21 @@ portfolio.
 | A1 | "production-ready" | Significato per un progetto v0.x di una persona | Pratiche di ingegneria da produzione (test, tipi, CI, osservabilità, sicurezza di base, limiti documentati). Non: HA dimostrata, pen-test, SLA |
 | A2 | `classifier` | Non è indicato **il ruolo** dell'utente (provider, deployer, importatore, distributore): gli obblighi dipendono dal ruolo, non solo dalla classe | Aggiungere `role` all'inventario; v0.1 orientata al deployer (D6) |
 | A3 | `classifier` | La classe dipende dalla **finalità prevista**, che non si deduce dal traffico | Classificazione su attributi dichiarati; il traffico fornisce evidenze e incongruenze, non la classe (D2) |
-| A4 | `classifier` — GPAI | Gli obblighi GPAI gravano sul **provider del modello**; chi usa il gateway quasi sempre non lo è | Registrare "usa un modello GPAI di X" come attributo; obblighi GPAI solo se role = provider di modello |
-| A5 | `scanner` — "configurazioni, prompt, log, dataset" | Ambito molto ampio; l'analisi di dataset è un prodotto a sé | v0.1: configurazioni, inventario e metadati di traffico. Dataset fuori scope fino a nuova decisione |
-| A6 | `findings` — "il feedback migliora le regole" | Apprendimento automatico o taratura manuale? | v0.1: soppressioni con ambito (regola/sistema/fingerprint) e precisione per regola nel digest. Nessun auto-tuning |
-| A7 | `local_agent` — "flussi di dati verso servizi AI" | Implica cattura di rete: privilegi elevati, invasiva, diversa per OS | v0.1: solo scoperta statica (file di configurazione noti, in sola lettura). Nessuna cattura di rete |
-| A8 | `local_agent` — utente singolo | L'uso personale non professionale è escluso dall'AI Act (art. 2(10)) | Presentare la scansione locale come **inventario AI e igiene di sicurezza** (server MCP, permessi, segreti in chiaro). La parte AI Act vale per l'uso professionale |
-| A9 | `a2a` — "implementazione del protocollo" | Reimplementare o usare l'SDK? | SDK ufficiale; Arbiter aggiunge governance |
-| A10 | `mcp_registry` — "logging di ogni invocazione" | Un catalogo non vede le invocazioni: serve stare nel percorso dati | In Fase 5 il modulo comprende catalogo (control plane) **e** proxy MCP (data plane) |
-| A11 | `llm_router` — "classe di rischio" | Rischio di cosa? | Ogni richiesta è associata a un sistema AI dell'inventario (via API key); la classe del sistema vincola modelli e regioni ammessi |
-| A12 | `policy` — post-chiamata | In streaming i token sono già stati inviati | v0.1: enforcement su risposte non-streaming; in streaming solo rilevazione e finding. Modalità buffer in seguito |
-| A13 | `audit` — append-only | Conflitto con cancellazione/retention GDPR | L'audit log contiene solo metadati e identificativi pseudonimi; i payload stanno in uno store separato con retention |
-| A14 | `audit` — "integrità verificabile" | Verificabile contro chi? Chi ha accesso al DB può riscrivere l'intera catena | v0.1: hash chain + comando di verifica + export. Ancoraggio esterno (checkpoint firmati) in Fase 6 |
-| A15 | `finops` — costi | I prezzi cambiano e in Azure dipendono da regione e tipo di deployment | Catalogo prezzi versionato e configurabile; i costi sono sempre "stimati" |
+| A4 | `classifier`: GPAI | Gli obblighi GPAI gravano sul **provider del modello**; chi usa il gateway quasi sempre non lo è | Registrare "usa un modello GPAI di X" come attributo; obblighi GPAI solo se role = provider di modello |
+| A5 | `scanner`: "configurazioni, prompt, log, dataset" | Ambito molto ampio; l'analisi di dataset è un prodotto a sé | v0.1: configurazioni, inventario e metadati di traffico. Dataset fuori scope fino a nuova decisione |
+| A6 | `findings`: "il feedback migliora le regole" | Apprendimento automatico o taratura manuale? | v0.1: soppressioni con ambito (regola/sistema/fingerprint) e precisione per regola nel digest. Nessun auto-tuning |
+| A7 | `local_agent`: "flussi di dati verso servizi AI" | Implica cattura di rete: privilegi elevati, invasiva, diversa per OS | v0.1: solo scoperta statica (file di configurazione noti, in sola lettura). Nessuna cattura di rete |
+| A8 | `local_agent`: utente singolo | L'uso personale non professionale è escluso dall'AI Act (art. 2(10)) | Presentare la scansione locale come **inventario AI e igiene di sicurezza** (server MCP, permessi, segreti in chiaro). La parte AI Act vale per l'uso professionale |
+| A9 | `a2a`: "implementazione del protocollo" | Reimplementare o usare l'SDK? | SDK ufficiale; Arbiter aggiunge governance |
+| A10 | `mcp_registry`: "logging di ogni invocazione" | Un catalogo non vede le invocazioni: serve stare nel percorso dati | In Fase 5 il modulo comprende catalogo (control plane) **e** proxy MCP (data plane) |
+| A11 | `llm_router`: "classe di rischio" | Rischio di cosa? | Ogni richiesta è associata a un sistema AI dell'inventario (via API key); la classe del sistema vincola modelli e regioni ammessi |
+| A12 | `policy`: post-chiamata | In streaming i token sono già stati inviati | v0.1: enforcement su risposte non-streaming; in streaming solo rilevazione e finding. Modalità buffer in seguito |
+| A13 | `audit`: append-only | Conflitto con cancellazione/retention GDPR | L'audit log contiene solo metadati e identificativi pseudonimi; i payload stanno in uno store separato con retention |
+| A14 | `audit`: "integrità verificabile" | Verificabile contro chi? Chi ha accesso al DB può riscrivere l'intera catena | v0.1: hash chain + comando di verifica + export. Ancoraggio esterno (checkpoint firmati) in Fase 6 |
+| A15 | `finops`: costi | I prezzi cambiano e in Azure dipendono da regione e tipo di deployment | Catalogo prezzi versionato e configurabile; i costi sono sempre "stimati" |
 | A16 | Postgres + CLI offline | La CLI standalone non può richiedere Postgres | Supporto doppio Postgres/SQLite: vincola lo schema a tipi portabili, CI su entrambi |
-| A17 | `daily_digest` — email | Canale non specificato | Adapter SMTP (Mailpit in locale); Azure Communication Services in Fase 6 |
-| A18 | `reporting` — PDF | Le librerie PDF richiedono dipendenze native, scomode su Windows | v0.1: Markdown e HTML. PDF come extra opzionale più avanti |
+| A17 | `daily_digest`: email | Canale non specificato | Adapter SMTP (Mailpit in locale); Azure Communication Services in Fase 6 |
+| A18 | `reporting`: PDF | Le librerie PDF richiedono dipendenze native, scomode su Windows | v0.1: Markdown e HTML. PDF come extra opzionale più avanti |
 | A19 | Interfaccia web | Non menzionata | Nessuna SPA in v0.1 (D5) |
 | A20 | Lingua degli artefatti | Brief in italiano, progetto open source | Vedi D3 |
 | A21 | Nome | `arbiter` è già occupato su PyPI | Vedi D4 |
@@ -161,13 +161,13 @@ portfolio.
 
 | Modulo | Dentro la v0.1 | Fuori (e quando) |
 |---|---|---|
-| **core** | Config (env + file), registry dei plugin, modelli di dominio, contesto tenant, persistenza Postgres/SQLite, bus eventi in-process, bootstrap OpenTelemetry, primitive di redazione | — |
+| **core** | Config (env + file), registry dei plugin, modelli di dominio, contesto tenant, persistenza Postgres/SQLite, bus eventi in-process, bootstrap OpenTelemetry, primitive di redazione | - |
 | **llm_router** | `/v1/chat/completions` con streaming SSE, `/v1/models`; adapter Azure OpenAI, OpenAI-compatibile, mock; routing per priorità, costo e vincoli di policy/classe di rischio; fallback e retry | Routing per latenza, embeddings, Responses API, cache semantica (v0.2+) |
 | **finops** | Metering per tenant/team/progetto/utente/sistema AI; catalogo prezzi versionato; budget con soglia soft e hard; API di consumo e report Markdown | Alert via email/webhook, raccomandazioni di ottimizzazione (v0.2) |
 | **policy** | Motore pre/post chiamata; rilevazione e redazione PII; allowlist di modelli e regioni per classe di rischio; enforcement dei budget | Moderazione dei contenuti con classificatori esterni, adapter OPA (dopo decisione in Fase 1) |
 | **audit** | Log append-only con hash chain per tenant; `arbiter audit verify`; export JSONL | Ancoraggio esterno e firma dei checkpoint (v0.3) |
 | **identity** | Tenant, team, progetti, API key (hash), RBAC a tre ruoli | Entra ID / OIDC (v0.3) |
-| **inventory** | Sistemi dichiarati via YAML/API/CLI con ruolo AI Act; scoperta dal traffico del gateway; segnalazione di uso non dichiarato | — |
+| **inventory** | Sistemi dichiarati via YAML/API/CLI con ruolo AI Act; scoperta dal traffico del gateway; segnalazione di uso non dichiarato | - |
 | **classifier** | Rule pack versionato; esiti: fuori ambito, pratica vietata, alto rischio (art. 6, Allegato III, deroga 6(3)), trasparenza (art. 50), rischio minimo; motivazione, articoli e date di applicazione | Obblighi lato provider di modelli GPAI; assistenza LLM (v0.2+) |
 | **scanner** | 10–15 regole su configurazioni, inventario e metadati di traffico | Analisi di prompt/log estesa, dataset |
 | **findings** | Modello completo (severità, confidenza, evidenze, articolo, stato); macchina a stati con revisione umana via CLI/API; soppressioni | Auto-tuning delle regole |
@@ -175,10 +175,10 @@ portfolio.
 | **local_agent** | Scoperta statica con consenso: configurazioni MCP e strumenti AI noti, in sola lettura e offline | Estensioni di IDE/browser, flussi di rete (v0.2+) |
 | **simulation** | 4 scenari: chatbot con disclosure corretta; screening CV (alto rischio, Allegato III); riconoscimento emozioni sul lavoro (vietato, art. 5); assistente di codice interno (minimo) | Altri scenari |
 | **reporting** | Report di sistema e di audit in Markdown | PDF |
-| **a2a** | — | Fase 5 (v0.2) |
-| **mcp_registry** | — | Fase 5 (v0.2) |
+| **a2a** | - | Fase 5 (v0.2) |
+| **mcp_registry** | - | Fase 5 (v0.2) |
 | **Azure / IaC** | Solo l'adapter Azure OpenAI | Fase 6 (v0.3) |
-| **Interfaccia web** | — | Da decidere dopo la v0.1 |
+| **Interfaccia web** | - | Da decidere dopo la v0.1 |
 
 **Criterio di accettazione della v0.1**: da repository pulito, `docker compose up` e un
 comando di demo mostrano in meno di 5 minuti una richiesta bloccata per policy, una
@@ -191,8 +191,8 @@ i quattro sistemi classificati con articoli e date, e un digest con i finding.
 
 | Fase | Contenuto | Rilascio |
 |---|---|---|
-| 1 | Architettura, modello dati, interfacce, ADR | — |
-| 2 | Scaffolding, CI, Compose, core | — |
+| 1 | Architettura, modello dati, interfacce, ADR | - |
+| 2 | Scaffolding, CI, Compose, core | - |
 | 3 | Gateway MVP | `0.1.0-alpha` |
 | 4 | Compliance MVP + simulation + CLI | **`0.1.0`** |
 | 5 | A2A + MCP + demo multi-agente | `0.2.0` |
@@ -206,7 +206,7 @@ crescono a ogni fase invece di nascere tutti in Fase 7.
 
 ## 8. Decisioni richieste ora
 
-### D1 — Posizionamento
+### D1: Posizionamento
 
 | Criterio | A. Compliance-first, gateway snello proprio | B. Gateway-first, compliance come estensione | C. Solo toolkit, come plugin di un gateway esistente |
 |---|---|---|---|
@@ -222,7 +222,7 @@ crescono a ogni fase invece di nascere tutti in Fase 7.
 **Raccomandazione: A.** È l'unica opzione che dimostra tutte le competenze elencate nel
 brief senza entrare in una gara di funzionalità con prodotti maturi.
 
-### D2 — Approccio del classifier
+### D2: Approccio del classifier
 
 | Criterio | A. Deterministico (albero decisionale su attributi dichiarati) | B. LLM-first (classifica da descrizione libera) | C. Ibrido (decide il deterministico; l'LLM, opt-in, suggerisce solo gli attributi) |
 |---|---|---|---|
@@ -237,7 +237,7 @@ brief senza entrare in una gara di funzionalità con prodotti maturi.
 **Raccomandazione: A in v0.1**, con interfacce che permettano C in seguito. Il brief
 richiede decisioni spiegabili e una CLI offline-first: B non soddisfa nessuno dei due.
 
-### D3 — Lingua degli artefatti
+### D3: Lingua degli artefatti
 
 | Opzione | Pro | Contro |
 |---|---|---|
@@ -248,7 +248,7 @@ richiede decisioni spiegabili e una CLI offline-first: B non soddisfa nessuno de
 **Raccomandazione: A**, con digest e report localizzabili (en/it) perché sono rivolti a
 utenti finali. I criteri tecnici del brief qui non sono discriminanti.
 
-### D4 — Nome e pacchetto
+### D4: Nome e pacchetto
 
 `arbiter` su PyPI è occupato (libreria di gestione dati, ultimo rilascio 2021). Su GitHub
 esistono inoltre più progetti "Arbiter" in ambito LLM, tra cui un router LLM e un
@@ -262,18 +262,18 @@ framework di valutazione.
 **Raccomandazione: A** se il nome ti sta a cuore, verificando la disponibilità del nome di
 distribuzione prima della Fase 2. Se la ricercabilità conta di più, B.
 
-### D5 — Interfaccia web
+### D5: Interfaccia web
 
 **Raccomandazione: nessuna SPA in v0.1.** API, CLI e report/digest HTML statici bastano per
 la demo. Una dashboard in sola lettura si può valutare dopo la v0.1 con un ADR dedicato.
 
-### D6 — Ruolo AI Act primario
+### D6: Ruolo AI Act primario
 
 **Raccomandazione: deployer.** Chi mette un gateway davanti a modelli di terzi è quasi
 sempre un deployer. Gli obblighi del provider (di sistema o di modello GPAI) restano nel
 modello dati ma vengono coperti dalle regole più avanti.
 
-### D7 — Azure (non bloccante)
+### D7: Azure (non bloccante)
 
 Hai già una sottoscrizione e un budget mensile indicativo? Serve per dimensionare la
 Fase 6. Stima di massima per l'ambiente demo: poche decine di euro al mese con
@@ -303,24 +303,24 @@ Ognuna verrà presentata con tabella completa e ADR. L'orientamento indicato è 
 
 AI Act e Digital Omnibus:
 
-- [Gibson Dunn — EU AI Act Omnibus Agreement](https://www.gibsondunn.com/eu-ai-act-omnibus-agreement-postponed-high-risk-deadlines-and-other-key-changes/)
-- [Morgan Lewis — What went into effect on 2 August](https://www.morganlewis.com/blogs/sourcingatmorganlewis/2026/08/eu-ai-acts-transparency-rules-what-went-into-effect-on-2-august)
-- [Commissione europea — FAQ sugli obblighi di trasparenza dell'art. 50](https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act)
-- [Cloud Security Alliance — Article 50 transparency obligations take effect](https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-article-50-transparency-20260729/)
-- [Fontvera — AI Act Digital Omnibus is law](https://fontvera.eu/intelligence/ai-act-omnibus-delay-failed)
-- [Usercentrics — Digital Omnibus now in force](https://usercentrics.com/knowledge-hub/eu-ai-act-high-risk-delay-article-50-transparency-consent/)
+- [Gibson Dunn: EU AI Act Omnibus Agreement](https://www.gibsondunn.com/eu-ai-act-omnibus-agreement-postponed-high-risk-deadlines-and-other-key-changes/)
+- [Morgan Lewis: What went into effect on 2 August](https://www.morganlewis.com/blogs/sourcingatmorganlewis/2026/08/eu-ai-acts-transparency-rules-what-went-into-effect-on-2-august)
+- [Commissione europea: FAQ sugli obblighi di trasparenza dell'art. 50](https://digital-strategy.ec.europa.eu/en/faqs/transparency-obligations-under-article-50-ai-act)
+- [Cloud Security Alliance: Article 50 transparency obligations take effect](https://labs.cloudsecurityalliance.org/research/csa-research-note-eu-ai-act-article-50-transparency-20260729/)
+- [Fontvera: AI Act Digital Omnibus is law](https://fontvera.eu/intelligence/ai-act-omnibus-delay-failed)
+- [Usercentrics: Digital Omnibus now in force](https://usercentrics.com/knowledge-hub/eu-ai-act-high-risk-delay-article-50-transparency-consent/)
 
 Protocolli:
 
 - [a2a-sdk su PyPI](https://pypi.org/project/a2a-sdk/)
-- [MCP — The 2026-07-28 Specification](https://blog.modelcontextprotocol.io/posts/2026-07-28/)
-- [MCP — Key Changes 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
+- [MCP: The 2026-07-28 Specification](https://blog.modelcontextprotocol.io/posts/2026-07-28/)
+- [MCP: Key Changes 2026-07-28](https://modelcontextprotocol.io/specification/2026-07-28/changelog)
 
 Panorama e nome:
 
-- [Braintrust — AI gateway comparison 2026](https://www.braintrust.dev/articles/ai-gateway-comparison-2026)
-- [Maxim — LLM gateways for AI agents 2026](https://www.getmaxim.ai/articles/5-best-llm-gateways-for-ai-agents-in-2026-mcp-support-tool-governance-and-cost-tracking/)
-- [PyPI — arbiter](https://pypi.org/project/arbiter/)
+- [Braintrust: AI gateway comparison 2026](https://www.braintrust.dev/articles/ai-gateway-comparison-2026)
+- [Maxim: LLM gateways for AI agents 2026](https://www.getmaxim.ai/articles/5-best-llm-gateways-for-ai-agents-in-2026-mcp-support-tool-governance-and-cost-tracking/)
+- [PyPI: arbiter](https://pypi.org/project/arbiter/)
 - [cnf/arbiter](https://github.com/cnf/arbiter), [ashita-ai/arbiter](https://github.com/ashita-ai/arbiter)
 
 ---

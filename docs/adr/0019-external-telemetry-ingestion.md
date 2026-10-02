@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0019 — Ingest external gateway data through source adapters into one canonical record
+# 0019: Ingest external gateway data through source adapters into one canonical record
 
 ## Context and Problem Statement
 
@@ -84,5 +84,5 @@ Rules for every source:
 
 - [ADR-0002](0002-compliance-first-positioning.md)
 - [LiteLLM StandardLoggingPayload](https://docs.litellm.ai/docs/proxy/logging_spec)
-- [Azure API Management — llm-emit-token-metric policy](https://learn.microsoft.com/en-us/azure/api-management/llm-emit-token-metric-policy)
+- [Azure API Management: llm-emit-token-metric policy](https://learn.microsoft.com/en-us/azure/api-management/llm-emit-token-metric-policy)
 - [State of the OpenTelemetry GenAI conventions, July 2026](https://john-hodge.com/blog/opentelemetry-genai-semantic-conventions/)

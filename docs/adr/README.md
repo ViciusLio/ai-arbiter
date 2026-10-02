@@ -40,7 +40,7 @@ supersedes the old one.
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
 
-## Phase 0 — summary
+## Phase 0: summary
 
 Decided by the project owner on 2026-10-02: ADR-0002 to ADR-0008 (D1–D7 of the
 [Phase 0 analysis](../phases/phase-0-analysis.md)). ADR-0001 records the process set by
@@ -55,7 +55,7 @@ Constraints added by the project owner when deciding:
 - A `0.0.1` release reserves `ai-arbiter` on PyPI (ADR-0005).
 - The AI Act role is an explicit field of the data model (ADR-0007).
 
-## Phase 1 — summary
+## Phase 1: summary
 
 Decided by the project owner on 2026-10-02: ADR-0010 to ADR-0021, plus the three
 deviations from the brief (single distribution, audit in core, roles one-to-many), the
@@ -77,7 +77,7 @@ Other decisions of the project owner:
 - AI Act sources: the official EU sources on EUR-Lex, verified before Phase 4, including
   the status of any pending change to the application calendar.
 
-## Phase 2 — summary
+## Phase 2: summary
 
 Scaffolding implemented; see the [Phase 2 summary](../phases/phase-2-scaffolding.md).
 

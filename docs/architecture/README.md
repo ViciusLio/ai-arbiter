@@ -4,10 +4,10 @@ Status: **accepted** on 2026-10-02 with ADR-0010 to ADR-0023. What v0.1 implemen
 and in which order, is set by ADR-0009. Parts already implemented are listed in the
 [Phase 2 summary](../phases/phase-2-scaffolding.md).
 
-- [Flows](flows.md) — sequence and state diagrams
-- [Data model](data-model.md) — entities and relations
-- [Interfaces](interfaces.md) — ports, events and the decision envelope
-- [Decisions](../adr/README.md) — ADR index
+- [Flows](flows.md): sequence and state diagrams
+- [Data model](data-model.md): entities and relations
+- [Interfaces](interfaces.md): ports, events and the decision envelope
+- [Decisions](../adr/README.md): ADR index
 
 ## 1. The idea in one paragraph
 

@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0015 — Support PostgreSQL and SQLite with one portable schema and row-level tenancy
+# 0015: Support PostgreSQL and SQLite with one portable schema and row-level tenancy
 
 ## Context and Problem Statement
 
@@ -61,7 +61,7 @@ Chosen options: **A** and **T1**.
 | Complexity | Medium (portability discipline) | Low | High |
 | Azure cost | One Flexible Server | Same | Same |
 | Scalability | PostgreSQL in production | Same | Same |
-| Security | Local file permissions for SQLite | — | — |
+| Security | Local file permissions for SQLite | - | - |
 | Compliance / privacy | Local data never leaves the machine | CLI results in ad hoc files | Same as A |
 | Maintainability | One model, two CI targets | Simplest | Duplicate logic |
 | Lock-in | None | None | None |

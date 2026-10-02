@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0006 — Ship no web UI in v0.1; make HTML outputs and OpenAPI docs the visible surface
+# 0006: Ship no web UI in v0.1; make HTML outputs and OpenAPI docs the visible surface
 
 ## Context and Problem Statement
 

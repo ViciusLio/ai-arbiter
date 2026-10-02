@@ -1,4 +1,4 @@
-# Phase 2 — Scaffolding
+# Phase 2: Scaffolding
 
 - **Status**: implemented and verified in Codespaces on 2026-10-02:
   `scripts/check.sh --containers` passes to the end (ADR-0026). ADR-0024 and ADR-0025

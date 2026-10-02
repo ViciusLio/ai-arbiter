@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0016 — Use an in-process event bus with a transactional outbox; add Service Bus in Phase 6
+# 0016: Use an in-process event bus with a transactional outbox; add Service Bus in Phase 6
 
 ## Context and Problem Statement
 

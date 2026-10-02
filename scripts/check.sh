@@ -20,6 +20,7 @@ uv sync --locked --all-extras
 step "Lint"
 uv run ruff check .
 uv run ruff format --check .
+scripts/no-em-dash.sh
 
 step "Types"
 uv run mypy

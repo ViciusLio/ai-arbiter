@@ -1,4 +1,4 @@
-# Phase 1 — Architecture
+# Phase 1: Architecture
 
 - **Status**: closed on 2026-10-02. ADR-0010 to ADR-0021 accepted, four of them amended;
   the three deviations approved (ADR-0010, ADR-0022, ADR-0023). ADR-0009 was accepted

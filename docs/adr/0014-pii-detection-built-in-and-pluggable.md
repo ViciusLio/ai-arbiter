@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0014 — Detect PII with built-in pattern detectors by default, pluggable for more
+# 0014: Detect PII with built-in pattern detectors by default, pluggable for more
 
 ## Context and Problem Statement
 

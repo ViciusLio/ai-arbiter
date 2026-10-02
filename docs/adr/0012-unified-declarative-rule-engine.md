@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0012 — Use one declarative rule engine in Python for policy, classification and scanning
+# 0012: Use one declarative rule engine in Python for policy, classification and scanning
 
 ## Context and Problem Statement
 

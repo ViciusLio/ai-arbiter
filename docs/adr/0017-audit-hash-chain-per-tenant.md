@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0017 — Chain audit entries per tenant with SHA-256 over canonical JSON
+# 0017: Chain audit entries per tenant with SHA-256 over canonical JSON
 
 ## Context and Problem Statement
 
@@ -78,4 +78,4 @@ rate outgrows it. Signed checkpoints are added in Phase 6.
 ## More Information
 
 - [Phase 0 analysis](../phases/phase-0-analysis.md), items A13, A14 and risk R12
-- [RFC 8785 — JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785)
+- [RFC 8785: JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785)

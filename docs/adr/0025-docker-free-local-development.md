@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0025 — Develop locally without Docker; build and test containers in CI only
+# 0025: Develop locally without Docker; build and test containers in CI only
 
 > Status note: the constraint comes from the project owner (Docker cannot be installed or
 > used on the corporate development machine). The adaptation was applied in Phase 2 ahead

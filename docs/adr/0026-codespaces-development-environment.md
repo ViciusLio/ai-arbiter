@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0026 — Develop in GitHub Codespaces with a dev container
+# 0026: Develop in GitHub Codespaces with a dev container
 
 ## Context and Problem Statement
 

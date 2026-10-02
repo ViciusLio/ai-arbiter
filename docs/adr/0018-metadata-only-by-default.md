@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0018 — Persist interaction metadata only; make redacted content an opt-in per system
+# 0018: Persist interaction metadata only; make redacted content an opt-in per system
 
 ## Context and Problem Statement
 

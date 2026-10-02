@@ -107,9 +107,9 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 
 | Phase | Strengths | Weaknesses |
 |---|---|---|
-| 0 — Analysis | The scope is one end-to-end slice with a core and deferrable parts, decided before any code. The positioning is clear: link the inventory classified under the AI Act with real traffic | AI Act dates come from secondary sources. The analysis is in Italian, the rest of the documentation in English |
-| 1 — Architecture | 26 decision records with option tables. Module boundaries, data model, interfaces and a first threat model are written down | No prototype was built, so the interfaces are untested. Default PII detection has low recall on names and free text. The audit chain is tamper-evident, not tamper-proof |
-| 2 — Scaffolding | Every check passes on Python 3.12, 3.13 and 3.14, on SQLite and PostgreSQL, with 98% coverage. The image and the Compose stack run. CI is green on Linux and Windows | The release workflow has never run and `0.0.1` is not published. No product feature exists yet. Telemetry is limited to a tracer bootstrap |
+| 0: Analysis | The scope is one end-to-end slice with a core and deferrable parts, decided before any code. The positioning is clear: link the inventory classified under the AI Act with real traffic | AI Act dates come from secondary sources. The analysis is in Italian, the rest of the documentation in English |
+| 1: Architecture | 26 decision records with option tables. Module boundaries, data model, interfaces and a first threat model are written down | No prototype was built, so the interfaces are untested. Default PII detection has low recall on names and free text. The audit chain is tamper-evident, not tamper-proof |
+| 2: Scaffolding | Every check passes on Python 3.12, 3.13 and 3.14, on SQLite and PostgreSQL, with 98% coverage. The image and the Compose stack run. CI is green on Linux and Windows | The release workflow has never run and `0.0.1` is not published. No product feature exists yet. Telemetry is limited to a tracer bootstrap |
 
 ### Improvements
 

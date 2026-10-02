@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0003 — Classify deterministically, with rules as versioned data
+# 0003: Classify deterministically, with rules as versioned data
 
 ## Context and Problem Statement
 

@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0022 — Store AI Act roles as a one-to-many relation of the AI system
+# 0022: Store AI Act roles as a one-to-many relation of the AI system
 
 ## Context and Problem Statement
 
@@ -46,7 +46,7 @@ explicit and enumerated, and the deployer is still the first role covered by rul
 | Complexity | Low to medium | Lowest | Low |
 | Azure cost | None | None | None |
 | Scalability | Indexed, queryable | Indexed | Not portably queryable (ADR-0015) |
-| Security | — | — | — |
+| Security | - | - | - |
 | Compliance / privacy | Correct for multi-role operators; basis recorded | Wrong for multi-role operators | Correct, without basis or dates |
 | Maintainability | Standard relation | Schema change when the second role appears | Validation in application code only |
 | Lock-in | None | None | None |

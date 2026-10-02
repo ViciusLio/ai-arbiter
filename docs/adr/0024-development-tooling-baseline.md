@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0024 — Development tooling baseline
+# 0024: Development tooling baseline
 
 > Status note: these choices were applied in Phase 2 before acceptance, because the
 > project owner asked to proceed with scaffolding and each of them could be reversed in

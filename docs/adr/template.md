@@ -4,7 +4,7 @@ date: YYYY-MM-DD
 decision-makers: Project owner
 ---
 
-# NNNN — Short title in the imperative
+# NNNN: Short title in the imperative
 
 ## Context and Problem Statement
 

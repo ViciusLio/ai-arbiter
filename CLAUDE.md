@@ -1,4 +1,4 @@
-# CLAUDE.md — Arbiter
+# CLAUDE.md: Arbiter
 
 AI Governance Gateway & EU AI Act Compliance Toolkit. Open source, Apache 2.0.
 Repository: <https://github.com/ViciusLio/ai-arbiter>
@@ -13,7 +13,7 @@ owner gave the go-ahead, and **no Phase 3 code is written until the owner answer
 questions in Step 2**. They were presented on 2026-10-02; if the answers are not in this
 file, present them again.
 
-### Step 1 — Environment: verified
+### Step 1: environment verified
 
 Verified in Codespaces on 2026-10-02, at commit `c8ccce3`:
 
@@ -31,7 +31,7 @@ Security tab). Details in `docs/phases/phase-2-scaffolding.md`.
 In a new codespace, repeat the quick check before working: `git config user.email`,
 `pg_isready -h postgres -U arbiter -d arbiter_test`, `scripts/check.sh`.
 
-### Step 2 — Decisions waiting for the owner
+### Step 2: Decisions waiting for the owner
 
 | # | Decision | Needed by |
 |---|---|---|
@@ -47,12 +47,12 @@ The v0.1 scope is accepted (ADR-0009). It has a **core** that `0.1.0` cannot shi
 and **deferrable** components that may follow in v0.1.x. Plan Phases 3 and 4 core first;
 start a deferrable item only when the core of that phase is done.
 
-### Step 3 — Phase 3: four decisions to bring first
+### Step 3: Phase 3: four decisions to bring first
 
 Presented to the owner on 2026-10-02, each as an option table with the seven criteria and
 a recommendation; answers pending. The options below are a summary, not decisions.
-Recommended: 1 — HMAC-SHA-256 with a pepper; 2 — in-house canonicaliser without floats;
-3 — versioned YAML file; 4 — unknown and unpriced, with an opt-in flagged estimate.
+Recommended: 1: HMAC-SHA-256 with a pepper; 2: in-house canonicaliser without floats;
+3: versioned YAML file; 4: unknown and unpriced, with an opt-in flagged estimate.
 
 1. **API key format and hashing.** Options: random high-entropy token with a recognisable
    prefix and a key id, stored as a plain SHA-256 digest; the same with HMAC-SHA-256 and
@@ -77,7 +77,7 @@ Recommended: 1 — HMAC-SHA-256 with a pepper; 2 — in-house canonicaliser with
 
 Also deferred to Phase 3: anchoring sink details for the audit chain (ADR-0017).
 
-### Step 4 — Phase 3 task list (gateway MVP)
+### Step 4: Phase 3 task list (gateway MVP)
 
 Core (ADR-0009), in this order:
 
@@ -123,13 +123,13 @@ published yet; the owner publishes it (`docs/releasing.md`).
 
 ## Reference documents
 
-- `docs/PROJECT_BRIEF.md` — initial requirements, in Italian. Never edited; changes go
+- `docs/PROJECT_BRIEF.md`: initial requirements, in Italian. Never edited; changes go
   through ADRs.
-- `docs/phases/phase-N-*.md` — analysis and summary of each phase
-- `docs/architecture/` — overview, flows, data model, interfaces
-- `docs/adr/` — decisions (MADR); index and open questions in `docs/adr/README.md`
-- `docs/releasing.md` — how a release is published
-- `CHANGELOG.md` — Keep a Changelog + SemVer, entries linked to ADRs
+- `docs/phases/phase-N-*.md`: analysis and summary of each phase
+- `docs/architecture/`: overview, flows, data model, interfaces
+- `docs/adr/`: decisions (MADR); index and open questions in `docs/adr/README.md`
+- `docs/releasing.md`: how a release is published
+- `CHANGELOG.md`: Keep a Changelog + SemVer, entries linked to ADRs
 
 ## Environment (ADR-0026)
 
@@ -201,6 +201,12 @@ uv run alembic revision --autogenerate -m "..."   # new migration
   repository settings.
 - When bringing a decision, number the options. The owner answers by number, for example
   "1: accept, 2: option B".
+- In the answer template suggested to the owner, write next to each number a short
+  description of what it chooses, for example "D1: 2 (HMAC-SHA-256 with a pepper)", so
+  that the answer can be read and found again later without the option tables.
+- Never use the em-dash character (U+2014), anywhere: code, comments, documentation,
+  commit messages, generated outputs and conversation. Use a colon, a comma, brackets or
+  two sentences. `scripts/check.sh` and CI fail when a tracked file contains one.
 - Before closing a working session, or when the owner writes "chiudiamo": update the
   "Resume here" section with state, open decisions and next steps, commit, push, and
   remind the owner to stop the codespace.

@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0013 — Write thin provider adapters instead of depending on a provider library
+# 0013: Write thin provider adapters instead of depending on a provider library
 
 ## Context and Problem Statement
 

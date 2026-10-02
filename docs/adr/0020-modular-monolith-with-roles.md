@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0020 — Build a modular monolith: one image, started in different roles
+# 0020: Build a modular monolith: one image, started in different roles
 
 ## Context and Problem Statement
 

@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0007 — Model the AI Act role explicitly; cover the deployer first
+# 0007: Model the AI Act role explicitly; cover the deployer first
 
 ## Context and Problem Statement
 

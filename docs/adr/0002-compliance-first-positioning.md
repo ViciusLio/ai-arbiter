@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0002 — Position Arbiter as compliance-first, with its own lean gateway
+# 0002: Position Arbiter as compliance-first, with its own lean gateway
 
 ## Context and Problem Statement
 

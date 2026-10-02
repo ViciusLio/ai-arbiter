@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0008 — Develop locally only until Phase 6; estimate costs and set budget alerts then
+# 0008: Develop locally only until Phase 6; estimate costs and set budget alerts then
 
 ## Context and Problem Statement
 

@@ -1,6 +1,6 @@
-# Arbiter — AI Governance Gateway & AI Act Compliance Toolkit
+# Arbiter: AI Governance Gateway & AI Act Compliance Toolkit
 
-> **Documento di avvio progetto** — versione originale del 2026-10-02.
+> **Documento di avvio progetto**: versione originale del 2026-10-02.
 > È la fonte di verità dei requisiti iniziali. Non si modifica a posteriori: ogni
 > cambiamento di scope o di scelta tecnica passa da un ADR in `docs/adr/`.
 

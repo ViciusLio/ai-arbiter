@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0021 — Localise outputs with keyed YAML catalogues and Babel for formatting
+# 0021: Localise outputs with keyed YAML catalogues and Babel for formatting
 
 ## Context and Problem Statement
 

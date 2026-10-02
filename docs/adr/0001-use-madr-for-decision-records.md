@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0001 — Record decisions as MADR files, never delete them
+# 0001: Record decisions as MADR files, never delete them
 
 ## Context and Problem Statement
 

@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0010 — Ship one distribution with extras and enforce module boundaries by tooling
+# 0010: Ship one distribution with extras and enforce module boundaries by tooling
 
 ## Context and Problem Statement
 

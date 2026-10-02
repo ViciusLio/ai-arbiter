@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0004 — Write artifacts in English; localise user-facing outputs in EN and IT
+# 0004: Write artifacts in English; localise user-facing outputs in EN and IT
 
 ## Context and Problem Statement
 

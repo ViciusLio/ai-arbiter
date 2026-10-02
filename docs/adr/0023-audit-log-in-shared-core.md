@@ -4,7 +4,7 @@ date: 2026-10-02
 decision-makers: Project owner
 ---
 
-# 0023 — Place the audit log in the shared core
+# 0023: Place the audit log in the shared core
 
 ## Context and Problem Statement
 
