@@ -5,22 +5,21 @@ capability, and are chosen by configuration. Ports are added here when the first
 that needs them is implemented; the full list is in ``docs/architecture/interfaces.md``.
 """
 
-from collections.abc import Awaitable, Callable
-from datetime import datetime
+from collections.abc import AsyncIterator, Awaitable, Callable
 from typing import Protocol, TypeVar
+from uuid import UUID
 
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ai_arbiter.core.audit.chain import VerificationReport
+from ai_arbiter.core.audit.log import AuditReceipt, AuditRecord
 from ai_arbiter.core.config.secrets import SecretRef
+from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.events.model import Event
 
 E = TypeVar("E", bound=Event)
 Handler = Callable[[E], Awaitable[None]]
-
-
-class Clock(Protocol):
-    def now(self) -> datetime: ...
 
 
 class SecretStore(Protocol):
@@ -39,4 +38,20 @@ class EventBus(Protocol):
         ...
 
 
-__all__ = ["Clock", "EventBus", "Handler", "SecretStore"]
+class AuditLog(Protocol):
+    async def append(
+        self, session: AsyncSession, tenant_id: UUID, record: AuditRecord
+    ) -> AuditReceipt:
+        """Chain an entry in the caller's transaction (ADR-0017)."""
+        ...
+
+    async def verify(self, session: AsyncSession, tenant_id: UUID) -> VerificationReport:
+        """Recompute the tenant's chain and report the first broken link."""
+        ...
+
+    def export(self, session: AsyncSession, tenant_id: UUID) -> AsyncIterator[str]:
+        """The chain as JSON lines that can be verified without the database."""
+        ...
+
+
+__all__ = ["AuditLog", "Clock", "EventBus", "Handler", "SecretStore"]

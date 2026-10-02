@@ -3,7 +3,6 @@
 import asyncio
 import os
 import secrets
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
 
@@ -12,7 +11,9 @@ import yaml
 
 from ai_arbiter import __version__
 from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
+from ai_arbiter.cli import audit as audit_commands
 from ai_arbiter.cli import serve as serve_command
+from ai_arbiter.cli.common import DISCLAIMER, CliState, fail, settings_from
 from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.config.settings import (
     DEFAULT_CONFIG_FILE,
@@ -26,8 +27,6 @@ from ai_arbiter.core.persistence import migrate
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.persistence.tenant import ensure_tenant
 from ai_arbiter.core.plugins.registry import EVENT_BUSES, GROUPS, SECRET_STORES, PluginRegistry
-
-DISCLAIMER = "Arbiter is a support tool. It does not provide legal advice."
 
 STARTER_CONFIG = f"""\
 # Arbiter configuration.
@@ -71,12 +70,8 @@ plugins_app = typer.Typer(help="Inspect plugins.", no_args_is_help=True)
 app.add_typer(db_app, name="db")
 app.add_typer(config_app, name="config")
 app.add_typer(plugins_app, name="plugins")
+app.add_typer(audit_commands.app, name="audit")
 app.command(name="serve")(serve_command.serve)
-
-
-@dataclass
-class CliState:
-    config_file: Path | None = None
 
 
 def _version_callback(value: bool) -> None:
@@ -107,19 +102,6 @@ def main(
     ] = False,
 ) -> None:
     ctx.obj = CliState(config_file=config)
-
-
-def fail(error: ArbiterError) -> typer.Exit:
-    typer.echo(f"Error: {error}", err=True)
-    return typer.Exit(code=1)
-
-
-def settings_from(ctx: typer.Context) -> Settings:
-    state: CliState = ctx.obj
-    try:
-        return load_settings(state.config_file)
-    except ArbiterError as error:
-        raise fail(error) from error
 
 
 async def _create_local_tenant(settings: Settings) -> None:

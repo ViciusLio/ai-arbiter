@@ -4,6 +4,7 @@ Each package that owns tables is imported here when it is implemented, so migrat
 schema tests see one metadata object.
 """
 
+from ai_arbiter.core.audit.model import AuditChainHead, AuditEntry
 from ai_arbiter.core.events.model import OutboxEvent
 from ai_arbiter.core.persistence.base import Base
 from ai_arbiter.core.persistence.tenant import Tenant
@@ -13,6 +14,8 @@ target_metadata = Base.metadata
 
 __all__ = [
     "ApiKey",
+    "AuditChainHead",
+    "AuditEntry",
     "OutboxEvent",
     "Principal",
     "Project",

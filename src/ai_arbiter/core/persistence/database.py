@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from sqlalchemy import event, text
-from sqlalchemy.engine import make_url
+from sqlalchemy.engine import Connection, make_url
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -27,10 +27,23 @@ def ensure_sqlite_directory(url: str) -> None:
     Path(parsed.database).parent.mkdir(parents=True, exist_ok=True)
 
 
-def _enable_sqlite_foreign_keys(dbapi_connection: Any, _record: Any) -> None:
+def _configure_sqlite_connection(dbapi_connection: Any, _record: Any) -> None:
+    # The driver must not open transactions on its own: ``_begin_sqlite_immediate`` does.
+    dbapi_connection.isolation_level = None
     cursor = dbapi_connection.cursor()
+    # SQLite does not enforce foreign keys unless asked, per connection.
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+
+
+def _begin_sqlite_immediate(connection: Connection) -> None:
+    """Start every transaction as a write transaction.
+
+    SQLite has no row locks. With its default deferred transactions, two sessions that
+    read and then write (the audit chain does exactly that) fail with "database is
+    locked" instead of waiting. Taking the write lock at ``BEGIN`` makes them queue.
+    """
+    connection.exec_driver_sql("BEGIN IMMEDIATE")
 
 
 def build_engine(url: str, **kwargs: Any) -> AsyncEngine:
@@ -52,10 +65,12 @@ class Database:
 
     def __init__(self, url: str, *, echo: bool = False) -> None:
         ensure_sqlite_directory(url)
-        self._engine = build_engine(url, echo=echo)
-        if self._engine.dialect.name == "sqlite":
-            # SQLite does not enforce foreign keys unless asked, per connection.
-            event.listen(self._engine.sync_engine, "connect", _enable_sqlite_foreign_keys)
+        if make_url(url).get_backend_name() == "sqlite":
+            self._engine = build_engine(url, echo=echo, connect_args={"timeout": 30})
+            event.listen(self._engine.sync_engine, "connect", _configure_sqlite_connection)
+            event.listen(self._engine.sync_engine, "begin", _begin_sqlite_immediate)
+        else:
+            self._engine = build_engine(url, echo=echo)
         self._sessions = async_sessionmaker(self._engine, expire_on_commit=False)
 
     @property

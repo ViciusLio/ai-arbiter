@@ -9,7 +9,8 @@ import typer
 from typer.testing import CliRunner
 
 from ai_arbiter import __version__
-from ai_arbiter.cli.main import DISCLAIMER, app
+from ai_arbiter.cli.common import DISCLAIMER
+from ai_arbiter.cli.main import app
 from ai_arbiter.cli.serve import parse_roles
 from ai_arbiter.core.config import Role, Settings
 from ai_arbiter.core.persistence import migrate
