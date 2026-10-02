@@ -51,6 +51,10 @@ supersedes the old one.
 | [0039](0039-real-provider-for-demos.md) | A local model server on demand for demos now, Azure AI Foundry in Phase 6 | Accepted | 4 |
 | [0040](0040-deferrable-items-before-0-1-0.md) | Deferrable items of v0.1 before `0.1.0` (Phase 4b), ahead of A2A and MCP | Accepted | 4b |
 | [0041](0041-legal-review-before-0-1-0.md) | `0.1.0` only after a legal review of the AI Act rule pack | Accepted | 4b |
+| [0042](0042-discovered-systems-by-project.md) | A system discovered from traffic is identified by its project; a candidate is a proposal | Accepted | 4b |
+| [0043](0043-simulation-scenarios-as-data.md) | Simulation scenarios are YAML files loaded into a tenant of their own, checked by tests | Accepted | 4b |
+| [0044](0044-reports-without-pdf.md) | Reports in Markdown and HTML; PDF by printing the HTML | Accepted | 4b |
+| [0045](0045-smtp-checked-against-the-compose-mail-catcher.md) | The SMTP notifier is checked against Mailpit in the Compose check | Accepted | 4b |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -160,6 +164,14 @@ deferrable item of ADR-0009, were implemented in this phase.
 Decided by the project owner on 2026-10-02, at the end of Phase 4: the phase is
 approved; ADR-0040 (Phase 4b before Phase 5); ADR-0041 (`0.1.0` waits for a legal
 review); the comparison with EUR-Lex is postponed and the pack stays `review: pending`.
+
+## Phase 4b: decisions
+
+Importers, reports and e-mail delivery followed decisions already taken (ADR-0009,
+ADR-0011, ADR-0019, ADR-0025). Four were brought to the project owner and decided on
+2026-10-02, each with the recommended option: ADR-0042 (a discovered system is
+identified by its project), ADR-0043 (scenarios as data files), ADR-0044 (no PDF),
+ADR-0045 (the SMTP notifier checked against Mailpit in the Compose check).
 
 ## Open questions
 
