@@ -25,7 +25,7 @@ Updated at every commit. Last update: 2026-10-02.
 | 0 Analysis, 1 Architecture, 2 Scaffolding | Done |
 | 3 Gateway MVP | Done |
 | 4 Compliance MVP | Done |
-| 4b Deferrable items of v0.1 | **In progress**: every step is written; the full check of the phase has not run yet |
+| 4b Deferrable items of v0.1 | **Built and checked; waits for the owner's approval** |
 | 5 A2A and MCP (v0.2) | Not started |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
@@ -40,8 +40,8 @@ Phase 4b, step by step:
 | Discovery of undeclared systems from traffic (`arbiter systems discover`) | Done |
 | Simulation scenarios (`arbiter demo`) | Done: three scenarios, run by the test suite |
 | Print style sheet for the HTML reports (no PDF, ADR-0044) | Done |
-| SMTP checked against the mail catcher of the Compose stack (ADR-0045) | Written as a step of the container check; not run yet |
-| Phase summary and the full check, containers included | In progress |
+| SMTP checked against the mail catcher of the Compose stack (ADR-0045) | Done: a step of the container check, passed locally |
+| Phase summary and the full check, containers included | Done: [summary](docs/phases/phase-4b-deferrable-items.md), with what was verified and what was not |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
@@ -270,7 +270,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |
 | I-24 | 4 | Cover provider obligations (Chapter III, Sections 2 and 3) and general-purpose models | Only deployer obligations are evaluated | After 0.1 | Open |
 | I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Done in Phase 4b: the importers (`arbiter ingest`) and discovery by project (`arbiter systems discover`, ADR-0042). Still to verify: the LiteLLM importer against a live LiteLLM |
-| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Done in Phase 4b: both reports (`arbiter report`) and `arbiter digest run --send` with a file and an SMTP notifier. The check against the mail catcher of the Compose stack (ADR-0045) is written and has not run yet. STARTTLS, TLS and authentication are covered only by tests that replace the client |
+| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Done in Phase 4b: both reports (`arbiter report`) and `arbiter digest run --send` with a file and an SMTP notifier. The SMTP notifier delivers to the mail catcher of the Compose stack in the container check (ADR-0045). STARTTLS, TLS and authentication are covered only by tests that replace the client |
 | I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Partly done in Phase 4b: three scenarios state the tier and the findings expected of eight systems, and the test suite runs them (`arbiter demo`, ADR-0043). They are regression checks on a few cases, not a measurement of precision, and they hold no text, so they say nothing about the PII detectors (I-13 stays open) |
 | I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |
 | I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Open |
