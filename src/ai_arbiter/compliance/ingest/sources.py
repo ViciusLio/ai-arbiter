@@ -163,6 +163,8 @@ class LiteLLMSource:
                 currency="USD" if cost is not None else None,
                 pii_categories=found,
                 system=system,
+                # The team, not the key: a key alias can be the name of a person.
+                group=(labels.get("team_alias") or "")[:200] or None,
                 labels=labels,
             )
         except ValidationError as exc:

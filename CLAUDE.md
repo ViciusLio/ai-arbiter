@@ -33,7 +33,7 @@ Update this list at every commit of the phase.
 | 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` (`compliance/ingest`) | Done. The LiteLLM mapping was written from its documented specification, not checked against output of a running LiteLLM |
 | 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Done: `arbiter report system KEY`, `arbiter report audit`, the two HTTP endpoints, `compliance/reports`. Verified by the automated tests only: the commands were not run by hand |
 | 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Done: `core/notification.py`, `adapters/local/notifiers.py`, `compliance/digest/delivery.py`, settings `plugins.notifier` and `notifications`. Not verified: the `smtp` notifier against a real server (Mailpit of the Compose stack); the tests replace the SMTP client |
-| 4 | Discovery of systems from traffic | Decided (ADR-0042): one candidate per project, a proposal with a draft declaration. Not started |
+| 4 | Discovery of systems from traffic | Done (ADR-0042): `compliance/inventory/discovery.py`, scan pack `2026.10.1`, `arbiter systems discover [--draft]`, column `interaction.source_group` (migration 0007). No HTTP endpoint for it. Verified by the automated tests only |
 | 5 | Simulation scenarios and `arbiter demo` | Decided (ADR-0043): YAML scenarios loaded into the tenant `demo`, checked by tests. Not started |
 | 5a | Print style sheet of the HTML reports and a note in the guide (ADR-0044: no PDF) | Not started |
 | 5b | Mailpit step in `scripts/check.sh --containers` and in the container job of CI (ADR-0045) | Not started |
@@ -175,6 +175,7 @@ uv run arbiter pii detectors      # what PII detection validates and misses
 uv run arbiter systems apply -f examples/systems.yaml   # declare and classify systems
 uv run arbiter systems show KEY   # indicative tier, obligations, provisions, dates
 uv run arbiter scan               # findings from inventory, classification and traffic
+uv run arbiter systems discover   # candidate systems in the traffic; --draft for YAML
 uv run arbiter findings list      # then: findings review ID --to confirmed --reviewer NAME
 uv run arbiter digest run --locale it   # daily digest; --locale all --format both -o DIR
 uv run arbiter report system KEY  # one system in full; report audit: the audit log
@@ -240,6 +241,9 @@ migrations differ.
 - Never use the em-dash character (U+2014), anywhere: code, comments, documentation,
   commit messages, generated outputs and conversation. Use a colon, a comma, brackets or
   two sentences. `scripts/check.sh` and CI fail when a tracked file contains one.
+- Every commit that changes what the project can do also updates the section "Where the
+  project is" of `README.md` (phases, the steps of the phase in progress, the date), so
+  that the README always says where the work has arrived. Commit and push them together.
 - Before closing a working session, or when the owner writes "chiudiamo": follow the
   closing steps under "Codespaces hygiene".
 - No automated test and no CI job may depend on a real model. A test that calls a real

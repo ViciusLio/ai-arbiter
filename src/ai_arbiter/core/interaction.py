@@ -47,6 +47,9 @@ class Interaction(Base):
     # ``native`` for Arbiter's gateway, otherwise the name of the external source.
     source: Mapped[str] = mapped_column(String(50), default=NATIVE_SOURCE)
     source_record_id: Mapped[str] = mapped_column(String(100))
+    # What an external source groups its requests by: a team or an application, never
+    # a person. Lets undeclared use be told apart by who makes it (ADR-0042).
+    source_group: Mapped[str | None] = mapped_column(String(200), default=None)
     started_at: Mapped[datetime] = mapped_column(UTCDateTime)
     duration_ms: Mapped[int | None] = mapped_column(Integer, default=None)
     operation: Mapped[str] = mapped_column(String(30), default="chat")
@@ -113,6 +116,9 @@ class InteractionRecord(BaseModel):
     pii_categories: list[str] = Field(default_factory=list)
     # Key of the declared AI system the record belongs to, when the source says so.
     system: str | None = None
+    # The team or the application the request came from at the source. Not a person:
+    # a source adapter leaves it empty when all it has is the name of a user.
+    group: str | None = Field(default=None, min_length=1, max_length=200)
     # What a configured mapping can match on, for example the alias of the key or of
     # the team at the source. Used to attribute the record, then discarded.
     labels: dict[str, str] = Field(default_factory=dict)

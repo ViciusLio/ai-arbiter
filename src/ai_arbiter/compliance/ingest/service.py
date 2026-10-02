@@ -140,6 +140,7 @@ class IngestService:
                     ai_system_id=system_id,
                     source=record.source,
                     source_record_id=record.source_record_id,
+                    source_group=record.group,
                     started_at=record.started_at,
                     duration_ms=record.duration_ms,
                     operation=record.operation,

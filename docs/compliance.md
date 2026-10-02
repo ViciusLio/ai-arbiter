@@ -161,7 +161,8 @@ completion text: none is stored.
 | `SCAN-RETIRED-SYSTEM-IN-USE` | A retired system that still sends traffic |
 | `SCAN-SYSTEM-WITHOUT-OWNER` | No owner named |
 | `SCAN-ROLE-NOT-COVERED` | A role whose obligations this version does not evaluate |
-| `SCAN-UNATTRIBUTED-TRAFFIC` | Requests made with API keys tied to no declared system |
+| `SCAN-UNDECLARED-SYSTEM-CANDIDATE` | A project, or a group of an imported source, makes requests that no declared system accounts for. One finding per candidate (see below) |
+| `SCAN-UNATTRIBUTED-TRAFFIC` | Requests tied to no declared system that nothing groups into a candidate |
 
 Controls the organisation attests in a declaration, read by these rules:
 `controls.transparency_notice`, `controls.human_oversight_assigned`,
@@ -169,6 +170,35 @@ Controls the organisation attests in a declaration, read by these rules:
 
 A finding about an obligation that does not apply yet has a lower severity until it
 does: it is a matter of readiness.
+
+### Systems nobody declared
+
+Traffic that belongs to no declared system is grouped into candidates (ADR-0042): by
+the **project** of the API key for requests through Arbiter's gateway, by the **group**
+the source names (in LiteLLM, the team alias) for imported records. The scan reports one
+finding per candidate, with the number of requests, the models used and the categories of
+personal data detected.
+
+```bash
+arbiter systems discover                    # the candidates of the last 30 days
+arbiter systems discover --draft > drafts.yaml
+# complete name, purpose, roles and facts in drafts.yaml, then:
+arbiter systems apply -f drafts.yaml
+```
+
+- A candidate is a proposal. Nothing is declared until a person completes a
+  declaration, and a draft answers no question of the rule packs: the system it
+  declares is `undetermined` until its facts are given.
+- A draft of a project names it (`project_id`). Once the system is declared, the
+  unattributed requests of that project count as the system's own in scans and reports,
+  and the candidate closes at the next scan.
+- For the gateway to apply the tier of the system (the policy on prohibited practices,
+  the routing constraints), its keys must be tied to it:
+  `arbiter keys create --name NAME --system KEY`.
+- For imported records, add a mapping under `ingest.mappings` so that later imports are
+  attributed to the system.
+- A scan pack from before `2026.10.1` keeps the earlier behaviour: all such traffic in
+  one finding.
 
 ### Lifecycle
 
@@ -312,6 +342,10 @@ ingest:
       system: cv-screening
 ```
 
+A record that is attributed to no system keeps its `group`: the team or the application
+it came from at the source, never a person (of a LiteLLM record, the team alias and not
+the alias of the key). That is what lets the scan name a candidate system for it.
+
 The LiteLLM mapping was written from the specification LiteLLM documents for its
 standard logging payload. It has not been run against the output of a live LiteLLM.
 
@@ -369,7 +403,9 @@ cut-off dates (ADR-0038).
   text, and the pack's review against EUR-Lex is pending.
 - Deployer obligations only. A provider gets a tier and no list of its obligations
   beyond Article 50.
-- Thirteen scan rules. Discovery of systems from traffic and the local agent are planned
-  for v0.1.x (ADR-0009).
+- Fourteen scan rules. The local agent is planned for v0.1.x (ADR-0009).
+- A discovered candidate is as fine as its project: a project that runs several systems
+  shows as one. A candidate from imported records stays until those records leave the
+  30-day window, because imported records are attributed at import and not afterwards.
 - Reports are Markdown and HTML only: no PDF.
 - Personal data in traffic is detected by format only (see [the gateway](gateway.md)).

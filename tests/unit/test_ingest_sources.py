@@ -43,6 +43,8 @@ def test_a_litellm_record_becomes_metadata_only() -> None:
     assert (record.cost_estimate, record.currency) == ("0.00042", "USD")
     assert record.pii_categories == ["email"]
     assert record.labels == {"key_alias": "hr-suite", "team_alias": "people-ops"}
+    # The team groups the record; the alias of the key, which can name a person, does not.
+    assert record.group == "people-ops"
     assert record.system is None
 
 

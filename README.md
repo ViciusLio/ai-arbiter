@@ -16,6 +16,37 @@ without the other.
 
 > Arbiter is a support tool. It does not provide legal advice.
 
+## Where the project is
+
+Updated at every commit. Last update: 2026-10-02.
+
+| Phase | State |
+|---|---|
+| 0 Analysis, 1 Architecture, 2 Scaffolding | Done |
+| 3 Gateway MVP | Done |
+| 4 Compliance MVP | Done |
+| 4b Deferrable items of v0.1 | **In progress**: 4 of 8 steps |
+| 5 A2A and MCP (v0.2) | Not started |
+| 6 Azure (v0.3) | Not started |
+| 7 Documentation and packaging (v1.0) | Not started |
+
+Phase 4b, step by step:
+
+| Step | State |
+|---|---|
+| Importers for the records of another gateway (`arbiter ingest`) | Done. The LiteLLM importer was not run against a live LiteLLM |
+| System report and audit report (`arbiter report`) | Done |
+| Digest by e-mail (`arbiter digest run --send`) | Done. The SMTP notifier was not run against a real mail server yet |
+| Discovery of undeclared systems from traffic (`arbiter systems discover`) | Done |
+| Simulation scenarios (`arbiter demo`) | Not started |
+| Print style sheet for the HTML reports (no PDF, ADR-0044) | Not started |
+| SMTP checked against the mail catcher of the Compose stack (ADR-0045) | Not started |
+| Phase summary and the full check, containers included | Not started |
+
+Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
+person with legal training (ADR-0041), and a comparison of the quoted articles with
+EUR-Lex (ADR-0034). No release has been published.
+
 Nothing is published yet. The name of this project on PyPI will be **`ai-arbiter`**. It
 is not related to `arbiter-ai` or `arbiter`, which are different projects by other
 authors and are already on PyPI.
@@ -111,7 +142,7 @@ How to configure and use each of them: [the gateway](docs/gateway.md) and
 | Inventory | AI systems declared in YAML, through the API or the CLI, with their AI Act roles |
 | Classifier | Deterministic rules as data, written from the Official Journal text: out of scope, prohibited, high-risk, transparency, minimal. Each outcome cites its provision and the date it applies from |
 | Review | A classification is indicative until a named person confirms or overrides it |
-| Scanner | Thirteen rules compare what was declared with the classification and with the gateway traffic |
+| Scanner | Fourteen rules compare what was declared with the classification and with the traffic, and name the projects whose requests no declared system accounts for |
 | Findings | Deduplicated, reviewed, accepted with an expiry or suppressed with a reason; all audited |
 | Digest | Inventory, findings, traffic and the audit head, in Markdown and HTML, in English and Italian |
 | Link to the gateway | A system classified as a prohibited practice gets no model; routing can be limited by risk tier |
@@ -232,7 +263,7 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | I-22 | 4 | Have the AI Act rule pack reviewed by a person with legal training | The rules summarise provisions; nobody qualified has checked them | Before 1.0 | Open |
 | I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |
 | I-24 | 4 | Cover provider obligations (Chapter III, Sections 2 and 3) and general-purpose models | Only deployer obligations are evaluated | After 0.1 | Open |
-| I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Partly done in Phase 4b: the importers exist (`arbiter ingest`), the LiteLLM one not yet run against a live LiteLLM. Discovery is open: it waits for a decision |
+| I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Done in Phase 4b: the importers (`arbiter ingest`) and discovery by project (`arbiter systems discover`, ADR-0042). Still to verify: the LiteLLM importer against a live LiteLLM |
 | I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Done in Phase 4b: both reports (`arbiter report`) and `arbiter digest run --send` with a file and an SMTP notifier. Still to verify: the SMTP notifier against a real mail server (tests replace the client) |
 | I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Open |
 | I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |

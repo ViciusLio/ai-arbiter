@@ -1,0 +1,203 @@
+# Scan rules: what the scanner reports about the inventory and the traffic.
+#
+# The scanner observes; these rules decide whether an observation is a finding, so that
+# the judgement stays in versioned data (ADR-0012). The facts are computed for each
+# declared system from its declaration, its current classification and the metadata of
+# its interactions in the last 30 days. No rule sees prompt or completion text: none is
+# stored.
+#
+# A finding is a proposal: a person confirms it, rejects it or accepts the risk
+# (ADR-0037). The rules are evaluated with two values: a control that was not declared
+# counts as not attested.
+#
+# `severity_before` is used while the obligation a rule refers to does not apply yet:
+# until then the finding is about readiness.
+
+pack: scan
+version: "2026.10.1"
+description: >-
+  A first set of high-precision checks on the inventory and the traffic. Since
+  2026.10.1, traffic of no declared system is reported per candidate system: per project
+  of the gateway, or per group of an external source (ADR-0042).
+
+facts:
+  system.lifecycle: string
+  system.has_owner: boolean
+  roles.not_covered: boolean
+  classification.exists: boolean
+  classification.tier: string
+  classification.reviewed: boolean
+  classification.derogation_claimed: boolean
+  classification.derogation_evidence: boolean
+  obligations.transparency_as_deployer: boolean
+  traffic.requests_30d: integer
+  traffic.undeclared_model_count: integer
+  traffic.pii_detected: boolean
+  traffic.unattributed_requests_30d: integer
+  candidate.requests_30d: integer
+  data.personal_data_processed: boolean
+  controls.transparency_notice: boolean
+  controls.human_oversight_assigned: boolean
+
+rules:
+  - id: SCAN-SYSTEM-NOT-CLASSIFIED
+    kind: finding
+    description: A declared system has no classification.
+    when: { fact: classification.exists, eq: false }
+    then:
+      outcome: finding
+      severity: medium
+      message_key: scan.system_not_classified
+
+  - id: SCAN-CLASSIFICATION-UNDETERMINED
+    kind: finding
+    description: Facts are missing that could change the classification.
+    when: { fact: classification.tier, eq: undetermined }
+    then:
+      outcome: finding
+      severity: medium
+      message_key: scan.classification_undetermined
+
+  - id: SCAN-CLASSIFICATION-NOT-REVIEWED
+    kind: finding
+    description: The classification is a proposal that nobody has confirmed or overridden.
+    when:
+      all:
+        - { fact: classification.exists, eq: true }
+        - { fact: classification.reviewed, eq: false }
+        - { fact: classification.tier, ne: undetermined }
+    then:
+      outcome: finding
+      severity: low
+      message_key: scan.classification_not_reviewed
+
+  - id: SCAN-PROHIBITED-PRACTICE
+    kind: finding
+    description: The system is classified as a prohibited practice and is not retired.
+    when:
+      all:
+        - { fact: classification.tier, eq: prohibited }
+        - { fact: system.lifecycle, ne: retired }
+    then:
+      outcome: finding
+      severity: critical
+      legal_refs: [{ article: "5" }]
+      applies_from: 2025-02-02
+      message_key: scan.prohibited_practice
+
+  - id: SCAN-DEROGATION-WITHOUT-ASSESSMENT
+    kind: finding
+    description: The Article 6(3) derogation is claimed with no reference to the provider's assessment.
+    when:
+      all:
+        - { fact: classification.derogation_claimed, eq: true }
+        - { fact: classification.derogation_evidence, eq: false }
+    then:
+      outcome: finding
+      severity: high
+      severity_before: medium
+      legal_refs: [{ article: "6(4)" }]
+      applies_from: 2027-12-02
+      message_key: scan.derogation_without_assessment
+
+  - id: SCAN-TRANSPARENCY-NOTICE-NOT-ATTESTED
+    kind: finding
+    description: A transparency obligation addressed to the deployer applies and no notice is attested.
+    when:
+      all:
+        - { fact: obligations.transparency_as_deployer, eq: true }
+        - not: { fact: controls.transparency_notice, eq: true }
+    then:
+      outcome: finding
+      severity: medium
+      legal_refs: [{ article: "50" }]
+      applies_from: 2026-08-02
+      message_key: scan.transparency_notice_not_attested
+
+  - id: SCAN-HUMAN-OVERSIGHT-NOT-ATTESTED
+    kind: finding
+    description: The system is high-risk and nobody is declared as assigned to human oversight.
+    when:
+      all:
+        - { fact: classification.tier, eq: high_risk }
+        - not: { fact: controls.human_oversight_assigned, eq: true }
+    then:
+      outcome: finding
+      severity: high
+      severity_before: low
+      legal_refs: [{ article: "26(2)" }]
+      applies_from: 2027-12-02
+      message_key: scan.human_oversight_not_attested
+
+  - id: SCAN-UNDECLARED-MODEL-IN-TRAFFIC
+    kind: finding
+    description: Traffic of the system reached a model its declaration does not list.
+    when: { fact: traffic.undeclared_model_count, gt: 0 }
+    then:
+      outcome: finding
+      severity: medium
+      message_key: scan.undeclared_model_in_traffic
+
+  - id: SCAN-PERSONAL-DATA-NOT-DECLARED
+    kind: finding
+    description: Detectors found personal data in prompts of a system not declared as processing any.
+    when:
+      all:
+        - { fact: traffic.pii_detected, eq: true }
+        - not: { fact: data.personal_data_processed, eq: true }
+    then:
+      outcome: finding
+      severity: medium
+      message_key: scan.personal_data_not_declared
+
+  - id: SCAN-RETIRED-SYSTEM-IN-USE
+    kind: finding
+    description: A system declared as retired still sends traffic.
+    when:
+      all:
+        - { fact: system.lifecycle, eq: retired }
+        - { fact: traffic.requests_30d, gt: 0 }
+    then:
+      outcome: finding
+      severity: medium
+      message_key: scan.retired_system_in_use
+
+  - id: SCAN-SYSTEM-WITHOUT-OWNER
+    kind: finding
+    description: No person or service is named as owner of the system.
+    when: { fact: system.has_owner, eq: false }
+    then:
+      outcome: finding
+      severity: low
+      message_key: scan.system_without_owner
+
+  - id: SCAN-ROLE-NOT-COVERED
+    kind: finding
+    description: The organisation holds a role for this system that this version does not evaluate.
+    when: { fact: roles.not_covered, eq: true }
+    then:
+      outcome: finding
+      severity: info
+      message_key: scan.role_not_covered
+
+  - id: SCAN-UNDECLARED-SYSTEM-CANDIDATE
+    kind: finding
+    description: >-
+      A project, or a group of an external source, makes requests and no declared system
+      accounts for them. One finding per candidate.
+    when: { fact: candidate.requests_30d, gt: 0 }
+    then:
+      outcome: finding
+      severity: medium
+      message_key: scan.undeclared_system_candidate
+
+  - id: SCAN-UNATTRIBUTED-TRAFFIC
+    kind: finding
+    description: >-
+      Requests tied to no declared system that nothing groups: no project and no group
+      of the source, so no candidate can be named.
+    when: { fact: traffic.unattributed_requests_30d, gt: 0 }
+    then:
+      outcome: finding
+      severity: low
+      message_key: scan.unattributed_traffic

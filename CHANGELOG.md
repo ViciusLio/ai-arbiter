@@ -22,6 +22,13 @@ Entries link to the decision record that motivated them, where one exists.
   - System report and audit report, in Markdown and HTML, in English and Italian:
     `arbiter report system KEY`, `arbiter report audit`, and
     `GET /api/v1/systems/{key}/report`, `GET /api/v1/audit/report`.
+  - Discovery of systems from traffic
+    ([ADR-0042](docs/adr/0042-discovered-systems-by-project.md)): requests that belong to
+    no declared system are grouped by project, or by the group an imported source names,
+    and the scan reports one finding per candidate (scan pack `2026.10.1`, rule
+    `SCAN-UNDECLARED-SYSTEM-CANDIDATE`). `arbiter systems discover` lists them and
+    `--draft` prints declarations for a person to complete. A declared system that names
+    its project counts that project's unattributed requests as its own.
   - Digest delivery: `arbiter digest run --send` sends the digest to the configured
     recipients, each in their language, through the `Notifier` port. Two notifiers:
     `file`, the default, which writes `.eml` files and sends nothing, and `smtp`, which

@@ -65,6 +65,8 @@ async def test_litellm_records_are_imported_without_content(
         ("litellm", "error", "some-other-model"),
     ]
     assert rows[0].pii_categories == ["email"]
+    assert rows[0].source_group == "people-ops"
+    assert await text_in_database(database, "hr-suite") == []
     assert (str(rows[0].cost_estimate), rows[0].currency, rows[0].price_version) == (
         "0.000420000",
         "USD",

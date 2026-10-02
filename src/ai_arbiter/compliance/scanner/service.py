@@ -5,13 +5,14 @@ from datetime import date, datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_arbiter.compliance.classifier.engine import COVERED_ROLES
 from ai_arbiter.compliance.classifier.service import ClassifierService
 from ai_arbiter.compliance.findings.model import ScanRun
 from ai_arbiter.compliance.findings.service import Evidence, FindingCandidate, FindingService
+from ai_arbiter.compliance.inventory.discovery import discover, ungrouped_requests
 from ai_arbiter.compliance.inventory.model import AISystem, AISystemRole
 from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.domain.risk import ActorRole
@@ -21,6 +22,7 @@ from ai_arbiter.core.ports import AuditLog
 from ai_arbiter.core.rules import Facts, FactType, RuleKind, RuleMatch, RulePack, evaluate
 
 TRAFFIC_WINDOW_DAYS = 30
+CANDIDATE_FACT = "candidate.requests_30d"
 # Declared facts the scan rules read as they are from the declaration.
 _DECLARED_PREFIXES = ("controls.", "data.")
 _PII_SAMPLE = 5000
@@ -58,9 +60,20 @@ class ScannerService:
     async def _traffic(
         self, session: AsyncSession, system: AISystem, since: datetime
     ) -> dict[str, Any]:
+        # The system's own keys, and keys of the project it names that are tied to no
+        # system: declaring the project is enough for its traffic to count (ADR-0042).
+        own = Interaction.ai_system_id == system.id
+        if system.project_id is not None:
+            own = or_(
+                own,
+                and_(
+                    Interaction.ai_system_id.is_(None),
+                    Interaction.project_id == system.project_id,
+                ),
+            )
         base = (
             Interaction.tenant_id == system.tenant_id,
-            Interaction.ai_system_id == system.id,
+            own,
             Interaction.started_at >= since,
         )
         requests = int(await session.scalar(select(func.count()).where(*base)) or 0)
@@ -139,7 +152,12 @@ class ScannerService:
         return facts, details
 
     def _candidates(
-        self, facts: Facts, details: Mapping[str, Any], system_id: UUID | None, today: date
+        self,
+        facts: Facts,
+        details: Mapping[str, Any],
+        system_id: UUID | None,
+        today: date,
+        distinguishing: str = "",
     ) -> list[FindingCandidate]:
         candidates = []
         for match in evaluate(self.pack, RuleKind.FINDING, facts):
@@ -153,6 +171,7 @@ class ScannerService:
                     severity=severity_on(match, today),
                     message_key=match.message_key,
                     ai_system_id=system_id,
+                    distinguishing=distinguishing,
                     legal_refs=[
                         {"regulation": ref.regulation, "article": ref.article}
                         for ref in match.legal_refs
@@ -183,16 +202,32 @@ class ScannerService:
             facts, details = await self.observe(session, system)
             candidates += self._candidates(facts, details, system.id, now.date())
 
-        unattributed = int(
-            await session.scalar(
-                select(func.count()).where(
-                    Interaction.tenant_id == tenant_id,
-                    Interaction.ai_system_id.is_(None),
-                    Interaction.started_at >= now - timedelta(days=TRAFFIC_WINDOW_DAYS),
+        since = now - timedelta(days=TRAFFIC_WINDOW_DAYS)
+        if CANDIDATE_FACT in self.pack.facts:
+            # One finding per candidate system; what nothing groups stays one finding.
+            discovered = await discover(session, tenant_id, since)
+            for found in discovered:
+                candidates += self._candidates(
+                    {CANDIDATE_FACT: found.requests},
+                    {"window_days": TRAFFIC_WINDOW_DAYS, **found.details()},
+                    None,
+                    now.date(),
+                    distinguishing=found.reference,
                 )
+            unattributed = await ungrouped_requests(session, tenant_id, since)
+        else:
+            # A scan pack from before discovery: every such request in one finding.
+            discovered = []
+            unattributed = int(
+                await session.scalar(
+                    select(func.count()).where(
+                        Interaction.tenant_id == tenant_id,
+                        Interaction.ai_system_id.is_(None),
+                        Interaction.started_at >= since,
+                    )
+                )
+                or 0
             )
-            or 0
-        )
         candidates += self._candidates(
             {"traffic.unattributed_requests_30d": unattributed},
             {"window_days": TRAFFIC_WINDOW_DAYS, "requests": unattributed},
@@ -200,7 +235,11 @@ class ScannerService:
             now.date(),
         )
 
-        stats = {"systems": len(systems), "detections": len(candidates)}
+        stats = {
+            "systems": len(systems),
+            "candidates": len(discovered),
+            "detections": len(candidates),
+        }
         for candidate in candidates:
             _, outcome = await self._findings.report(
                 session, tenant_id, candidate, scan_run_id=scan.id

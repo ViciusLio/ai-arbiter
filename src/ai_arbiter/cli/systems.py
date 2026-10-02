@@ -1,9 +1,13 @@
 """``arbiter systems``: declare AI systems, classify them, review the classification."""
 
+from datetime import timedelta
 from pathlib import Path
 from typing import Annotated
+from uuid import UUID
 
 import typer
+import yaml
+from sqlalchemy import select
 
 from ai_arbiter.cli.common import (
     DISCLAIMER,
@@ -18,12 +22,20 @@ from ai_arbiter.cli.common import (
 from ai_arbiter.compliance.classifier.model import ReviewDecision
 from ai_arbiter.compliance.classifier.service import EffectiveClassification
 from ai_arbiter.compliance.inventory.declarations import load_declarations
+from ai_arbiter.compliance.inventory.discovery import (
+    DiscoveredSystem,
+    discover,
+    draft_declaration,
+    ungrouped_requests,
+)
+from ai_arbiter.compliance.scanner.service import TRAFFIC_WINDOW_DAYS
 from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.domain.risk import RiskTier
 from ai_arbiter.core.domain.tenancy import LOCAL_TENANT_SLUG
 from ai_arbiter.core.domain.time import utcnow
 from ai_arbiter.core.errors import ArbiterError
 from ai_arbiter.core.i18n import SUPPORTED_LOCALES, Translator
+from ai_arbiter.gateway.identity.model import Project, Team
 
 app = typer.Typer(help="Declare, classify and review AI systems.", no_args_is_help=True)
 
@@ -320,3 +332,83 @@ def review(
     decision = ReviewDecision.CONFIRMED if confirm else ReviewDecision.OVERRIDDEN
     current = run(_review(settings_from(ctx), tenant, key, decision, override, reason, reviewer))
     typer.echo(f"{key}: {current.tier.value}, {current.status} by {reviewer}")
+
+
+async def _discover(
+    settings: Settings, tenant: str
+) -> tuple[list[tuple[DiscoveredSystem, str]], int]:
+    since = utcnow() - timedelta(days=TRAFFIC_WINDOW_DAYS)
+    async with open_database(settings) as database:
+        tenant_id = await tenant_id_for(database, tenant)
+        async with database.session() as session:
+            found = await discover(session, tenant_id, since)
+            projects = [item.project_id for item in found if item.project_id is not None]
+            names: dict[UUID, str] = {}
+            if projects:
+                # The inventory knows projects by identifier; their names are the gateway's.
+                rows = await session.execute(
+                    select(Project.id, Team.name, Project.name)
+                    .join(Team, Team.id == Project.team_id)
+                    .where(Project.tenant_id == tenant_id, Project.id.in_(projects))
+                )
+                names = {project_id: f"{team} / {name}" for project_id, team, name in rows}
+            rest = await ungrouped_requests(session, tenant_id, since)
+    named = [
+        (item, names.get(item.project_id, "") if item.project_id else item.group or "")
+        for item in found
+    ]
+    return named, rest
+
+
+@app.command("discover")
+def discover_systems(
+    ctx: typer.Context,
+    draft: Annotated[
+        bool,
+        typer.Option("--draft", help="Print draft declarations (YAML) for a person to complete."),
+    ] = False,
+    tenant: TenantSlug = LOCAL_TENANT_SLUG,
+    locale: Locale = "en",
+) -> None:
+    """List what in the traffic looks like an AI system nobody declared.
+
+    A candidate is a project of the gateway, or a group of an imported source, whose
+    requests of the last 30 days belong to no declared system. Nothing is declared here.
+    """
+    t = translator(locale)
+    found, rest = run(_discover(settings_from(ctx), tenant))
+    days = TRAFFIC_WINDOW_DAYS
+    if draft:
+        if not found:
+            raise fail(ArbiterError(t.text("discover.none", days=days)))
+        typer.echo(f"# {t.text('discover.draft_header', days=days)}")
+        if any(item.project_id is not None for item, _ in found):
+            typer.echo(f"# {t.text('discover.draft_keys')}")
+        if any(item.project_id is None for item, _ in found):
+            typer.echo(f"# {t.text('discover.draft_mapping')}")
+        typer.echo(f"# {t.text('disclaimer')}")
+        drafts = [draft_declaration(item, name or None) for item, name in found]
+        typer.echo(
+            yaml.safe_dump({"systems": drafts}, sort_keys=False, allow_unicode=True), nl=False
+        )
+        return
+    if not found:
+        typer.echo(t.text("discover.none", days=days))
+    else:
+        typer.echo(t.text("discover.summary", count=len(found), days=days))
+        typer.echo("")
+        header = [t.text(f"discover.column.{name}") for name in ("candidate", "name", "requests")]
+        typer.echo(
+            f"{header[0]:<46} {header[1]:<32} {header[2]:>9}  "
+            f"{t.text('discover.column.last_seen'):<12} {t.text('discover.column.models')}"
+        )
+        for item, name in found:
+            typer.echo(
+                f"{item.reference:<46} {name or '-':<32} {t.integer(item.requests):>9}  "
+                f"{t.date(item.last_seen.date()):<12} {', '.join(item.models) or '-'}"
+            )
+    if rest:
+        typer.echo("")
+        typer.echo(t.text("discover.ungrouped", count=t.integer(rest)))
+    typer.echo("")
+    typer.echo(t.text("disclaimer"))
