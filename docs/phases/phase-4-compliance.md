@@ -1,7 +1,8 @@
 # Phase 4: Compliance MVP
 
-- **Status**: core implemented on 2026-10-02; waits for the approval of the project
-  owner
+- **Status**: core implemented on 2026-10-02 and approved by the project owner the same
+  day. The comparison with EUR-Lex is postponed (the pack stays `review: pending`);
+  `0.1.0` waits for a legal review of the pack (ADR-0041); Phase 4b follows (ADR-0040)
 - **Date**: 2026-10-02
 - **Inputs**: [Phase 4 preparation](phase-4-preparation.md) (legal text verified,
   decisions P4-1 to P4-6), ADR-0034 to ADR-0039, the gateway of Phase 3

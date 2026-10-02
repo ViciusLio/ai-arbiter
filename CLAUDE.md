@@ -8,13 +8,13 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0 to 3 are done and approved. **The core of Phase 4
-(compliance MVP) is implemented and waits for the owner's approval.** The version is
-`0.1.0a1`, not published (ADR-0032). Do not start Phase 5, and do not start the
-deferrable items of v0.1, until the owner says so.
+**State on 2026-10-02.** Phases 0 to 4 are done and approved. **Phase 4b is in
+progress**: the deferrable items of v0.1 that the owner chose to do before `0.1.0`
+(ADR-0040). The version is `0.1.0a1`, not published (ADR-0032). `0.1.0` waits for a legal
+review of the AI Act rule pack (ADR-0041). Phase 5 (A2A and MCP) follows Phase 4b.
 
-Read first: `docs/phases/phase-4-compliance.md` (what was built, verified and not
-verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
+Read first: `docs/phases/phase-4-compliance.md`, then `docs/compliance.md`,
+`docs/gateway.md` and `docs/audit.md`.
 
 ### Step 1: quick check in a new codespace, or after a restart
 
@@ -24,34 +24,40 @@ verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
 Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
 the test suite is running: the tests migrate and drop its tables.
 
-### Step 2: decisions waiting for the owner
+### Step 2: Phase 4b, where it stands
 
-| # | Decision | Needed by |
+Update this list at every commit of the phase.
+
+| # | Item | State |
 |---|---|---|
-| 1 | Approval of Phase 4 | Next phase |
-| 2 | What comes next: Phase 5 (A2A and MCP, v0.2), or a v0.1.x phase for deferrable items (importers, discovery from traffic, reports, e-mail delivery, simulation scenarios, post-call policy, audit anchoring, further PII detectors) | Planning |
-| 3 | Q3: spot check on EUR-Lex of the articles the AI Act pack quotes (2, 3(1), 4, 5, 6, 26, 27(1), 49(2), 50, 111, 113, Annex III). When done: set `review: confirmed` and `review_date` in `rulepacks/ai-act/<version>/pack.yaml` | `0.1.0` |
-| 4 | Whether `0.1.0` waits for a review of the rule pack by a person with legal training (I-22) | `0.1.0` |
-| 5 | Publishing `0.1.0a1` (`docs/releasing.md`); the CodeQL alerts (the Codespace token gets a 403); whether to enable Dependabot alerts | When the owner decides |
-| 6 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+| 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` | Not started |
+| 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Not started |
+| 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Not started |
+| 4 | Discovery of systems from traffic | Waits for the owner's decision on what identifies a discovered system |
+| 5 | Simulation scenarios and `arbiter demo` | Waits for the owner's decision on their form |
+| 6 | Phase summary `docs/phases/phase-4b-*.md`, README tracking, changelog, full check | Not started |
 
-Decided so far in Phase 4: ADR-0034 to ADR-0039 (source of the legal text, staged facts,
-Article 6(3) derogation, review of classifications, retention, real provider for demos).
+### Step 3: for the owner, not blocking
 
-### Step 3: what is not done
+Q10: find the person who reviews the rule pack (ADR-0041). Q3: spot check on EUR-Lex of
+the articles the pack quotes (2, 3(1), 4, 5, 6, 26, 27(1), 49(2), 50, 111, 113, Annex
+III); when done, set `review: confirmed` and `review_date` in
+`rulepacks/ai-act/<version>/pack.yaml`. Publishing `0.1.0a1` (`docs/releasing.md`); the
+CodeQL alerts (the Codespace token gets a 403); whether to enable Dependabot alerts;
+Azure subscription and budget by Phase 6.
 
-Deferrable items of v0.1 (ADR-0009, ADR-0027), only when the owner asks: LiteLLM and
-JSONL importers, discovery of systems from traffic, remaining scanner rules, system and
-audit reports, digest by SMTP, local agent, simulation scenarios, post-call policy,
-external anchoring of the audit head, opt-in store of redacted content, further PII
-detectors with measured precision and recall.
+### Step 4: what stays deferrable after Phase 4b
 
-Not verified: the legal correctness of the rule pack (nobody with legal training read
-it); the quoted articles on EUR-Lex itself; the `azure_openai` adapter against a real
-endpoint; hosted OpenAI-compatible services; the release workflow. The README table
-"Release improvement tracking" lists every open improvement (I-01 to I-30).
+Post-call policy evaluation, external anchoring of the audit head, opt-in store of
+redacted content, further PII detectors with measured precision and recall, the local
+agent, the remaining scanner rules. Only when the owner asks.
 
-### Step 4: Phase 5 (A2A and MCP, v0.2), if the owner chooses it
+Not verified: the legal correctness of the rule pack; the quoted articles on EUR-Lex
+itself; the `azure_openai` adapter against a real endpoint; hosted OpenAI-compatible
+services; the release workflow. The README table "Release improvement tracking" lists
+every open improvement.
+
+### Step 5: Phase 5 (A2A and MCP, v0.2), after Phase 4b
 
 Open the phase by bringing the decisions first, as numbered option tables with a short
 description next to each number: the MCP revisions to support; A2A through the official

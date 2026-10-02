@@ -49,6 +49,8 @@ supersedes the old one.
 | [0037](0037-classification-is-a-proposal-until-reviewed.md) | A classification is a proposal until a named person confirms or overrides it | Accepted | 4 |
 | [0038](0038-retention-defaults-and-purge.md) | Retention defaults, a six-month floor for high-risk systems, a purge command | Accepted | 4 |
 | [0039](0039-real-provider-for-demos.md) | A local model server on demand for demos now, Azure AI Foundry in Phase 6 | Accepted | 4 |
+| [0040](0040-deferrable-items-before-0-1-0.md) | Deferrable items of v0.1 before `0.1.0` (Phase 4b), ahead of A2A and MCP | Accepted | 4b |
+| [0041](0041-legal-review-before-0-1-0.md) | `0.1.0` only after a legal review of the AI Act rule pack | Accepted | 4b |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -155,6 +157,10 @@ The core of the compliance toolkit is implemented; see the
 implementation beyond ADR-0034 to ADR-0039. Routing constraints by risk class, the first
 deferrable item of ADR-0009, were implemented in this phase.
 
+Decided by the project owner on 2026-10-02, at the end of Phase 4: the phase is
+approved; ADR-0040 (Phase 4b before Phase 5); ADR-0041 (`0.1.0` waits for a legal
+review); the comparison with EUR-Lex is postponed and the pack stays `review: pending`.
+
 ## Open questions
 
 | # | Question | Blocks |
@@ -164,7 +170,8 @@ deferrable item of ADR-0009, were implemented in this phase.
 | Q3 | The owner's spot check on EUR-Lex of the articles the AI Act rule pack quotes (ADR-0034). Until then the pack carries `review: pending` | The `0.1.0` release |
 | Q7 | Closed on 2026-10-02 by ADR-0034 to ADR-0039 | - |
 | Q8 | The CodeQL alert list cannot be read with the Codespace token; Dependabot alerts are disabled for the repository. Both are for the owner to look at | - |
-| Q9 | Whether `0.1.0` waits for a review of the AI Act rule pack by a person with legal training, and what comes next: Phase 5 (A2A and MCP) or a v0.1.x phase for the deferrable items of ADR-0009 | Planning |
+| Q9 | Closed on 2026-10-02 by ADR-0040 and ADR-0041 | - |
+| Q10 | Who reviews the AI Act rule pack (ADR-0041). The owner finds the reviewer | The `0.1.0` release |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
 | Q5 | Closed on 2026-10-02 by ADR-0033 for the OpenAI-compatible adapter. The Azure OpenAI adapter is checked against a real endpoint in Phase 6 | Phase 6 |
 | Q6 | Closed on 2026-10-02 by ADR-0032 | - |

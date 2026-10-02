@@ -191,7 +191,11 @@ Entries link to the decision record that motivated them, where one exists.
     classification facts, the Article 6(3) derogation, review of classifications,
     retention, and a real provider for demos
     ([ADR-0034](docs/adr/0034-legal-text-from-the-publications-office.md) to
-    [ADR-0039](docs/adr/0039-real-provider-for-demos.md)).
+    [ADR-0039](docs/adr/0039-real-provider-for-demos.md));
+  - the deferrable items of v0.1 before `0.1.0`, and `0.1.0` only after a legal review
+    of the AI Act rule pack
+    ([ADR-0040](docs/adr/0040-deferrable-items-before-0-1-0.md),
+    [ADR-0041](docs/adr/0041-legal-review-before-0-1-0.md)).
 
 ### Changed
 
