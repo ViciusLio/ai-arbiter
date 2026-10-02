@@ -1,0 +1,56 @@
+# Local stack with containers: Arbiter, PostgreSQL and a mail catcher.
+#
+#   docker compose -f deploy/compose/compose.yaml up --build --wait
+#
+# This is the alternative path. The primary local path needs no containers
+# (`uv run arbiter init && uv run arbiter serve`, see README). Because Docker is not
+# available on the development machine, this file is exercised by CI only (ADR-0025).
+#
+# Everything is published on 127.0.0.1 only. The database password is a local default for
+# a throwaway container; set ARBITER_POSTGRES_PASSWORD to change it.
+
+name: arbiter
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: arbiter
+      POSTGRES_PASSWORD: ${ARBITER_POSTGRES_PASSWORD:-arbiter-local-only}
+      POSTGRES_DB: arbiter
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arbiter -d arbiter"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    # Catches outgoing mail; web UI on http://127.0.0.1:8025. Used from Phase 4 (digest).
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:1025:1025"
+      - "127.0.0.1:8025:8025"
+
+  arbiter:
+    image: ai-arbiter:dev
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ARBITER_ENVIRONMENT: compose
+      ARBITER_DATABASE__URL: postgresql+asyncpg://arbiter:${ARBITER_POSTGRES_PASSWORD:-arbiter-local-only}@postgres:5432/arbiter
+    # Migrate, then serve. In Azure the migration runs as a separate job (Phase 6).
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["arbiter db upgrade && exec arbiter serve --host 0.0.0.0 --port 8080"]
+    ports:
+      - "127.0.0.1:8080:8080"
+
+volumes:
+  postgres-data:

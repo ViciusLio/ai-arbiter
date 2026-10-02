@@ -1,0 +1,11 @@
+# Allow-list: the image needs only what the build stage copies.
+*
+!pyproject.toml
+!uv.lock
+!README.md
+!LICENSE
+!NOTICE
+!src/**
+
+**/__pycache__
+**/*.py[cod]
