@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-10-02
 decision-makers: Project owner
 ---
@@ -7,9 +7,14 @@ decision-makers: Project owner
 # 0025 — Develop locally without Docker; build and test containers in CI only
 
 > Status note: the constraint comes from the project owner (Docker cannot be installed or
-> used on the development machine). How to adapt to it is proposed here and was applied
-> in Phase 2 ahead of acceptance, because option A is the only one that keeps both the
-> constraint and the brief's container deliverables.
+> used on the corporate development machine). The adaptation was applied in Phase 2 ahead
+> of acceptance and accepted on 2026-10-02.
+>
+> Extended by [ADR-0026](0026-codespaces-development-environment.md), decided the same
+> day: development moves to GitHub Codespaces, where Docker and PostgreSQL are available.
+> What this ADR establishes still holds: the project must build, test and run with no
+> container runtime, and CI verifies the container deliverables. The statement that CI is
+> the *only* place where containers run is replaced by ADR-0026.
 
 ## Context and Problem Statement
 
@@ -29,7 +34,7 @@ Compose file still have to exist and be known to work.
 
 ## Decision Outcome
 
-Proposed option: **A**.
+Chosen option: **A**.
 
 Local development, no containers:
 

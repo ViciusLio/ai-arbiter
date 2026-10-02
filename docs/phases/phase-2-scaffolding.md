@@ -1,6 +1,8 @@
 # Phase 2 — Scaffolding
 
-- **Status**: awaiting approval
+- **Status**: implemented; ADR-0024 and ADR-0025 accepted on 2026-10-02. Approval of the
+  phase waits for the verification in Codespaces of the items listed under "Not verified"
+  (ADR-0026)
 - **Date**: 2026-10-02
 - **Inputs**: Phase 1 decisions (ADR-0010 to ADR-0023), the constraint that Docker is not
   available on the development machine
@@ -64,17 +66,21 @@ PostgreSQL variants plus the tests that need the web stack or OpenTelemetry.
 Expect the first CI run to need fixes. The workflows use action versions newer than any
 that were tested here.
 
+Added after the phase, and equally unverified: the dev container (`.devcontainer/`) and
+`scripts/check.sh`. They were written on a machine that cannot run them. The first
+codespace is their first run; the checklist is in `CLAUDE.md`, section "Resume here".
+
 ## Decisions made in this phase
 
 | ADR | Decision | Status |
 |---|---|---|
 | [0022](../adr/0022-ai-act-roles-one-to-many.md) | AI Act roles as a one-to-many relation | Accepted |
 | [0023](../adr/0023-audit-log-in-shared-core.md) | Audit log in the shared core | Accepted |
-| [0024](../adr/0024-development-tooling-baseline.md) | Tooling baseline: hatchling, Typer, pytest-asyncio, import-linter, pip-audit, gitleaks, CodeQL, SHA-pinned actions | **Proposed, applied** |
-| [0025](../adr/0025-docker-free-local-development.md) | Local development without Docker; containers built and tested in CI only | **Proposed, applied** |
+| [0024](../adr/0024-development-tooling-baseline.md) | Tooling baseline: hatchling, Typer, pytest-asyncio, import-linter, pip-audit, gitleaks, CodeQL, SHA-pinned actions | Accepted |
+| [0025](../adr/0025-docker-free-local-development.md) | Local development without Docker; containers built and tested in CI | Accepted, extended by 0026 |
+| [0026](../adr/0026-codespaces-development-environment.md) | Development in GitHub Codespaces with a dev container | Accepted |
 
-ADR-0024 and ADR-0025 were applied before acceptance. Both are cheap to reverse; the
-reasons are in their status notes.
+ADR-0024 and ADR-0025 were applied before acceptance and accepted afterwards.
 
 ## Things that turned out differently from the design
 
@@ -92,8 +98,8 @@ reasons are in their status notes.
   migrates and then serves. A mock model provider needs no container because it is an
   in-process adapter (ADR-0013). Azure emulators are added when the adapters they stand in
   for exist.
-- **Package authors.** `pyproject.toml` and `NOTICE` say "The Arbiter authors". Replace it
-  with your name if you prefer.
+- **Package author.** Set to "ViciusLio" in `pyproject.toml` and `NOTICE`, as decided by
+  the project owner.
 
 ## Defects found by the tests while building
 
@@ -106,8 +112,8 @@ reasons are in their status notes.
 See the [ADR index](../adr/README.md). The ones that matter next:
 
 1. ADR-0009 (v0.1 scope) is still unconfirmed.
-2. ADR-0024 and ADR-0025 need a decision.
-3. Azure subscription and budget (ADR-0008) are still unanswered; not blocking.
+2. Azure subscription and budget (ADR-0008): the owner decides by Phase 6.
+3. Everything under "Not verified" has to be checked in Codespaces before Phase 3.
 
 ## Proposed Phase 3 task list
 

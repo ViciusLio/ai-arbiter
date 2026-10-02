@@ -1,13 +1,87 @@
 # CLAUDE.md — Arbiter
 
 AI Governance Gateway & EU AI Act Compliance Toolkit. Open source, Apache 2.0.
+Repository: <https://github.com/ViciusLio/ai-arbiter>
 
-## Status
+This file is the hand-over between sessions. A session in a new environment has no
+memory of earlier ones: everything needed to resume is here or linked from here.
 
-- **Current phase**: 2 — Scaffolding, awaiting approval
-- **Next step**: owner decides ADR-0024, ADR-0025 and confirms ADR-0009; then Phase 3
-  (gateway MVP). Open questions are in `docs/adr/README.md`.
-- Version in `pyproject.toml`: `0.0.1` (name-reserving release, not published yet).
+## Resume here
+
+**State on 2026-10-02.** Phases 0, 1 and 2 are done. Phase 3 has not started and must not
+start until the steps below are complete and the owner says so.
+
+Phase 2 was built on a corporate Windows machine without Docker, uv or PostgreSQL
+installed. Development now moves to GitHub Codespaces (ADR-0026). The dev container, the
+project Dockerfile, the Compose stack, the PostgreSQL tests, Python 3.12 and every GitHub
+Actions workflow were written but **have never run**. Treat them as unverified drafts.
+
+### Step 1 — Verify the environment (first task in Codespaces)
+
+1. The dev container came up: `uv --version`, `uv python list --only-installed` (3.12,
+   3.13, 3.14), `docker version`, `pg_isready -h postgres -U arbiter -d arbiter_test`,
+   `echo $ARBITER_TEST_DATABASE_URL`.
+2. `scripts/check.sh --containers` passes. It runs lint, types, import rules, tests on
+   SQLite and PostgreSQL for every supported Python, tests without extras, then builds
+   the image and starts the Compose stack.
+3. The first CI run on GitHub is green. Read it with `gh run list` and `gh run view`.
+4. Fix what fails, in small `fix:` / `ci:` / `build:` commits. Expect failures: the
+   workflows use action versions that were never exercised, and `pip-audit` and gitleaks
+   have never run.
+5. Update the "Not verified" table in `docs/phases/phase-2-scaffolding.md` with what was
+   actually verified, and the Phase 2 status line.
+
+### Step 2 — Decisions waiting for the owner
+
+| # | Decision | Needed by |
+|---|---|---|
+| 1 | Confirm the v0.1 scope (ADR-0009, still `proposed`). A ten-line summary was given to the owner; on confirmation set the ADR to `accepted` | Before Phase 3 is closed |
+| 2 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+| 3 | Approval of Phase 2 once Step 1 is done, and the go-ahead for Phase 3 | Phase 3 |
+
+### Step 3 — Phase 3: four decisions to bring first
+
+Phase 3 opens by presenting these to the owner, each as an option table with the seven
+criteria and a recommendation, then waiting. The options below are a starting point, not
+decisions.
+
+1. **API key format and hashing.** Options: random high-entropy token with a recognisable
+   prefix and a key id, stored as a plain SHA-256 digest; the same with HMAC-SHA-256 and
+   a server-side pepper from the secret store; a slow password hash (argon2); signed
+   stateless tokens. Points to weigh: per-request latency, what a database leak exposes,
+   revocation, secret-scanner friendliness of the prefix.
+2. **Canonical JSON for the audit hash (ADR-0017).** Options: a dependency implementing
+   RFC 8785; an in-house canonicaliser limited to the types audit entries use (no
+   floats), tested against the RFC vectors; `json.dumps(sort_keys=True)`, which is not
+   RFC-conformant. Points to weigh: third parties must be able to re-verify an export
+   with other tools.
+3. **Price catalogue format and currency.** Options: a versioned YAML data file shipped
+   like a rule pack, with overrides in configuration; a database table managed through
+   the API; importing a third-party price list. Points to weigh: `Decimal` arithmetic,
+   price per million tokens, cached-token and regional prices, one reporting currency
+   per tenant with an explicit conversion rate, the catalogue version stored on every
+   interaction.
+4. **Token counts when a provider returns no usage.** Options: leave them unknown and
+   report the interaction as unpriced; a character-based estimate flagged as estimated; a
+   tokenizer dependency per model family. Points to weigh: budgets enforced on estimates,
+   honesty of FinOps reports, dependency weight in the request path.
+
+Also deferred to Phase 3: anchoring sink details for the audit chain (ADR-0017).
+
+### Step 4 — Phase 3 task list (gateway MVP)
+
+1. Identity: teams, projects, principals, API keys, three roles.
+2. Rule engine (`core.rules`): rule pack schema, condition evaluator, match trace.
+3. Redaction: built-in detectors with EU and Italian formats (ADR-0014).
+4. Audit: hash chain, verification, export, external anchoring (ADR-0017, ADR-0023).
+5. Policy: fact collection, pre- and post-call evaluation, default policy pack.
+6. Providers: mock, OpenAI-compatible, Azure OpenAI; plugin settings models (ADR-0013).
+7. Router: candidates, constraints, priority and cost strategies, fallback and retry.
+8. FinOps: versioned price catalogue, metering, roll-ups, budgets.
+9. HTTP: `/v1/chat/completions` with streaming, `/v1/models`, admin endpoints.
+10. Request-path latency measured against the mock provider.
+
+Target release at the end of Phase 3: `0.1.0-alpha`.
 
 ## Names (ADR-0005)
 
@@ -17,9 +91,20 @@ AI Governance Gateway & EU AI Act Compliance Toolkit. Open source, Apache 2.0.
 | Repository, PyPI distribution | `ai-arbiter` |
 | Import package | `ai_arbiter` |
 | CLI | `arbiter`, alias `ai-arbiter` |
+| Author | ViciusLio |
 
 Unrelated to `arbiter-ai` on PyPI. Always write the full distribution name in install
-instructions.
+instructions. Version in `pyproject.toml`: `0.0.1`, the name-reserving release, not
+published yet; the owner publishes it (`docs/releasing.md`).
+
+## Git
+
+- Commits are authored as **ViciusLio <viciuslios@gmail.com>**, always. Check
+  `git config user.email` before the first commit in a new clone or codespace; if it
+  differs, set it in the repository's local config, never globally.
+- Conventional Commits. End commit messages with the co-author trailer of the assistant
+  that wrote them.
+- Work on `main` until the owner asks for branches. Never force-push `main`.
 
 ## Reference documents
 
@@ -31,11 +116,26 @@ instructions.
 - `docs/releasing.md` — how a release is published
 - `CHANGELOG.md` — Keep a Changelog + SemVer, entries linked to ADRs
 
+## Environment (ADR-0026)
+
+Development happens in the dev container (`.devcontainer/`), in GitHub Codespaces.
+
+- Python 3.12, 3.13, 3.14 installed by uv; 3.12 is the default (`.python-version`).
+- Docker-in-Docker: the project image and `deploy/compose/compose.yaml` run inside it.
+- PostgreSQL is the sidecar service `postgres`; `ARBITER_TEST_DATABASE_URL` is preset, so
+  database tests run on SQLite and PostgreSQL.
+- The project Compose stack publishes its own PostgreSQL on `127.0.0.1:5432` of the dev
+  container; the test database is on host `postgres`. They do not collide.
+- Stop the codespace when idle; it is billed beyond the free allowance.
+
 ## Commands
 
 ```bash
+scripts/check.sh                  # everything CI checks, on every supported Python
+scripts/check.sh --containers     # plus image build and Compose smoke test
+
 uv sync --all-extras              # install everything, including dev tools
-uv run pytest                     # tests (SQLite)
+uv run pytest                     # tests (SQLite, and PostgreSQL when the URL is set)
 uv run pytest --cov               # with the 80% coverage gate
 uv run ruff check .               # lint
 uv run ruff format .              # format (also formats Python blocks in Markdown)
@@ -46,13 +146,7 @@ uv run arbiter serve              # HTTP application on 127.0.0.1:8080
 uv run alembic revision --autogenerate -m "..."   # new migration
 ```
 
-- All five checks (pytest, ruff check, ruff format --check, mypy, lint-imports) must pass
-  before a phase is closed.
-- PostgreSQL tests run when `ARBITER_TEST_DATABASE_URL` points to an empty database;
-  otherwise they are skipped. CI runs them.
-- Behind a TLS-intercepting proxy, add `--system-certs` to `uv sync` and `uv build`.
-- `.python-version` is 3.12, the lowest supported version. If only a newer interpreter is
-  installed, pass `--python 3.13` (or set `UV_PYTHON`).
+`scripts/check.sh` must pass before a phase is closed.
 
 ## Working rules
 
@@ -61,23 +155,25 @@ uv run alembic revision --autogenerate -m "..."   # new migration
   scalability, security, compliance/privacy, maintainability, lock-in), a recommendation,
   then wait for the decision. Record it as an ADR. Accepted ADRs are superseded, never
   edited.
-- Conventional Commits.
+- The owner sometimes answers with a filled-in template. A line left as a placeholder
+  (for example `[confermato / modifiche]`) is not a decision: keep the item open and ask.
 - Conversation with the owner is in Italian. Code, comments, docs, ADRs and commit
   messages are in English (ADR-0004).
 - User-facing outputs (digest, reports, classifier text) exist in EN and IT.
 - AI Act rules are written only from the official EU sources on EUR-Lex
   (<https://eur-lex.europa.eu/>). Before Phase 4, verify the current text and the status
   of any pending change to the application calendar, and record the verification date in
-  the rule pack.
+  the rule pack. Dates in the Phase 0 analysis come from secondary sources.
 - Every user-facing output states that Arbiter is a support tool and not legal advice.
   Never write "compliant"; use "indicative" and "no findings".
 - An LLM may suggest classification inputs, never decide a classification (ADR-0003).
 - No Azure resources before Phase 6 (ADR-0008).
-- Docker is not available on the development machine (ADR-0025). Local development uses
-  SQLite and in-process substitutes; the Dockerfile and Compose file are verified by CI.
-  Never claim they were tested locally.
+- Say what was verified and what was not. Never report something as tested if it only
+  exists.
 - Publishing to PyPI or any other outward-facing action is prepared, then triggered by
   the owner.
+- At the end of each phase: phase summary in `docs/phases/`, ADR index and open questions,
+  `CHANGELOG.md`, and this file's "Resume here" section.
 
 ## Technical constraints (from the brief)
 
@@ -95,6 +191,7 @@ uv run alembic revision --autogenerate -m "..."   # new migration
 - Only `gateway.api` imports the web framework; `cli.serve` imports it lazily.
 - The base install (no extras) must keep working: optional dependencies are imported
   inside the function that needs them and raise `MissingExtraError` when absent.
+- The project must build, test and run with no container runtime (ADR-0025).
 - One schema for SQLite and PostgreSQL: generic `JSON`, `Uuid`, `UTCDateTime`; no
   dialect-specific SQL in shared code. Every model change comes with a migration; a test
   compares the two.

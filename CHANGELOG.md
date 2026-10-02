@@ -37,10 +37,15 @@ Entries link to the decision record that motivated them, where one exists.
   gateway and compliance do not import each other, adapters are wired only at the
   composition roots, the web framework is imported only by `gateway.api`.
 - Container image and Compose stack (Arbiter, PostgreSQL, Mailpit), built and smoke-tested
-  in CI ([ADR-0025](docs/adr/0025-docker-free-local-development.md), proposed).
+  in CI; the project also runs with no container runtime
+  ([ADR-0025](docs/adr/0025-docker-free-local-development.md)).
 - GitHub Actions: lint, type-check, tests on Linux and Windows and on PostgreSQL, tests of
   the base install, dependency audit, secret scan, CodeQL, image build; Dependabot
-  ([ADR-0024](docs/adr/0024-development-tooling-baseline.md), proposed).
+  ([ADR-0024](docs/adr/0024-development-tooling-baseline.md)).
+- Dev container for GitHub Codespaces with Python 3.12, 3.13 and 3.14, uv,
+  Docker-in-Docker and a PostgreSQL test database; `scripts/check.sh` runs every CI check
+  locally ([ADR-0026](docs/adr/0026-codespaces-development-environment.md)).
+- Project links and author in the package metadata.
 - Release workflow publishing to PyPI through Trusted Publishing, triggered by a version
   tag; procedure in `docs/releasing.md`.
 - Apache-2.0 licence, `NOTICE`, `README.md`.

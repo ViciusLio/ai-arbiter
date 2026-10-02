@@ -33,8 +33,9 @@ supersedes the old one.
 | [0021](0021-i18n-message-catalogs.md) | Localise outputs with keyed YAML catalogues and Babel for formatting | Accepted, amended | 1 |
 | [0022](0022-ai-act-roles-one-to-many.md) | Store AI Act roles as a one-to-many relation of the AI system | Accepted | 1 |
 | [0023](0023-audit-log-in-shared-core.md) | Place the audit log in the shared core | Accepted | 1 |
-| [0024](0024-development-tooling-baseline.md) | Development tooling baseline | **Proposed, applied** | 2 |
-| [0025](0025-docker-free-local-development.md) | Develop locally without Docker; build and test containers in CI only | **Proposed, applied** | 2 |
+| [0024](0024-development-tooling-baseline.md) | Development tooling baseline | Accepted | 2 |
+| [0025](0025-docker-free-local-development.md) | Develop locally without Docker; build and test containers in CI only | Accepted, extended by 0026 | 2 |
+| [0026](0026-codespaces-development-environment.md) | Develop in GitHub Codespaces with a dev container | Accepted | 2 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -80,28 +81,38 @@ Other decisions of the project owner:
 
 Scaffolding implemented; see the [Phase 2 summary](../phases/phase-2-scaffolding.md).
 
-- ADR-0024 (tooling baseline) and ADR-0025 (Docker-free local development) are proposed
-  and were applied ahead of acceptance.
-- ADR-0025 follows from a constraint stated by the project owner during the phase: Docker
-  cannot be installed or used on the development machine.
+Decided by the project owner on 2026-10-02:
+
+- ADR-0024 (tooling baseline) and ADR-0025 (Docker-free local development) accepted
+  without changes. Both had been applied ahead of acceptance.
+- ADR-0026: development moves to GitHub Codespaces with a dev container (Python 3.12,
+  3.13 and 3.14, uv, Docker-in-Docker, PostgreSQL). Neither Docker nor uv will be used on
+  the corporate machine. ADR-0026 extends ADR-0025: running without containers stays a
+  supported path, and containers are now verified in Codespaces as well as in CI.
+- Author name: "ViciusLio" in package metadata and `NOTICE`; repository at
+  <https://github.com/ViciusLio/ai-arbiter>.
+- Azure subscription and budget (ADR-0008) stay open until Phase 6.
+- Phase 3 does not start yet. It will start in Codespaces, after the environment and the
+  unverified parts of Phase 2 have been checked there.
 
 ## Open questions
 
 | # | Question | Blocks |
 |---|---|---|
-| Q1 | Confirm the v0.1 scope and its amendments (ADR-0009). The scope line was left unfilled in both decision notes | Phase 4 at the latest |
-| Q2 | Accept, change or reject ADR-0024 (tooling) and ADR-0025 (Docker-free development) | Nothing immediately; both are already applied |
-| Q3 | Azure subscription available, and indicative monthly budget (ADR-0008). Left unfilled in both decision notes | Phase 6 |
-| Q4 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
-| Q5 | Author name in `pyproject.toml` and `NOTICE` (currently "The Arbiter authors"), and the repository URL for the PyPI page | The `0.0.1` release |
+| Q1 | Confirm the v0.1 scope and its amendments (ADR-0009). A ten-line summary was sent to the owner for explicit confirmation | Before Phase 3 is closed |
+| Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
+| Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
+| Q4 | Dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the GitHub Actions workflows have never run. Verify them in Codespaces and on the first push (checklist in `CLAUDE.md`) | Phase 3 |
 
 ## Deferred decisions
 
 | Topic | When |
 |---|---|
-| API key format, hashing and rotation | Phase 3 |
-| Canonical JSON implementation for the audit hash; anchoring sink details | Phase 3 |
-| Price catalogue format and currency handling | Phase 3 |
+| API key format, hashing and rotation | Phase 3, first |
+| Canonical JSON implementation for the audit hash | Phase 3, first |
+| Price catalogue format and currency handling | Phase 3, first |
+| Token counts when a provider returns no usage | Phase 3, first |
+| Anchoring sink details for the audit chain | Phase 3 |
 | Retention defaults and legal minimums | Phase 4 |
 | A2A and MCP module design, MCP revision support matrix | Phase 5 |
 | IaC tool (Bicep preferred by the brief), networking, identity, signed audit checkpoints, row-level security, container image scanning | Phase 6 |
