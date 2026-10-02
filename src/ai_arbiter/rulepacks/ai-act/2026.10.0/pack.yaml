@@ -1,0 +1,647 @@
+# AI Act rule pack: indicative classification of AI systems under Regulation (EU)
+# 2024/1689 as amended by Regulation (EU) 2026/1744.
+#
+# This pack is data: conditions compare declared facts with the values written here,
+# and nothing is executed (ADR-0012). It supports a classification that a person must
+# review (ADR-0037). It is not legal advice and it does not replace the Regulation.
+#
+# What it covers: scope and exclusions (Art. 2 and 3), prohibited practices (Art. 5),
+# high-risk classification (Art. 6, Annex I by declaration, Annex III point by point),
+# the Art. 6(3) derogation as claimed by the provider (ADR-0036), transparency
+# obligations (Art. 50), AI literacy (Art. 4) and the obligations of deployers of
+# high-risk systems (Art. 26 and 27).
+#
+# What it does not cover: obligations of providers, importers and distributors beyond
+# Art. 50; general-purpose AI models (Chapter V); the exclusions of Art. 2(4) and 2(12);
+# Commission guidelines, harmonised standards and national law.
+#
+# Every rule names the provision it comes from and the date it applies from. The
+# texts it was written from are listed under `regulation.sources` (ADR-0034).
+
+pack: ai-act
+version: "2026.10.0"
+description: Indicative classification under the EU AI Act, deployer first.
+
+regulation:
+  id: "Regulation (EU) 2024/1689"
+  amended_by: ["Regulation (EU) 2026/1744"]
+  as_of: 2026-10-02
+  verified_against: primary
+  # `confirmed` once the project owner has compared the quoted articles on EUR-Lex.
+  review: pending
+  sources:
+    - celex: 32024R1689
+      title: "Regulation (EU) 2024/1689, Official Journal L of 12.7.2024"
+      retrieved: 2026-10-02
+      url: https://publications.europa.eu/resource/celex/32024R1689
+      sha256: 8f0b656302f9864cc87e040c371f209a9d65ae1a6cecc25ca5eb737e872d721a
+    - celex: 32026R1744
+      title: "Regulation (EU) 2026/1744, Official Journal L of 24.7.2026"
+      retrieved: 2026-10-02
+      url: https://publications.europa.eu/resource/celex/32026R1744
+      sha256: 9d754652b867722807e4219c85912ce354233e58a1b4eb8c7752b4d1922993db
+    - celex: 02024R1689-20260727
+      title: "Consolidated text of Regulation (EU) 2024/1689 as of 27.7.2026 (documentation tool, no legal effect)"
+      retrieved: 2026-10-02
+      url: https://publications.europa.eu/resource/celex/02024R1689-20260727
+      sha256: 5e7719f77e8a606b257dc25958ee3222c4383300a5a34270a5b850a2ce8b8715
+
+stages: [scope, prohibited, high_risk, transparency, deployer]
+
+facts:
+  scope.is_ai_system: { type: boolean, stage: scope, ref: "Art. 3(1)" }
+  scope.union_nexus: { type: boolean, stage: scope, ref: "Art. 2(1)" }
+  scope.military_defence_national_security: { type: boolean, stage: scope, ref: "Art. 2(3)" }
+  scope.scientific_research_only: { type: boolean, stage: scope, ref: "Art. 2(6)" }
+  scope.pre_market_development: { type: boolean, stage: scope, ref: "Art. 2(8)" }
+  scope.personal_non_professional: { type: boolean, stage: scope, ref: "Art. 2(10)" }
+  prohibited.manipulative_techniques: { type: boolean, stage: prohibited, ref: "Art. 5(1)(a)" }
+  prohibited.exploits_vulnerabilities: { type: boolean, stage: prohibited, ref: "Art. 5(1)(b)" }
+  prohibited.intimate_content_without_consent: { type: boolean, stage: prohibited, ref: "Art. 5(1)(ba)" }
+  prohibited.child_sexual_abuse_material: { type: boolean, stage: prohibited, ref: "Art. 5(1)(bb)" }
+  prohibited.social_scoring: { type: boolean, stage: prohibited, ref: "Art. 5(1)(c)" }
+  prohibited.crime_prediction_by_profiling: { type: boolean, stage: prohibited, ref: "Art. 5(1)(d)" }
+  prohibited.facial_image_scraping: { type: boolean, stage: prohibited, ref: "Art. 5(1)(e)" }
+  prohibited.emotion_inference_work_education: { type: boolean, stage: prohibited, ref: "Art. 5(1)(f)" }
+  prohibited.emotion_inference_medical_or_safety: { type: boolean, stage: prohibited, ref: "Art. 5(1)(f)" }
+  prohibited.biometric_categorisation_sensitive: { type: boolean, stage: prohibited, ref: "Art. 5(1)(g)" }
+  prohibited.realtime_remote_biometric_identification: { type: boolean, stage: prohibited, ref: "Art. 5(1)(h)" }
+  prohibited.realtime_rbi_authorised_objective: { type: boolean, stage: prohibited, ref: "Art. 5(1)(h)(i)-(iii)" }
+  high_risk.annex1_safety_component: { type: boolean, stage: high_risk, ref: "Art. 6(1)(a)" }
+  high_risk.annex1_third_party_assessment: { type: boolean, stage: high_risk, ref: "Art. 6(1)(b)" }
+  annex3.biometrics: { type: boolean, stage: high_risk, ref: "Annex III(1)" }
+  annex3.biometrics_remote_identification: { type: boolean, stage: high_risk, ref: "Annex III(1)(a)" }
+  annex3.biometrics_categorisation: { type: boolean, stage: high_risk, ref: "Annex III(1)(b)" }
+  annex3.biometrics_emotion_recognition: { type: boolean, stage: high_risk, ref: "Annex III(1)(c)" }
+  annex3.critical_infrastructure: { type: boolean, stage: high_risk, ref: "Annex III(2)" }
+  annex3.education: { type: boolean, stage: high_risk, ref: "Annex III(3)" }
+  annex3.education_admission: { type: boolean, stage: high_risk, ref: "Annex III(3)(a)" }
+  annex3.education_learning_outcomes: { type: boolean, stage: high_risk, ref: "Annex III(3)(b)" }
+  annex3.education_level_assessment: { type: boolean, stage: high_risk, ref: "Annex III(3)(c)" }
+  annex3.education_exam_monitoring: { type: boolean, stage: high_risk, ref: "Annex III(3)(d)" }
+  annex3.employment: { type: boolean, stage: high_risk, ref: "Annex III(4)" }
+  annex3.employment_recruitment: { type: boolean, stage: high_risk, ref: "Annex III(4)(a)" }
+  annex3.employment_work_decisions: { type: boolean, stage: high_risk, ref: "Annex III(4)(b)" }
+  annex3.essential_services: { type: boolean, stage: high_risk, ref: "Annex III(5)" }
+  annex3.essential_public_benefits: { type: boolean, stage: high_risk, ref: "Annex III(5)(a)" }
+  annex3.essential_creditworthiness: { type: boolean, stage: high_risk, ref: "Annex III(5)(b)" }
+  annex3.essential_insurance_pricing: { type: boolean, stage: high_risk, ref: "Annex III(5)(c)" }
+  annex3.essential_emergency_dispatch: { type: boolean, stage: high_risk, ref: "Annex III(5)(d)" }
+  annex3.law_enforcement: { type: boolean, stage: high_risk, ref: "Annex III(6)" }
+  annex3.law_enforcement_victim_risk: { type: boolean, stage: high_risk, ref: "Annex III(6)(a)" }
+  annex3.law_enforcement_polygraph: { type: boolean, stage: high_risk, ref: "Annex III(6)(b)" }
+  annex3.law_enforcement_evidence_reliability: { type: boolean, stage: high_risk, ref: "Annex III(6)(c)" }
+  annex3.law_enforcement_offending_risk: { type: boolean, stage: high_risk, ref: "Annex III(6)(d)" }
+  annex3.law_enforcement_profiling: { type: boolean, stage: high_risk, ref: "Annex III(6)(e)" }
+  annex3.migration: { type: boolean, stage: high_risk, ref: "Annex III(7)" }
+  annex3.migration_polygraph: { type: boolean, stage: high_risk, ref: "Annex III(7)(a)" }
+  annex3.migration_risk_assessment: { type: boolean, stage: high_risk, ref: "Annex III(7)(b)" }
+  annex3.migration_application_examination: { type: boolean, stage: high_risk, ref: "Annex III(7)(c)" }
+  annex3.migration_identification: { type: boolean, stage: high_risk, ref: "Annex III(7)(d)" }
+  annex3.justice: { type: boolean, stage: high_risk, ref: "Annex III(8)" }
+  annex3.justice_judicial_assistance: { type: boolean, stage: high_risk, ref: "Annex III(8)(a)" }
+  annex3.justice_election_influence: { type: boolean, stage: high_risk, ref: "Annex III(8)(b)" }
+  high_risk.derogation_claimed: { type: boolean, stage: high_risk, ref: "Art. 6(3)" }
+  high_risk.profiling_natural_persons: { type: boolean, stage: high_risk, ref: "Art. 6(3)" }
+  high_risk.derogation_assessment_ref: { type: string, stage: high_risk, ref: "Art. 6(4)" }
+  transparency.interacts_with_persons: { type: boolean, stage: transparency, ref: "Art. 50(1)" }
+  transparency.generates_synthetic_content: { type: boolean, stage: transparency, ref: "Art. 50(2)" }
+  transparency.emotion_or_biometric_categorisation: { type: boolean, stage: transparency, ref: "Art. 50(3)" }
+  transparency.deep_fake: { type: boolean, stage: transparency, ref: "Art. 50(4)" }
+  transparency.public_interest_text: { type: boolean, stage: transparency, ref: "Art. 50(4)" }
+  transparency.editorial_control: { type: boolean, stage: transparency, ref: "Art. 50(4)" }
+  deployer.public_authority: { type: boolean, stage: deployer, ref: "Art. 26(8)" }
+  deployer.public_law_body_or_public_service: { type: boolean, stage: deployer, ref: "Art. 27(1)" }
+  deployer.employer_uses_at_workplace: { type: boolean, stage: deployer, ref: "Art. 26(7)" }
+
+rules:
+  - id: AIA-ART3-NOT-AN-AI-SYSTEM
+    kind: classification
+    when: { fact: scope.is_ai_system, eq: false }
+    then:
+      outcome: out_of_scope
+      legal_refs: [{ article: "3(1)" }]
+      message_key: aia.art3_not_an_ai_system
+
+  - id: AIA-ART2-1-NO-UNION-NEXUS
+    kind: classification
+    when: { fact: scope.union_nexus, eq: false }
+    then:
+      outcome: out_of_scope
+      legal_refs: [{ article: "2(1)" }]
+      message_key: aia.art2_1_no_union_nexus
+
+  - id: AIA-ART2-3-MILITARY
+    kind: classification
+    when: { fact: scope.military_defence_national_security, eq: true }
+    then:
+      outcome: out_of_scope
+      legal_refs: [{ article: "2(3)" }]
+      message_key: aia.art2_3_military
+
+  - id: AIA-ART2-6-RESEARCH
+    kind: classification
+    when: { fact: scope.scientific_research_only, eq: true }
+    then:
+      outcome: out_of_scope
+      legal_refs: [{ article: "2(6)" }]
+      message_key: aia.art2_6_research
+
+  - id: AIA-ART2-8-PRE-MARKET
+    kind: classification
+    when: { fact: scope.pre_market_development, eq: true }
+    then:
+      outcome: out_of_scope
+      legal_refs: [{ article: "2(8)" }]
+      message_key: aia.art2_8_pre_market
+
+  - id: AIA-ART2-10-PERSONAL-USE
+    kind: classification
+    when: { fact: scope.personal_non_professional, eq: true }
+    then:
+      outcome: out_of_scope
+      legal_refs: [{ article: "2(10)" }]
+      message_key: aia.art2_10_personal_use
+
+  - id: AIA-ART4-AI-LITERACY
+    kind: classification
+    roles: [provider, deployer]
+    when: { fact: scope.is_ai_system, eq: true }
+    then:
+      outcome: obligation
+      legal_refs: [{ article: "4" }]
+      applies_from: 2025-02-02
+      message_key: aia.art4_ai_literacy
+
+  - id: AIA-ART5-1A-MANIPULATION
+    kind: classification
+    when: { fact: prohibited.manipulative_techniques, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(a)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1a_manipulation
+
+  - id: AIA-ART5-1B-VULNERABILITIES
+    kind: classification
+    when: { fact: prohibited.exploits_vulnerabilities, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(b)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1b_vulnerabilities
+
+  - id: AIA-ART5-1BA-INTIMATE-CONTENT
+    kind: classification
+    when: { fact: prohibited.intimate_content_without_consent, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(ba)" }, { article: "5(1a)" }, { article: "5(1b)" }]
+      applies_from: 2026-12-02
+      message_key: aia.art5_1ba_intimate_content
+
+  - id: AIA-ART5-1BB-CSAM
+    kind: classification
+    when: { fact: prohibited.child_sexual_abuse_material, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(bb)" }, { article: "5(1a)" }]
+      applies_from: 2026-12-02
+      message_key: aia.art5_1bb_csam
+
+  - id: AIA-ART5-1C-SOCIAL-SCORING
+    kind: classification
+    when: { fact: prohibited.social_scoring, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(c)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1c_social_scoring
+
+  - id: AIA-ART5-1D-CRIME-PREDICTION
+    kind: classification
+    when: { fact: prohibited.crime_prediction_by_profiling, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(d)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1d_crime_prediction
+
+  - id: AIA-ART5-1E-FACIAL-SCRAPING
+    kind: classification
+    when: { fact: prohibited.facial_image_scraping, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(e)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1e_facial_scraping
+
+  - id: AIA-ART5-1F-EMOTION-INFERENCE
+    kind: classification
+    when: { all: [{ fact: prohibited.emotion_inference_work_education, eq: true }, { not: { fact: prohibited.emotion_inference_medical_or_safety, eq: true } }] }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(f)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1f_emotion_inference
+
+  - id: AIA-ART5-1G-BIOMETRIC-CATEGORISATION
+    kind: classification
+    when: { fact: prohibited.biometric_categorisation_sensitive, eq: true }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(g)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1g_biometric_categorisation
+
+  - id: AIA-ART5-1H-REALTIME-RBI
+    kind: classification
+    when: { all: [{ fact: prohibited.realtime_remote_biometric_identification, eq: true }, { not: { fact: prohibited.realtime_rbi_authorised_objective, eq: true } }] }
+    then:
+      outcome: prohibited
+      legal_refs: [{ article: "5(1)(h)" }]
+      applies_from: 2025-02-02
+      message_key: aia.art5_1h_realtime_rbi
+
+  - id: AIA-ART6-1-ANNEX1-PRODUCT
+    kind: classification
+    when: { all: [{ fact: high_risk.annex1_safety_component, eq: true }, { fact: high_risk.annex1_third_party_assessment, eq: true }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(1)" }, { article: "Annex I" }]
+      applies_from: 2028-08-02
+      message_key: aia.art6_1_annex1_product
+
+  - id: AIA-ANNEX3-1A-REMOTE-BIOMETRIC-ID
+    kind: classification
+    when: { all: [{ fact: annex3.biometrics, eq: true }, { fact: annex3.biometrics_remote_identification, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(1)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_1a_remote_biometric_id
+
+  - id: AIA-ANNEX3-1B-BIOMETRIC-CATEGORISATION
+    kind: classification
+    when: { all: [{ fact: annex3.biometrics, eq: true }, { fact: annex3.biometrics_categorisation, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(1)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_1b_biometric_categorisation
+
+  - id: AIA-ANNEX3-1C-EMOTION-RECOGNITION
+    kind: classification
+    when: { all: [{ fact: annex3.biometrics, eq: true }, { fact: annex3.biometrics_emotion_recognition, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(1)(c)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_1c_emotion_recognition
+
+  - id: AIA-ANNEX3-2-CRITICAL-INFRASTRUCTURE
+    kind: classification
+    when: { all: [{ fact: annex3.critical_infrastructure, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(2)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_2_critical_infrastructure
+
+  - id: AIA-ANNEX3-3A-EDUCATION-ADMISSION
+    kind: classification
+    when: { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_admission, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(3)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_3a_education_admission
+
+  - id: AIA-ANNEX3-3B-LEARNING-OUTCOMES
+    kind: classification
+    when: { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_learning_outcomes, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(3)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_3b_learning_outcomes
+
+  - id: AIA-ANNEX3-3C-EDUCATION-LEVEL
+    kind: classification
+    when: { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_level_assessment, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(3)(c)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_3c_education_level
+
+  - id: AIA-ANNEX3-3D-EXAM-MONITORING
+    kind: classification
+    when: { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_exam_monitoring, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(3)(d)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_3d_exam_monitoring
+
+  - id: AIA-ANNEX3-4A-RECRUITMENT
+    kind: classification
+    when: { all: [{ fact: annex3.employment, eq: true }, { fact: annex3.employment_recruitment, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(4)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_4a_recruitment
+
+  - id: AIA-ANNEX3-4B-WORK-DECISIONS
+    kind: classification
+    when: { all: [{ fact: annex3.employment, eq: true }, { fact: annex3.employment_work_decisions, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(4)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_4b_work_decisions
+
+  - id: AIA-ANNEX3-5A-PUBLIC-BENEFITS
+    kind: classification
+    when: { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_public_benefits, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(5)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_5a_public_benefits
+
+  - id: AIA-ANNEX3-5B-CREDITWORTHINESS
+    kind: classification
+    when: { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_creditworthiness, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(5)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_5b_creditworthiness
+
+  - id: AIA-ANNEX3-5C-INSURANCE-PRICING
+    kind: classification
+    when: { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_insurance_pricing, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(5)(c)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_5c_insurance_pricing
+
+  - id: AIA-ANNEX3-5D-EMERGENCY-DISPATCH
+    kind: classification
+    when: { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_emergency_dispatch, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(5)(d)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_5d_emergency_dispatch
+
+  - id: AIA-ANNEX3-6A-VICTIM-RISK
+    kind: classification
+    when: { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_victim_risk, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(6)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_6a_victim_risk
+
+  - id: AIA-ANNEX3-6B-POLYGRAPH
+    kind: classification
+    when: { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_polygraph, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(6)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_6b_polygraph
+
+  - id: AIA-ANNEX3-6C-EVIDENCE-RELIABILITY
+    kind: classification
+    when: { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_evidence_reliability, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(6)(c)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_6c_evidence_reliability
+
+  - id: AIA-ANNEX3-6D-OFFENDING-RISK
+    kind: classification
+    when: { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_offending_risk, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(6)(d)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_6d_offending_risk
+
+  - id: AIA-ANNEX3-6E-PROFILING
+    kind: classification
+    when: { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_profiling, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(6)(e)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_6e_profiling
+
+  - id: AIA-ANNEX3-7A-POLYGRAPH
+    kind: classification
+    when: { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_polygraph, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(7)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_7a_polygraph
+
+  - id: AIA-ANNEX3-7B-MIGRATION-RISK
+    kind: classification
+    when: { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_risk_assessment, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(7)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_7b_migration_risk
+
+  - id: AIA-ANNEX3-7C-APPLICATION-EXAMINATION
+    kind: classification
+    when: { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_application_examination, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(7)(c)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_7c_application_examination
+
+  - id: AIA-ANNEX3-7D-IDENTIFICATION
+    kind: classification
+    when: { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_identification, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(7)(d)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_7d_identification
+
+  - id: AIA-ANNEX3-8A-JUDICIAL-ASSISTANCE
+    kind: classification
+    when: { all: [{ fact: annex3.justice, eq: true }, { fact: annex3.justice_judicial_assistance, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(8)(a)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_8a_judicial_assistance
+
+  - id: AIA-ANNEX3-8B-ELECTION-INFLUENCE
+    kind: classification
+    when: { all: [{ fact: annex3.justice, eq: true }, { fact: annex3.justice_election_influence, eq: true }, { not: { all: [{ fact: high_risk.derogation_claimed, eq: true }, { fact: high_risk.profiling_natural_persons, eq: false }] } }] }
+    then:
+      outcome: high_risk
+      legal_refs: [{ article: "6(2)" }, { article: "Annex III(8)(b)" }]
+      applies_from: 2027-12-02
+      message_key: aia.annex3_8b_election_influence
+
+  - id: AIA-ART6-3-DEROGATION
+    kind: classification
+    roles: [provider, deployer]
+    # Only for a system that falls under a point of Annex III: the derogation is not
+    # asked about otherwise.
+    when:
+      all:
+        - any:
+          - { all: [{ fact: annex3.biometrics, eq: true }, { fact: annex3.biometrics_remote_identification, eq: true }] }
+          - { all: [{ fact: annex3.biometrics, eq: true }, { fact: annex3.biometrics_categorisation, eq: true }] }
+          - { all: [{ fact: annex3.biometrics, eq: true }, { fact: annex3.biometrics_emotion_recognition, eq: true }] }
+          - { all: [{ fact: annex3.critical_infrastructure, eq: true }] }
+          - { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_admission, eq: true }] }
+          - { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_learning_outcomes, eq: true }] }
+          - { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_level_assessment, eq: true }] }
+          - { all: [{ fact: annex3.education, eq: true }, { fact: annex3.education_exam_monitoring, eq: true }] }
+          - { all: [{ fact: annex3.employment, eq: true }, { fact: annex3.employment_recruitment, eq: true }] }
+          - { all: [{ fact: annex3.employment, eq: true }, { fact: annex3.employment_work_decisions, eq: true }] }
+          - { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_public_benefits, eq: true }] }
+          - { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_creditworthiness, eq: true }] }
+          - { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_insurance_pricing, eq: true }] }
+          - { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_emergency_dispatch, eq: true }] }
+          - { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_victim_risk, eq: true }] }
+          - { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_polygraph, eq: true }] }
+          - { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_evidence_reliability, eq: true }] }
+          - { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_offending_risk, eq: true }] }
+          - { all: [{ fact: annex3.law_enforcement, eq: true }, { fact: annex3.law_enforcement_profiling, eq: true }] }
+          - { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_polygraph, eq: true }] }
+          - { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_risk_assessment, eq: true }] }
+          - { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_application_examination, eq: true }] }
+          - { all: [{ fact: annex3.migration, eq: true }, { fact: annex3.migration_identification, eq: true }] }
+          - { all: [{ fact: annex3.justice, eq: true }, { fact: annex3.justice_judicial_assistance, eq: true }] }
+          - { all: [{ fact: annex3.justice, eq: true }, { fact: annex3.justice_election_influence, eq: true }] }
+        - { fact: high_risk.derogation_claimed, eq: true }
+        - { fact: high_risk.profiling_natural_persons, eq: false }
+    then:
+      outcome: obligation
+      legal_refs: [{ article: "6(3)" }, { article: "6(4)" }, { article: "49(2)" }]
+      applies_from: 2027-12-02
+      message_key: aia.art6_3_derogation
+
+  - id: AIA-ART50-1-INTERACTION
+    kind: classification
+    roles: [provider]
+    when: { fact: transparency.interacts_with_persons, eq: true }
+    then:
+      outcome: transparency
+      legal_refs: [{ article: "50(1)" }]
+      applies_from: 2026-08-02
+      message_key: aia.art50_1_interaction
+
+  - id: AIA-ART50-2-SYNTHETIC-CONTENT
+    kind: classification
+    roles: [provider]
+    when: { fact: transparency.generates_synthetic_content, eq: true }
+    then:
+      outcome: transparency
+      legal_refs: [{ article: "50(2)" }, { article: "111(4)" }]
+      applies_from: 2026-08-02
+      message_key: aia.art50_2_synthetic_content
+
+  - id: AIA-ART50-3-EMOTION-BIOMETRIC
+    kind: classification
+    roles: [deployer]
+    when: { fact: transparency.emotion_or_biometric_categorisation, eq: true }
+    then:
+      outcome: transparency
+      legal_refs: [{ article: "50(3)" }]
+      applies_from: 2026-08-02
+      message_key: aia.art50_3_emotion_biometric
+
+  - id: AIA-ART50-4-DEEP-FAKE
+    kind: classification
+    roles: [deployer]
+    when: { fact: transparency.deep_fake, eq: true }
+    then:
+      outcome: transparency
+      legal_refs: [{ article: "50(4)" }]
+      applies_from: 2026-08-02
+      message_key: aia.art50_4_deep_fake
+
+  - id: AIA-ART50-4-PUBLIC-INTEREST-TEXT
+    kind: classification
+    roles: [deployer]
+    when: { all: [{ fact: transparency.public_interest_text, eq: true }, { not: { fact: transparency.editorial_control, eq: true } }] }
+    then:
+      outcome: transparency
+      legal_refs: [{ article: "50(4)" }]
+      applies_from: 2026-08-02
+      message_key: aia.art50_4_public_interest_text
+
+outcome_obligations:
+  - id: AIA-ART26-1-INSTRUCTIONS-FOR-USE
+    outcome: high_risk
+    roles: [deployer]
+    legal_refs: [{ article: "26(1)" }]
+    message_key: aia.art26_1_instructions_for_use
+
+  - id: AIA-ART26-2-HUMAN-OVERSIGHT
+    outcome: high_risk
+    roles: [deployer]
+    legal_refs: [{ article: "26(2)" }]
+    message_key: aia.art26_2_human_oversight
+
+  - id: AIA-ART26-4-INPUT-DATA
+    outcome: high_risk
+    roles: [deployer]
+    legal_refs: [{ article: "26(4)" }]
+    message_key: aia.art26_4_input_data
+
+  - id: AIA-ART26-5-MONITORING
+    outcome: high_risk
+    roles: [deployer]
+    legal_refs: [{ article: "26(5)" }]
+    message_key: aia.art26_5_monitoring
+
+  - id: AIA-ART26-6-LOGS
+    outcome: high_risk
+    roles: [deployer]
+    legal_refs: [{ article: "26(6)" }]
+    message_key: aia.art26_6_logs
+
+  - id: AIA-ART26-7-INFORM-WORKERS
+    outcome: high_risk
+    roles: [deployer]
+    when: { fact: deployer.employer_uses_at_workplace, eq: true }
+    legal_refs: [{ article: "26(7)" }]
+    message_key: aia.art26_7_inform_workers
+
+  - id: AIA-ART26-8-REGISTRATION
+    outcome: high_risk
+    roles: [deployer]
+    when: { fact: deployer.public_authority, eq: true }
+    legal_refs: [{ article: "26(8)" }, { article: "49" }]
+    message_key: aia.art26_8_registration
+
+  - id: AIA-ART26-9-DPIA
+    outcome: high_risk
+    roles: [deployer]
+    legal_refs: [{ article: "26(9)" }]
+    message_key: aia.art26_9_dpia
+
+  - id: AIA-ART27-FUNDAMENTAL-RIGHTS-ASSESSMENT
+    outcome: high_risk
+    roles: [deployer]
+    when: { any: [{ all: [{ fact: deployer.public_law_body_or_public_service, eq: true }, { not: { fact: annex3.critical_infrastructure, eq: true } }] }, { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_creditworthiness, eq: true }] }, { all: [{ fact: annex3.essential_services, eq: true }, { fact: annex3.essential_insurance_pricing, eq: true }] }] }
+    legal_refs: [{ article: "27(1)" }]
+    message_key: aia.art27_fundamental_rights_assessment

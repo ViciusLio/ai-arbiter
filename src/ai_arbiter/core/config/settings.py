@@ -224,6 +224,22 @@ class AuditSettings(_Section):
     fail_mode: Literal["closed", "open"] = "closed"
 
 
+class ComplianceSettings(_Section):
+    # Rule pack files to use instead of the ones shipped with the package.
+    ai_act_pack: Path | None = None
+    scan_pack: Path | None = None
+
+
+class RetentionSettings(_Section):
+    """How long data is kept before ``arbiter retention purge`` deletes it (ADR-0038)."""
+
+    # Interactions. A tenant can set its own period; a system classified high-risk
+    # keeps its interactions for at least six months whatever is configured.
+    interaction_months: int = Field(default=13, ge=1)
+    # Outbox events, counted from when they were dispatched.
+    outbox_days: int = Field(default=7, ge=1)
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -252,6 +268,8 @@ class Settings(BaseSettings):
     redaction: RedactionSettings = RedactionSettings()
     policy: PolicySettings = PolicySettings()
     audit: AuditSettings = AuditSettings()
+    compliance: ComplianceSettings = ComplianceSettings()
+    retention: RetentionSettings = RetentionSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

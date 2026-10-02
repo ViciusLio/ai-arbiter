@@ -89,9 +89,11 @@ class ApiKey(Base):
     tenant_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("tenant.id"))
     project_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("project.id"))
     principal_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("principal.id"))
-    # Ties traffic to an inventory entry. The inventory arrives in Phase 4, and the
-    # foreign key with it.
-    ai_system_id: Mapped[UUID | None] = mapped_column(Uuid, default=None)
+    # Ties traffic to an inventory entry. The table belongs to the compliance toolkit
+    # and is named here by string: the gateway does not import it.
+    ai_system_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("ai_system.id"), default=None
+    )
     name: Mapped[str] = mapped_column(String(200))
     key_id: Mapped[str] = mapped_column(String(32), unique=True)
     key_hash: Mapped[str] = mapped_column(String(64))

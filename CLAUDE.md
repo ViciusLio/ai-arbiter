@@ -9,48 +9,48 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 ## Resume here
 
 **State on 2026-10-02.** Phases 0 to 3 are done and approved; the version is `0.1.0a1`,
-not published (ADR-0032). **Phase 4 (compliance MVP) is being prepared: no rule and no
-code is written until the owner answers the decisions P4-1 to P4-6.** They were presented
-on 2026-10-02; if the answers are not in this file, present them again from
-`docs/phases/phase-4-preparation.md`.
+not published (ADR-0032). **Phase 4 (compliance MVP) is in progress.** Its opening
+decisions are taken (ADR-0034 to ADR-0039). Stop at the end of the phase for approval.
 
-Read first: `docs/phases/phase-4-preparation.md` (legal text verified, decisions to
-take), then `docs/phases/phase-3-gateway.md` (what exists).
+Read first: `docs/phases/phase-4-preparation.md` (legal text verified, order of work),
+then `docs/phases/phase-3-gateway.md` (what exists).
 
-### Step 1: quick check in a new codespace
+### Step 1: quick check in a new codespace, or after a restart
 
-`git config user.email` (must be `viciuslios@gmail.com`, local config),
+`git config user.email` (must be `viciuslios@gmail.com`, local config), `git status`,
 `pg_isready -h postgres -U arbiter -d arbiter_test`, then `uv run pytest -q`.
 
 Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
 the test suite is running: the tests migrate and drop its tables.
 
-### Step 2: decisions waiting for the owner
+### Step 2: Phase 4, where it stands
 
-| # | Decision | Recommended |
+Update this list at every commit of the phase.
+
+| # | Item | State |
 |---|---|---|
-| P4-1 | Which source counts as the official AI Act text, since the EUR-Lex website refuses automated access | 3: Publications Office for the work, owner spot-checks on EUR-Lex |
-| P4-2 | The facts the classifier asks for | 3: staged, coarse areas then detailed facts |
-| P4-3 | Who may claim the Art. 6(3) derogation | 1: the deployer records the provider's claim |
-| P4-4 | Review and override of a classification | 3: a proposal until a named person confirms |
-| P4-5 | Retention defaults | 2: defaults, six-month floor for high-risk, purge command |
-| P4-6 | A real provider for demos (GitHub Models is retired) | 1 now (Ollama on demand), 3 in Phase 6 (Azure AI Foundry) |
-
-Also for the owner, not blocking: read the CodeQL alerts in the Security tab (the
-Codespace token gets a 403); decide whether to enable Dependabot alerts; publish
-`0.1.0a1` when ready (`docs/releasing.md`); Azure subscription and budget by Phase 6.
-
-### Step 3: after the answers
-
-Record one ADR per decision, update the ADR index and `CHANGELOG.md`, then build the core
-of Phase 4 in the order of section 4 of the preparation document: inventory and
-`SystemDirectory`; the AI Act rule pack and the classifier; the review workflow;
-scanner; findings; daily digest in English and Italian; `arbiter worker`; retention. Then
-routing constraints by risk class. Stop at the end of the phase.
+| 0 | Rule engine: three-valued evaluation, staged facts, legal sources; `SystemDirectory` port | Done, committed |
+| 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Service and tests done; CLI and API missing |
+| 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Service and tests done; CLI and API missing |
+| 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Service and tests done; CLI and API missing |
+| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Not started |
+| 5 | `arbiter worker`: outbox dispatcher; systems classified when declared or changed | Not started |
+| 6 | Retention: `arbiter retention purge` (ADR-0038) | Not started; settings exist |
+| 7 | CLI: `systems`, `classify`, `scan`, `findings`, `digest`; HTTP under `/api/v1`, wired in `gateway.api` (the import contract needs an exception for `gateway.api -> compliance`) | Not started |
+| 8 | Routing constraints by risk class, through `SystemDirectory`; policy facts `system.tier` | Not started |
+| 9 | Guide `docs/compliance.md`, phase summary, README tracking, changelog; `scripts/check.sh --containers` | Not started |
 
 The AI Act rule pack is written only from the three texts listed in the preparation
-document (CELEX 32024R1689, 32026R1744, consolidated 02024R1689-20260727). It stays
-`verified_against: secondary` until the owner has done the spot check of P4-1.
+document. It declares `verified_against: primary` and `review: pending` until the owner
+has done the spot check on EUR-Lex (ADR-0034); outputs must say that the review is
+pending.
+
+### Step 3: for the owner, not blocking
+
+Spot check on EUR-Lex of the articles the pack quotes (Art. 2, 3, 4, 5, 6, 26, 27, 50,
+111, 113 and Annex III); the CodeQL alerts in the Security tab (the Codespace token gets
+a 403); whether to enable Dependabot alerts; publishing `0.1.0a1`
+(`docs/releasing.md`); Azure subscription and budget by Phase 6.
 
 ### Step 4: what is not done from Phase 3
 
@@ -126,10 +126,17 @@ Set by the owner on 2026-10-02. These hold in every session.
 - Disk: at the end of a session report `df -h /workspaces` and `docker system df`. If
   unused Docker images exceed 2 GB, propose `docker system prune` to the owner before
   running it.
-- At the end of a session, or when the owner writes "chiudiamo": update "Resume here",
-  commit, push, and check that `git status` is clean. Then try to stop the codespace
-  with `gh codespace stop -c "$CODESPACE_NAME"`. If that fails for lack of permission,
-  say so and remind the owner to stop it from <https://github.com/codespaces>.
+- Stop the codespace only when the owner writes "chiudiamo", never on your own
+  initiative. Then: update "Resume here", commit, push, check that `git status` is
+  clean, and try `gh codespace stop -c "$CODESPACE_NAME"`. If that fails for lack of
+  permission, say so and remind the owner to stop it from <https://github.com/codespaces>.
+- When you stop to wait for the owner's answer, say so plainly in the last line of the
+  message: the idle timer of the codespace is running from that moment.
+- The codespace also stops by itself after a period without activity of the owner, even
+  while a long task is running (it happened on 2026-10-02, in the middle of a test run).
+  Files on disk survive; `/tmp`, running processes and containers do not. So: commit and
+  push at every working step, keep nothing needed in `/tmp`, and after a restart check
+  `git status`, the test database and what was running before going on.
 - Billing and account settings are out of reach. When usage needs checking, ask the
   owner to look at <https://github.com/settings/billing>.
 - Never create another codespace or change the machine type without asking.

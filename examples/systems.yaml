@@ -1,0 +1,142 @@
+# Example declarations of AI systems. Every system here is invented.
+#
+#   arbiter systems apply -f examples/systems.yaml
+#   arbiter classify --all
+#   arbiter systems show cv-screening
+#
+# A fact that is left out is "not answered", which is different from `false`: the
+# classifier then reports the system as undetermined and lists the questions to answer
+# (`arbiter systems questions KEY`). `arbiter systems facts` lists every fact with the
+# provision it comes from.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+fact_sets:
+  # A deployer established in the Union, using a system that is on the market.
+  in_scope:
+    scope.is_ai_system: true
+    scope.union_nexus: true
+    scope.military_defence_national_security: false
+    scope.scientific_research_only: false
+    scope.pre_market_development: false
+    scope.personal_non_professional: false
+  no_prohibited_practice:
+    prohibited.manipulative_techniques: false
+    prohibited.exploits_vulnerabilities: false
+    prohibited.intimate_content_without_consent: false
+    prohibited.child_sexual_abuse_material: false
+    prohibited.social_scoring: false
+    prohibited.crime_prediction_by_profiling: false
+    prohibited.facial_image_scraping: false
+    prohibited.emotion_inference_work_education: false
+    prohibited.biometric_categorisation_sensitive: false
+    prohibited.realtime_remote_biometric_identification: false
+  no_high_risk_area:
+    high_risk.annex1_safety_component: false
+    annex3.biometrics: false
+    annex3.critical_infrastructure: false
+    annex3.education: false
+    annex3.employment: false
+    annex3.essential_services: false
+    annex3.law_enforcement: false
+    annex3.migration: false
+    annex3.justice: false
+  no_transparency_case:
+    transparency.interacts_with_persons: false
+    transparency.generates_synthetic_content: false
+    transparency.emotion_or_biometric_categorisation: false
+    transparency.deep_fake: false
+    transparency.public_interest_text: false
+
+systems:
+  - key: invoice-data-extraction
+    name: Invoice data extraction
+    purpose: Reads supplier invoices and fills in the accounting records for review by a clerk.
+    roles:
+      - { role: deployer, basis: "Licensed from a software vendor" }
+    models:
+      - { provider: azure_openai, model: gpt-4o, general_purpose: true }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+
+  - key: customer-support-assistant
+    name: Customer support assistant
+    purpose: Answers customers' questions about orders on the public website.
+    roles:
+      - { role: deployer, basis: "Configured on a vendor platform" }
+    models:
+      - { provider: azure_openai, model: gpt-4o, general_purpose: true }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      transparency.interacts_with_persons: true
+      transparency.generates_synthetic_content: true
+      controls.transparency_notice: true
+      data.personal_data_processed: true
+
+  - key: cv-screening
+    name: CV screening
+    purpose: Ranks job applications for the recruiters of the HR department.
+    roles:
+      - { role: deployer, basis: "Module of the HR suite bought from a vendor" }
+    models:
+      - { provider: openai_compat, model: vendor-ranker-2 }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      annex3.employment: true
+      annex3.employment_recruitment: true
+      annex3.employment_work_decisions: false
+      high_risk.derogation_claimed: false
+      deployer.public_authority: false
+      deployer.public_law_body_or_public_service: false
+      deployer.employer_uses_at_workplace: true
+      data.personal_data_processed: true
+
+  - key: loan-pre-screening
+    name: Loan pre-screening
+    purpose: Prepares a summary of a loan application for the credit officer who decides.
+    roles:
+      - { role: deployer, basis: "Used by the retail credit unit" }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      annex3.essential_services: true
+      annex3.essential_public_benefits: false
+      annex3.essential_creditworthiness: true
+      annex3.essential_insurance_pricing: false
+      annex3.essential_emergency_dispatch: false
+      # The provider says the system only prepares the assessment (Article 6(3)), but
+      # the reference to its documented assessment is missing: the scanner reports it.
+      high_risk.derogation_claimed: true
+      high_risk.profiling_natural_persons: false
+      data.personal_data_processed: true
+
+  - key: call-centre-mood-monitor
+    name: Call centre mood monitor
+    purpose: Infers the mood of call centre agents from their voice during calls.
+    lifecycle: planned
+    roles:
+      - { role: deployer, basis: "Proposal from a vendor, not purchased" }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      prohibited.emotion_inference_work_education: true
+      prohibited.emotion_inference_medical_or_safety: false
+
+  - key: marketing-copy-generator
+    name: Marketing copy generator
+    purpose: Drafts product descriptions for the web shop.
+    roles:
+      - { role: deployer, basis: "Subscription to an online service" }
+    # Only the scope was answered: the classification stays undetermined.
+    use: [in_scope]
+
+  - key: demand-forecast-prototype
+    name: Demand forecast prototype
+    purpose: Experimental model built by the data team, not used in operations.
+    lifecycle: development
+    roles:
+      - { role: provider, basis: "Developed in house" }
+    facts:
+      scope.is_ai_system: true
+      scope.union_nexus: true
+      scope.military_defence_national_security: false
+      scope.scientific_research_only: false
+      scope.pre_market_development: true
+      scope.personal_non_professional: false

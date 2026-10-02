@@ -1,3 +1,4 @@
+import re
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from importlib import resources
@@ -22,8 +23,6 @@ def test_every_locale_has_the_same_keys() -> None:
 
 
 def test_every_locale_uses_the_same_placeholders() -> None:
-    import re
-
     english = catalogue("en")
 
     for locale in SUPPORTED_LOCALES:
@@ -39,10 +38,16 @@ def test_every_locale_states_that_arbiter_is_not_legal_advice() -> None:
 
 
 def test_no_message_claims_compliance() -> None:
+    """Outputs say "indicative" and "no findings", never that something is compliant.
+
+    The legal terms "conformity assessment" and "in accordance with" are not such a
+    claim; in Italian they share a root with "conforme", hence the whole-word match.
+    """
+    claim = re.compile(r"\b(compliant|non-compliant|conforme|conformi)\b", re.IGNORECASE)
+
     for locale in SUPPORTED_LOCALES:
         for key, message in catalogue(locale).items():
-            assert "compliant" not in message.lower(), key
-            assert "conforme" not in message.lower(), key
+            assert not claim.search(message), f"{locale}: {key}"
 
 
 def test_messages_of_the_default_policy_pack_exist_in_every_locale() -> None:
