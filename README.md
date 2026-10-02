@@ -98,6 +98,35 @@ A container image and a Compose file are in `deploy/`.
 Design and decisions are in [`docs/architecture`](docs/architecture/README.md) and
 [`docs/adr`](docs/adr/README.md).
 
+## Release improvement tracking
+
+At the end of each phase the project records where it stands, strengths and weaknesses
+alike, and what would improve it. Rows stay in the table after they are closed.
+
+### Where each phase stands
+
+| Phase | Strengths | Weaknesses |
+|---|---|---|
+| 0 — Analysis | The scope is one end-to-end slice with a core and deferrable parts, decided before any code. The positioning is clear: link the inventory classified under the AI Act with real traffic | AI Act dates come from secondary sources. The analysis is in Italian, the rest of the documentation in English |
+| 1 — Architecture | 26 decision records with option tables. Module boundaries, data model, interfaces and a first threat model are written down | No prototype was built, so the interfaces are untested. Default PII detection has low recall on names and free text. The audit chain is tamper-evident, not tamper-proof |
+| 2 — Scaffolding | Every check passes on Python 3.12, 3.13 and 3.14, on SQLite and PostgreSQL, with 98% coverage. The image and the Compose stack run. CI is green on Linux and Windows | The release workflow has never run and `0.0.1` is not published. No product feature exists yet. Telemetry is limited to a tracer bootstrap |
+
+### Improvements
+
+| ID | Phase | Improvement | Why | Target | Status |
+|---|---|---|---|---|---|
+| I-01 | 0 | Verify AI Act dates and the amending regulation on EUR-Lex, article by article | The rule pack must rest on the official text | Before Phase 4 | Open |
+| I-02 | 0 | Add an English summary of the Phase 0 analysis | One language across the documentation | 1.0 | Open |
+| I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Open |
+| I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Open |
+| I-05 | 1 | Anchor the audit chain head outside the database, then sign checkpoints | A full rewrite of the chain is otherwise undetectable | 0.1.x, then 0.3 | Open |
+| I-06 | 2 | Publish `0.0.1` and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | Before 0.1.0-alpha | Open |
+| I-07 | 2 | Set the PostgreSQL test URL in the CI job that tests the base install | That job missed a defect the dev container found | Phase 3 | Open |
+| I-08 | 2 | Review the CodeQL alert list | The workflow passes, the alerts were never read | Phase 3 | Open |
+| I-09 | 2 | Give each CI job its own uv cache key; pin the runner image | Jobs race to save one cache; `ubuntu-latest` changes on 19 October 2026 | Phase 3 | Open |
+| I-10 | 2 | Add metrics, log export and request-path instrumentation | Only tracing is bootstrapped | Phase 3, then 0.3 | Open |
+| I-11 | 2 | Reduce the image size (316 MB) | Faster pulls and cold starts | 0.3 | Open |
+
 ## Licence
 
 Apache-2.0. See [LICENSE](LICENSE).
