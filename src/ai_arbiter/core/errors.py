@@ -27,3 +27,19 @@ class MissingExtraError(ArbiterError):
             f"{feature} needs the '{extra}' extra. Install it with: "
             f'pip install "ai-arbiter[{extra}]"'
         )
+
+
+class AuthenticationError(ArbiterError):
+    """The caller could not be identified: no key, or a key that is not valid."""
+
+
+class PermissionDeniedError(ArbiterError):
+    """The caller is identified and is not allowed to do this."""
+
+
+class NotFoundError(ArbiterError):
+    """The thing asked for does not exist in the caller's tenant."""
+
+
+class ConflictError(ArbiterError):
+    """The change contradicts something that already exists."""

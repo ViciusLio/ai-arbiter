@@ -1,6 +1,8 @@
 """Root of the ``arbiter`` command."""
 
 import asyncio
+import os
+import secrets
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
@@ -9,7 +11,9 @@ import typer
 import yaml
 
 from ai_arbiter import __version__
+from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
 from ai_arbiter.cli import serve as serve_command
+from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.config.settings import (
     DEFAULT_CONFIG_FILE,
     DEFAULT_DATABASE_URL,
@@ -43,6 +47,13 @@ database:
 plugins:
   secret_store: env
   event_bus: in_process
+
+identity:
+  # The pepper keys the hash of API keys. `arbiter init` generated one in .env.
+  api_key_pepper:
+    active: "1"
+    secrets:
+      "1": secret://api-key-pepper
 
 telemetry:
   enabled: false
@@ -120,6 +131,26 @@ async def _create_local_tenant(settings: Settings) -> None:
         await database.dispose()
 
 
+def ensure_local_secrets(settings: Settings) -> list[str]:
+    """Generate the secrets a local workspace needs and that are not set anywhere.
+
+    Values go to ``.env`` in the working directory, readable by the owner only. Returns
+    the names of the variables that were written.
+    """
+    references = [settings.identity.api_key_pepper.secrets[settings.identity.api_key_pepper.active]]
+    present = read_dotenv_secrets(DEFAULT_DOTENV)
+    written: list[str] = []
+    for reference in references:
+        variable = EnvSecretStore.variable_name(SecretRef.parse(reference))
+        if os.environ.get(variable) or present.get(variable):
+            continue
+        descriptor = os.open(DEFAULT_DOTENV, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+        with os.fdopen(descriptor, "a", encoding="utf-8") as file:
+            file.write(f"{variable}={secrets.token_urlsafe(48)}\n")
+        written.append(variable)
+    return written
+
+
 @app.command()
 def init(
     ctx: typer.Context,
@@ -140,9 +171,12 @@ def init(
         settings = load_settings(config_path)
         migrate.upgrade(settings.database.url)
         asyncio.run(_create_local_tenant(settings))
+        generated = ensure_local_secrets(settings)
     except ArbiterError as error:
         raise fail(error) from error
     typer.echo(f"Database ready: {settings.redacted()['database']['url']}")
+    for variable in generated:
+        typer.echo(f"Generated {variable} in {DEFAULT_DOTENV} (keep this file out of git)")
     typer.echo("")
     typer.echo(DISCLAIMER)
 

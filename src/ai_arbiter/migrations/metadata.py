@@ -7,7 +7,17 @@ schema tests see one metadata object.
 from ai_arbiter.core.events.model import OutboxEvent
 from ai_arbiter.core.persistence.base import Base
 from ai_arbiter.core.persistence.tenant import Tenant
+from ai_arbiter.gateway.identity.model import ApiKey, Principal, Project, RoleBinding, Team
 
 target_metadata = Base.metadata
 
-__all__ = ["OutboxEvent", "Tenant", "target_metadata"]
+__all__ = [
+    "ApiKey",
+    "OutboxEvent",
+    "Principal",
+    "Project",
+    "RoleBinding",
+    "Team",
+    "Tenant",
+    "target_metadata",
+]

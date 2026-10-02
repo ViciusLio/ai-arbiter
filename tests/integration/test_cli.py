@@ -12,6 +12,7 @@ from ai_arbiter import __version__
 from ai_arbiter.cli.main import DISCLAIMER, app
 from ai_arbiter.cli.serve import parse_roles
 from ai_arbiter.core.config import Role, Settings
+from ai_arbiter.core.persistence import migrate
 
 runner = CliRunner()
 
@@ -43,6 +44,35 @@ def test_init_creates_configuration_database_and_local_tenant(tmp_path: Path) ->
         assert connection.execute("SELECT slug FROM tenant").fetchall() == [("local",)]
     finally:
         connection.close()
+
+
+def test_init_generates_the_api_key_pepper_once(tmp_path: Path) -> None:
+    first = runner.invoke(app, ["init"])
+    dotenv = tmp_path / ".env"
+    content = dotenv.read_text(encoding="utf-8")
+
+    second = runner.invoke(app, ["init"])
+
+    assert "Generated ARBITER_SECRET_API_KEY_PEPPER in .env" in first.output
+    assert "Generated" not in second.output
+    assert dotenv.read_text(encoding="utf-8") == content
+    name, _, value = content.strip().partition("=")
+    assert name == "ARBITER_SECRET_API_KEY_PEPPER"
+    assert len(value) >= 32
+    assert value not in first.output
+    if sys.platform != "win32":
+        assert dotenv.stat().st_mode & 0o077 == 0
+
+
+def test_init_does_not_generate_a_pepper_that_the_environment_provides(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ARBITER_SECRET_API_KEY_PEPPER", "provided-" + "x" * 32)
+
+    result = runner.invoke(app, ["init"])
+
+    assert result.exit_code == 0, result.output
+    assert not (tmp_path / ".env").exists()
 
 
 def test_init_twice_keeps_the_configuration_and_the_data(tmp_path: Path) -> None:
@@ -84,9 +114,10 @@ def test_db_current_distinguishes_migrated_from_unmigrated() -> None:
     assert before.exit_code == 1
     assert "database: not migrated" in before.output
     assert upgrade.exit_code == 0, upgrade.output
-    assert "Schema is at revision 0001" in upgrade.output
+    head = migrate.head_revision()
+    assert f"Schema is at revision {head}" in upgrade.output
     assert after.exit_code == 0
-    assert "database: 0001" in after.output
+    assert f"database: {head}" in after.output
 
 
 def test_config_show_masks_credentials(monkeypatch: pytest.MonkeyPatch) -> None:

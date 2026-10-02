@@ -10,7 +10,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -20,6 +20,7 @@ from pydantic_settings import (
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
+from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.errors import ConfigurationError
 
 DEFAULT_CONFIG_FILE = Path("arbiter.yaml")
@@ -64,6 +65,35 @@ class PluginSettings(_Section):
     event_bus: str = "in_process"
 
 
+def _secret_reference(value: str) -> str:
+    SecretRef.parse(value)
+    return value
+
+
+class PepperSettings(_Section):
+    """Peppers that key the hash of API keys (ADR-0028).
+
+    ``secrets`` maps a pepper id to a secret reference. New keys use ``active``; a key
+    issued earlier is verified with the pepper whose id is stored on it, so rotating
+    means adding an entry and changing ``active``.
+    """
+
+    active: str = "1"
+    secrets: dict[str, str] = {"1": "secret://api-key-pepper"}
+
+    @model_validator(mode="after")
+    def _check(self) -> "PepperSettings":
+        if self.active not in self.secrets:
+            raise ValueError(f"active pepper '{self.active}' is not listed under secrets")
+        for reference in self.secrets.values():
+            _secret_reference(reference)
+        return self
+
+
+class IdentitySettings(_Section):
+    api_key_pepper: PepperSettings = PepperSettings()
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -85,6 +115,7 @@ class Settings(BaseSettings):
     database: DatabaseSettings = DatabaseSettings()
     server: ServerSettings = ServerSettings()
     plugins: PluginSettings = PluginSettings()
+    identity: IdentitySettings = IdentitySettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

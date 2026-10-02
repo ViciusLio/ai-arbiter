@@ -18,8 +18,14 @@ def _tables(connection: Connection) -> set[str]:
     return set(inspect(connection).get_table_names())
 
 
+def _newest_revision_file() -> str:
+    return max(
+        path.name.split("_")[0] for path in (migrate.MIGRATIONS_PATH / "versions").glob("*.py")
+    )
+
+
 async def test_upgrade_brings_the_database_to_head(database: Database) -> None:
-    assert migrate.head_revision() == "0001"
+    assert migrate.head_revision() == _newest_revision_file()
     assert await migrate.current_revision(database) == migrate.head_revision()
 
 

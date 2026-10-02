@@ -7,13 +7,18 @@ Database tests run on SQLite always, and on PostgreSQL as well when
 import os
 from collections.abc import AsyncIterator
 from pathlib import Path
+from uuid import UUID
 
 import pytest
 
+from ai_arbiter.adapters.local.secrets import EnvSecretStore
 from ai_arbiter.core.persistence import migrate
 from ai_arbiter.core.persistence.database import Database
+from ai_arbiter.core.persistence.tenant import ensure_tenant
 
 TEST_DATABASE_ENV = "ARBITER_TEST_DATABASE_URL"
+TEST_PEPPER = "pepper-for-tests-only-0123456789abcdef"
+TEST_SECRETS = {"ARBITER_SECRET_API_KEY_PEPPER": TEST_PEPPER}
 
 
 @pytest.fixture(autouse=True)
@@ -58,3 +63,20 @@ async def database(migrated_url: str) -> AsyncIterator[Database]:
     instance = Database(migrated_url)
     yield instance
     await instance.dispose()
+
+
+@pytest.fixture
+def secret_store() -> EnvSecretStore:
+    return EnvSecretStore(dict(TEST_SECRETS))
+
+
+@pytest.fixture
+async def tenant_id(database: Database) -> UUID:
+    async with database.transaction() as session:
+        return (await ensure_tenant(session, slug="acme", name="Acme")).id
+
+
+@pytest.fixture
+async def other_tenant_id(database: Database) -> UUID:
+    async with database.transaction() as session:
+        return (await ensure_tenant(session, slug="globex", name="Globex")).id
