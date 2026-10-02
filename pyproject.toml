@@ -74,6 +74,9 @@ mock = "ai_arbiter.adapters.mock.provider:MockProvider"
 openai_compat = "ai_arbiter.adapters.openai_compat.provider:OpenAICompatProvider"
 azure_openai = "ai_arbiter.adapters.azure.openai:AzureOpenAIProvider"
 
+[project.entry-points."ai_arbiter.pii_detectors"]
+builtin = "ai_arbiter.core.redaction.builtin:BuiltinDetector"
+
 [dependency-groups]
 dev = [
     "import-linter>=2.1",

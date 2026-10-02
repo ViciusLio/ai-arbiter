@@ -47,7 +47,7 @@ def test_init_creates_configuration_database_and_local_tenant(tmp_path: Path) ->
         connection.close()
 
 
-def test_init_generates_the_api_key_pepper_once(tmp_path: Path) -> None:
+def test_init_generates_the_local_secrets_once(tmp_path: Path) -> None:
     first = runner.invoke(app, ["init"])
     dotenv = tmp_path / ".env"
     content = dotenv.read_text(encoding="utf-8")
@@ -55,17 +55,18 @@ def test_init_generates_the_api_key_pepper_once(tmp_path: Path) -> None:
     second = runner.invoke(app, ["init"])
 
     assert "Generated ARBITER_SECRET_API_KEY_PEPPER in .env" in first.output
+    assert "Generated ARBITER_SECRET_REDACTION_KEY in .env" in first.output
     assert "Generated" not in second.output
     assert dotenv.read_text(encoding="utf-8") == content
-    name, _, value = content.strip().partition("=")
-    assert name == "ARBITER_SECRET_API_KEY_PEPPER"
-    assert len(value) >= 32
-    assert value not in first.output
+    secrets = dict(line.split("=", 1) for line in content.splitlines())
+    assert set(secrets) == {"ARBITER_SECRET_API_KEY_PEPPER", "ARBITER_SECRET_REDACTION_KEY"}
+    assert all(len(value) >= 32 and value not in first.output for value in secrets.values())
+    assert len(set(secrets.values())) == 2
     if sys.platform != "win32":
         assert dotenv.stat().st_mode & 0o077 == 0
 
 
-def test_init_does_not_generate_a_pepper_that_the_environment_provides(
+def test_init_does_not_generate_a_secret_that_the_environment_provides(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("ARBITER_SECRET_API_KEY_PEPPER", "provided-" + "x" * 32)
@@ -73,7 +74,9 @@ def test_init_does_not_generate_a_pepper_that_the_environment_provides(
     result = runner.invoke(app, ["init"])
 
     assert result.exit_code == 0, result.output
-    assert not (tmp_path / ".env").exists()
+    content = (tmp_path / ".env").read_text(encoding="utf-8")
+    assert "ARBITER_SECRET_API_KEY_PEPPER" not in content
+    assert "ARBITER_SECRET_REDACTION_KEY" in content
 
 
 def test_init_twice_keeps_the_configuration_and_the_data(tmp_path: Path) -> None:

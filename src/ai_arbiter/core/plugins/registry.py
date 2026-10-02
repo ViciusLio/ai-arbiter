@@ -17,9 +17,10 @@ GROUP_PREFIX = "ai_arbiter."
 SECRET_STORES = "secret_stores"  # noqa: S105 - a group name, not a secret
 EVENT_BUSES = "event_buses"
 LLM_PROVIDERS = "llm_providers"
+PII_DETECTORS = "pii_detectors"
 
 # Port groups known to this version, in display order.
-GROUPS: tuple[str, ...] = (SECRET_STORES, EVENT_BUSES, LLM_PROVIDERS)
+GROUPS: tuple[str, ...] = (SECRET_STORES, EVENT_BUSES, LLM_PROVIDERS, PII_DETECTORS)
 
 EntryPointSource = Callable[[str], Iterable[EntryPoint]]
 

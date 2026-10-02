@@ -65,6 +65,7 @@ class PluginSettings(_Section):
 
     secret_store: str = "env"  # noqa: S105 - a plugin name, not a secret
     event_bus: str = "in_process"
+    pii_detector: str = "builtin"
 
 
 def _secret_reference(value: str) -> str:
@@ -191,6 +192,38 @@ class FinOpsSettings(_Section):
     reporting: ReportingCurrencySettings | None = None
 
 
+class RedactionSettings(_Section):
+    """How detected personal data is replaced, by category (ADR-0014)."""
+
+    default_strategy: Literal["mask", "hash", "drop"] = "mask"
+    strategies: dict[str, Literal["mask", "hash", "drop"]] = {}
+    # Root secret for hashed tags and prompt fingerprints, as a secret reference. Without
+    # it the hash strategy is refused and no prompt fingerprint is stored.
+    key: str | None = None
+
+    @model_validator(mode="after")
+    def _check(self) -> "RedactionSettings":
+        if self.key is not None:
+            _secret_reference(self.key)
+        uses_hash = self.default_strategy == "hash" or "hash" in self.strategies.values()
+        if uses_hash and self.key is None:
+            raise ValueError("the hash strategy needs redaction.key")
+        return self
+
+
+class PolicySettings(_Section):
+    # A rule pack file to use instead of the default policy shipped with the package.
+    pack: Path | None = None
+    # Model names clients may ask for. ``None`` allows every model a deployment serves.
+    allowed_models: tuple[str, ...] | None = None
+
+
+class AuditSettings(_Section):
+    # What happens to a request whose audit entry cannot be written: ``closed`` fails
+    # the request, ``open`` lets it through. A tenant can override it (ADR-0017).
+    fail_mode: Literal["closed", "open"] = "closed"
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -216,6 +249,9 @@ class Settings(BaseSettings):
     deployments: tuple[DeploymentSettings, ...] = ()
     router: RouterSettings = RouterSettings()
     finops: FinOpsSettings = FinOpsSettings()
+    redaction: RedactionSettings = RedactionSettings()
+    policy: PolicySettings = PolicySettings()
+    audit: AuditSettings = AuditSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

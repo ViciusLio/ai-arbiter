@@ -12,6 +12,7 @@ import yaml
 from ai_arbiter import __version__
 from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
 from ai_arbiter.cli import audit as audit_commands
+from ai_arbiter.cli import pii as pii_commands
 from ai_arbiter.cli import serve as serve_command
 from ai_arbiter.cli.common import DISCLAIMER, CliState, fail, settings_from
 from ai_arbiter.core.config.secrets import SecretRef
@@ -26,7 +27,14 @@ from ai_arbiter.core.errors import ArbiterError
 from ai_arbiter.core.persistence import migrate
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.persistence.tenant import ensure_tenant
-from ai_arbiter.core.plugins.registry import EVENT_BUSES, GROUPS, SECRET_STORES, PluginRegistry
+from ai_arbiter.core.plugins.registry import (
+    EVENT_BUSES,
+    GROUPS,
+    LLM_PROVIDERS,
+    PII_DETECTORS,
+    SECRET_STORES,
+    PluginRegistry,
+)
 
 STARTER_CONFIG = f"""\
 # Arbiter configuration.
@@ -54,6 +62,22 @@ identity:
     secrets:
       "1": secret://api-key-pepper
 
+# Model deployments. The mock provider needs no account and no network; replace it with
+# `openai_compat` or `azure_openai` deployments to reach real models.
+deployments:
+  - name: mock
+    provider: mock
+    model: mock-small
+    region: local
+
+redaction:
+  # Personal data found in prompts is replaced before a prompt leaves the gateway:
+  # mask ([EMAIL]), hash ([EMAIL:1f3a9c2e]) or drop. Run `arbiter pii detectors` to see
+  # what is detected and what is not.
+  default_strategy: mask
+  # Root secret for hashed tags and prompt fingerprints, generated in .env by init.
+  key: secret://redaction-key
+
 telemetry:
   enabled: false
 """
@@ -71,6 +95,7 @@ app.add_typer(db_app, name="db")
 app.add_typer(config_app, name="config")
 app.add_typer(plugins_app, name="plugins")
 app.add_typer(audit_commands.app, name="audit")
+app.add_typer(pii_commands.app, name="pii")
 app.command(name="serve")(serve_command.serve)
 
 
@@ -120,6 +145,8 @@ def ensure_local_secrets(settings: Settings) -> list[str]:
     the names of the variables that were written.
     """
     references = [settings.identity.api_key_pepper.secrets[settings.identity.api_key_pepper.active]]
+    if settings.redaction.key is not None:
+        references.append(settings.redaction.key)
     present = read_dotenv_secrets(DEFAULT_DOTENV)
     written: list[str] = []
     for reference in references:
@@ -211,6 +238,8 @@ def plugins_list(ctx: typer.Context) -> None:
     active = {
         SECRET_STORES: {settings.plugins.secret_store},
         EVENT_BUSES: {settings.plugins.event_bus},
+        LLM_PROVIDERS: {deployment.provider for deployment in settings.deployments},
+        PII_DETECTORS: {settings.plugins.pii_detector},
     }
     registry = PluginRegistry()
     for group in GROUPS:
