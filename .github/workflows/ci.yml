@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Third-party actions are pinned to commit SHAs and updated by Dependabot (ADR-0024).
+
+jobs:
+  lint:
+    name: Lint, types, import rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked --all-extras
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run lint-imports
+
+  test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: "3.12" }
+          - { os: ubuntu-latest, python: "3.13" }
+          - { os: ubuntu-latest, python: "3.14" }
+          - { os: windows-latest, python: "3.12" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - run: uv sync --locked --all-extras
+      # The coverage threshold is set in pyproject.toml.
+      - run: uv run pytest --cov --cov-report=term --cov-report=xml
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
+        with:
+          name: coverage
+          path: coverage.xml
+
+  test-postgres:
+    name: Tests on PostgreSQL
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: arbiter
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: arbiter_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U arbiter -d arbiter_test"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      ARBITER_TEST_DATABASE_URL: postgresql+asyncpg://arbiter:ci-only@localhost:5432/arbiter_test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked --all-extras
+      - name: Run the database tests on PostgreSQL
+        run: |
+          set -o pipefail
+          uv run pytest -k postgresql -rs | tee pytest-postgres.log
+          if grep -q "^SKIPPED" pytest-postgres.log; then
+            echo "::error::PostgreSQL tests were skipped; the database URL was not picked up"
+            exit 1
+          fi
+
+  test-base-install:
+    name: Tests without extras
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      # No extras: the offline toolkit must work without the web stack (ADR-0010).
+      - run: uv sync --locked
+      - run: uv run pytest
+      - name: The wheel works on its own
+        run: |
+          uv build
+          uv venv /tmp/base
+          uv pip install --python /tmp/base/bin/python dist/*.whl
+          mkdir /tmp/workspace && cd /tmp/workspace
+          /tmp/base/bin/arbiter --version
+          /tmp/base/bin/ai-arbiter --version
+          /tmp/base/bin/arbiter init
+          /tmp/base/bin/arbiter db current
+          if /tmp/base/bin/arbiter serve; then
+            echo "::error::serve should refuse to start without the gateway extra"
+            exit 1
+          fi
+
+  security:
+    name: Dependency audit and secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Audit locked dependencies
+        run: |
+          uv export --locked --all-extras --no-emit-project --format requirements-txt > requirements.txt
+          uvx pip-audit --requirement requirements.txt --require-hashes --disable-pip
+      - name: Scan the history for secrets
+        run: >-
+          docker run --rm -v "${{ github.workspace }}:/repo"
+          -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo
+          ghcr.io/gitleaks/gitleaks:v8.30.1
+          git --redact --no-banner /repo
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+
+  container:
+    name: Container image and Compose stack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: deploy/docker/Dockerfile
+          push: false
+          load: true
+          tags: ai-arbiter:dev
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: The image runs as a non-root user
+        run: test "$(docker run --rm --entrypoint id ai-arbiter:dev -u)" = "10001"
+      # Docker is not available on the development machine (ADR-0025): this is where
+      # the Compose file is exercised.
+      - name: Start the Compose stack
+        run: docker compose -f deploy/compose/compose.yaml up --no-build --wait --wait-timeout 180
+      - name: Call the health endpoints
+        run: |
+          curl --fail --silent --show-error http://127.0.0.1:8080/healthz
+          curl --fail --silent --show-error http://127.0.0.1:8080/readyz
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose -f deploy/compose/compose.yaml logs
+      - name: Stop the stack
+        if: always()
+        run: docker compose -f deploy/compose/compose.yaml down --volumes
