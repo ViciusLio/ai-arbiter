@@ -8,10 +8,18 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0 to 4b are done and approved. **In progress**:
-improvements that need no decision, and the opening of Phase 5 (A2A and MCP), which
-starts with decisions brought to the owner. The version is `0.1.0a1`, not published
-(ADR-0032). `0.1.0` waits for a legal review of the AI Act rule pack (ADR-0041).
+**State on 2026-10-02, session closed by the owner.** Phases 0 to 4b are done and
+approved. The improvements that needed no decision are made and declared in the README.
+**Phase 5 (A2A and MCP) is open and waits for the owner's answers** to the decisions
+P5-1 to P5-8 in `docs/phases/phase-5-preparation.md`, and to one question on I-20
+(whether to cache key lookups, which delays the effect of revoking a key). No code of
+Phase 5 exists. The version is `0.1.0a1`, not published (ADR-0032). `0.1.0` waits for a
+legal review of the AI Act rule pack (ADR-0041).
+
+Last verified: CI green on every job at `9bfbf03`; `scripts/check.sh --containers`
+passed at `cdf71ff`; the full suite passed locally at `25aa5a0` (943 tests, 98%
+coverage). On "riprendi": if the owner has not answered yet, ask for the answers to
+P5-1 to P5-8 with the template of the preparation, and write no code for the phase.
 
 Read first: `docs/phases/phase-4b-deferrable-items.md` (what was built, verified and not
 verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
