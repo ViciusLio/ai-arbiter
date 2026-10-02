@@ -1,0 +1,90 @@
+# {{ t("digest.title") }}
+
+- **{{ t("digest.tenant") }}**: {{ d.tenant_name }}
+- **{{ t("digest.period") }}**: {{ t("digest.period_value", start=f.timestamp(d.period_start), end=f.timestamp(d.period_end)) }}
+- **{{ t("digest.generated") }}**: {{ f.timestamp(d.generated_at) }}
+- **{{ t("digest.rule_pack") }}**: {{ t("digest.rule_pack_value", pack=d.pack, version=d.pack_version, as_of=f.date(d.pack_as_of) if d.pack_as_of else "-") }}
+
+> {{ t("digest.indicative_note") }}
+{% if d.pack_review != "confirmed" %}
+>
+> {{ t("digest.review_pending_note") }}
+{% endif %}
+
+## {{ t("digest.inventory") }}
+
+{% if not d.systems %}
+{{ t("digest.no_systems") }}
+{% else %}
+{{ t("digest.inventory_summary", count=d.systems | length, awaiting=d.awaiting_review) }}
+
+| {{ t("digest.column.tier") }} | {{ t("digest.column.systems") }} |
+|---|---:|
+{% for tier, count in d.tier_counts %}
+| {{ t("tier." + tier) }} | {{ count }} |
+{% endfor %}
+
+| {{ t("digest.column.system") }} | {{ t("digest.column.tier") }} | {{ t("digest.column.review") }} | {{ t("digest.column.missing") }} |
+|---|---|---|---:|
+{% for system in d.systems %}
+| {{ system.name }} (`{{ system.key }}`) | {{ t("tier." + system.tier) }} | {{ t("review." + system.status) }} | {{ system.missing_facts }} |
+{% endfor %}
+{% endif %}
+
+## {{ t("digest.findings") }}
+
+{% if not d.findings %}
+{{ t("digest.no_findings") }}
+{% else %}
+{{ t("digest.findings_summary", count=d.findings | length, opened=d.opened_in_period, closed=d.closed_in_period) }}
+
+| {{ t("digest.column.severity") }} | {{ t("digest.column.findings") }} |
+|---|---:|
+{% for severity, count in d.severity_counts %}
+| {{ t("severity." + severity) }} | {{ count }} |
+{% endfor %}
+
+| {{ t("digest.column.severity") }} | {{ t("digest.column.system") }} | {{ t("digest.column.finding") }} | {{ t("digest.column.reference") }} | {{ t("digest.column.applies_from") }} |
+|---|---|---|---|---|
+{% for finding in d.findings %}
+| {{ t("severity." + finding.severity) }} | {{ finding.system_key or t("digest.whole_tenant") }} | {{ t(finding.message_key) }} `{{ finding.rule_id }}` | {{ finding.legal_refs | join(", ") or "-" }} | {% if finding.applies_from %}{{ f.date(finding.applies_from) }}{% if finding.readiness %} ({{ t("digest.readiness") }}){% endif %}{% else %}-{% endif %} |
+{% endfor %}
+{% endif %}
+{% if d.rule_feedback %}
+
+### {{ t("digest.rule_feedback") }}
+
+{{ t("digest.rule_feedback_note") }}
+
+| {{ t("digest.column.rule") }} | {{ t("digest.column.confirmed") }} | {{ t("digest.column.false_positive") }} |
+|---|---:|---:|
+{% for rule, counts in d.rule_feedback | dictsort %}
+| `{{ rule }}` | {{ counts.get("confirmed", 0) + counts.get("mitigated", 0) }} | {{ counts.get("false_positive", 0) }} |
+{% endfor %}
+{% endif %}
+
+## {{ t("digest.traffic") }}
+
+{% if not d.traffic.requests %}
+{{ t("digest.no_traffic") }}
+{% else %}
+{{ t("digest.traffic_summary", requests=f.integer(d.traffic.requests), denied=f.integer(d.traffic.denied), failed=f.integer(d.traffic.failed)) }}
+{% for currency, amount in d.traffic.cost | dictsort %}
+{{ t("digest.traffic_cost", amount=f.amount(amount), currency=currency) }}
+{% endfor %}
+{% if d.traffic.unpriced %}
+{{ t("digest.traffic_unpriced", count=f.integer(d.traffic.unpriced)) }}
+{% endif %}
+{% endif %}
+
+## {{ t("digest.audit") }}
+
+{% if d.audit_hash %}
+{{ t("digest.audit_head", seq=d.audit_seq, hash=d.audit_hash) }}
+{% else %}
+{{ t("digest.audit_empty") }}
+{% endif %}
+
+---
+
+*{{ t("disclaimer") }}*

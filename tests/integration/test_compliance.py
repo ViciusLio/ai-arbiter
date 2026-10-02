@@ -8,6 +8,8 @@ import pytest
 from sqlalchemy import select
 
 from ai_arbiter.compliance.classifier.model import Classification, ReviewDecision
+from ai_arbiter.compliance.digest.model import DigestModel, build_digest, record_digest_run
+from ai_arbiter.compliance.digest.render import render_digest
 from ai_arbiter.compliance.findings.model import (
     Finding,
     FindingStatus,
@@ -23,8 +25,10 @@ from ai_arbiter.core.domain.risk import RiskTier
 from ai_arbiter.core.errors import ConflictError, NotFoundError
 from ai_arbiter.core.events.bus import InProcessEventBus
 from ai_arbiter.core.events.model import OutboxEvent
+from ai_arbiter.core.i18n import LocalisationError
 from ai_arbiter.core.interaction import Interaction
 from ai_arbiter.core.persistence.database import Database
+from ai_arbiter.core.persistence.tenant import Tenant
 
 EXAMPLES = Path(__file__).parents[2] / "examples" / "systems.yaml"
 NOW = datetime(2026, 10, 15, 9, 0, tzinfo=UTC)
@@ -884,3 +888,152 @@ async def test_the_audit_chain_holds_after_compliance_activity(
     assert report.ok
     assert report.entries == len(entries) > 30
     assert not any(name in str(entry.decision) for entry in entries for name in names)
+
+
+# --- digest ------------------------------------------------------------------------------
+
+
+async def digest_for(
+    compliance: ComplianceRuntime, database: Database, tenant_id: UUID, now: datetime = NOW
+) -> DigestModel:
+    async with database.session() as session:
+        tenant = await session.get_one(Tenant, tenant_id)
+        return await build_digest(
+            session,
+            tenant,
+            classifier=compliance.classifier,
+            findings=compliance.findings,
+            period_start=now - timedelta(days=1),
+            period_end=now + timedelta(seconds=1),
+            generated_at=now,
+        )
+
+
+async def test_the_digest_of_an_empty_tenant_says_there_is_nothing(
+    compliance: ComplianceRuntime, database: Database, tenant_id: UUID
+) -> None:
+    digest = await digest_for(compliance, database, tenant_id)
+
+    text = render_digest(digest)
+
+    assert text.startswith("# Daily digest\n")
+    assert "No AI system is declared." in text
+    assert "No findings." in text
+    assert "No request went through the gateway in the period." in text
+    assert "The audit log has no entries yet." in text
+    assert "It does not provide legal advice." in text
+    assert digest.summary()["systems"] == 0
+
+
+async def test_the_digest_shows_inventory_findings_traffic_and_the_audit_head(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    await declare(compliance, database, tenant_id, declarations)
+    await review(compliance, database, tenant_id, "cv-screening", ReviewDecision.CONFIRMED)
+    await scan(compliance, database, tenant_id)
+    async with database.session() as session:
+        system = await compliance.inventory.get(session, tenant_id, "cv-screening")
+    await interactions(database, tenant_id, system.id, count=3)
+
+    digest = await digest_for(compliance, database, tenant_id)
+    text = render_digest(digest)
+
+    assert dict(digest.tier_counts) == {
+        "prohibited": 1,
+        "high_risk": 1,
+        "transparency": 1,
+        "minimal": 2,
+        "out_of_scope": 1,
+        "undetermined": 1,
+    }
+    assert digest.awaiting_review == 6
+    assert digest.severity_counts[0] == ("critical", 1)
+    assert digest.opened_in_period == len(digest.findings)
+    assert "7 declared systems, 6 with a classification awaiting review." in text
+    assert "| CV screening (`cv-screening`) | High-risk | Confirmed by a reviewer | 0 |" in text
+    assert "| Marketing copy generator (`marketing-copy-generator`) | Undetermined |" in text
+    assert (
+        "| Critical | call-centre-mood-monitor | The system is classified as a prohibited" in text
+    )
+    assert "`SCAN-HUMAN-OVERSIGHT-NOT-ATTESTED` | 26(2) | December 2, 2027 (readiness: not" in text
+    assert "3 requests, of which 0 denied by policy and 0 failed." in text
+    assert f"Head of the audit chain: entry {digest.audit_seq}, hash {digest.audit_hash}" in text
+    assert "comparison with EUR-Lex by the project owner is still pending" in text
+    assert "indicative" in text
+    assert "compliant" not in text.lower()
+    assert text.index("| Critical |") < text.index("| Low |")
+
+
+async def test_the_digest_is_available_in_italian_and_as_html(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    hostile = declarations["invoice-data-extraction"].model_copy(
+        update={"name": "<script>alert(1)</script> & co"}
+    )
+    async with database.transaction() as session:
+        declared = await compliance.inventory.declare(session, tenant_id, hostile)
+        await compliance.classifier.classify_system(session, declared.system)
+    await scan(compliance, database, tenant_id)
+    digest = await digest_for(compliance, database, tenant_id)
+
+    italian = render_digest(digest, locale="it")
+    html = render_digest(digest, locale="it", output="html")
+
+    assert italian.startswith("# Digest giornaliero\n")
+    assert "1 sistemi dichiarati, 1 con classificazione in attesa di revisione." in italian
+    assert "| Minimo | Indicativa, in attesa di revisione |" in italian
+    assert "Non fornisce consulenza legale." in italian
+    assert html.startswith("<!DOCTYPE html>")
+    assert '<html lang="it">' in html
+    assert "<h1>Digest giornaliero</h1>" in html
+    assert "&lt;script&gt;alert(1)&lt;/script&gt; &amp; co" in html
+    assert "<script>" not in html
+    assert "Non fornisce consulenza legale." in html
+    with pytest.raises(LocalisationError):
+        render_digest(digest, locale="fr")
+
+
+async def test_a_digest_run_is_recorded_with_counts_only(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    await declare(compliance, database, tenant_id, declarations, "cv-screening")
+    digest = await digest_for(compliance, database, tenant_id)
+
+    async with database.transaction() as session:
+        tenant = await session.get_one(Tenant, tenant_id)
+        run = await record_digest_run(session, tenant, digest, ["en", "it"])
+
+    assert run.locales == ["en", "it"]
+    assert run.summary["tiers"] == {"high_risk": 1}
+    assert "CV screening" not in str(run.summary)
+
+
+async def test_reviewer_feedback_per_rule_is_in_the_digest(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    finding_id = await one_finding(compliance, database, tenant_id, declarations)
+    await move(
+        compliance,
+        database,
+        tenant_id,
+        finding_id,
+        FindingStatus.FALSE_POSITIVE,
+        reason="Ownership is tracked elsewhere.",
+    )
+
+    text = render_digest(await digest_for(compliance, database, tenant_id))
+
+    assert "How reviewers judged each rule" in text
+    assert "| `SCAN-SYSTEM-WITHOUT-OWNER` | 0 | 1 |" in text

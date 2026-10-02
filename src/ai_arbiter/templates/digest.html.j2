@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ t("digest.title") }}: {{ d.tenant_name }}</title>
+<style>
+body { font-family: system-ui, sans-serif; line-height: 1.45; max-width: 60rem; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+table { border-collapse: collapse; margin: 0.75rem 0 1.5rem; width: 100%; }
+th, td { border: 1px solid #c8c8c8; padding: 0.35rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: #f0f0f0; }
+td.n { text-align: right; }
+.note { border-left: 4px solid #8a6d00; background: #fff8dc; padding: 0.6rem 0.9rem; margin: 1rem 0; }
+code { font-size: 0.9em; }
+footer { margin-top: 2rem; border-top: 1px solid #c8c8c8; padding-top: 0.75rem; font-style: italic; }
+</style>
+</head>
+<body>
+<h1>{{ t("digest.title") }}</h1>
+<ul>
+<li><strong>{{ t("digest.tenant") }}</strong>: {{ d.tenant_name }}</li>
+<li><strong>{{ t("digest.period") }}</strong>: {{ t("digest.period_value", start=f.timestamp(d.period_start), end=f.timestamp(d.period_end)) }}</li>
+<li><strong>{{ t("digest.generated") }}</strong>: {{ f.timestamp(d.generated_at) }}</li>
+<li><strong>{{ t("digest.rule_pack") }}</strong>: {{ t("digest.rule_pack_value", pack=d.pack, version=d.pack_version, as_of=f.date(d.pack_as_of) if d.pack_as_of else "-") }}</li>
+</ul>
+<div class="note">
+<p>{{ t("digest.indicative_note") }}</p>
+{% if d.pack_review != "confirmed" %}
+<p>{{ t("digest.review_pending_note") }}</p>
+{% endif %}
+</div>
+
+<h2>{{ t("digest.inventory") }}</h2>
+{% if not d.systems %}
+<p>{{ t("digest.no_systems") }}</p>
+{% else %}
+<p>{{ t("digest.inventory_summary", count=d.systems | length, awaiting=d.awaiting_review) }}</p>
+<table>
+<tr><th>{{ t("digest.column.tier") }}</th><th>{{ t("digest.column.systems") }}</th></tr>
+{% for tier, count in d.tier_counts %}
+<tr><td>{{ t("tier." + tier) }}</td><td class="n">{{ count }}</td></tr>
+{% endfor %}
+</table>
+<table>
+<tr><th>{{ t("digest.column.system") }}</th><th>{{ t("digest.column.tier") }}</th><th>{{ t("digest.column.review") }}</th><th>{{ t("digest.column.missing") }}</th></tr>
+{% for system in d.systems %}
+<tr><td>{{ system.name }} (<code>{{ system.key }}</code>)</td><td>{{ t("tier." + system.tier) }}</td><td>{{ t("review." + system.status) }}</td><td class="n">{{ system.missing_facts }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+
+<h2>{{ t("digest.findings") }}</h2>
+{% if not d.findings %}
+<p>{{ t("digest.no_findings") }}</p>
+{% else %}
+<p>{{ t("digest.findings_summary", count=d.findings | length, opened=d.opened_in_period, closed=d.closed_in_period) }}</p>
+<table>
+<tr><th>{{ t("digest.column.severity") }}</th><th>{{ t("digest.column.findings") }}</th></tr>
+{% for severity, count in d.severity_counts %}
+<tr><td>{{ t("severity." + severity) }}</td><td class="n">{{ count }}</td></tr>
+{% endfor %}
+</table>
+<table>
+<tr><th>{{ t("digest.column.severity") }}</th><th>{{ t("digest.column.system") }}</th><th>{{ t("digest.column.finding") }}</th><th>{{ t("digest.column.reference") }}</th><th>{{ t("digest.column.applies_from") }}</th></tr>
+{% for finding in d.findings %}
+<tr><td>{{ t("severity." + finding.severity) }}</td><td>{{ finding.system_key or t("digest.whole_tenant") }}</td><td>{{ t(finding.message_key) }} <code>{{ finding.rule_id }}</code></td><td>{{ finding.legal_refs | join(", ") or "-" }}</td><td>{% if finding.applies_from %}{{ f.date(finding.applies_from) }}{% if finding.readiness %} ({{ t("digest.readiness") }}){% endif %}{% else %}-{% endif %}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+{% if d.rule_feedback %}
+<h3>{{ t("digest.rule_feedback") }}</h3>
+<p>{{ t("digest.rule_feedback_note") }}</p>
+<table>
+<tr><th>{{ t("digest.column.rule") }}</th><th>{{ t("digest.column.confirmed") }}</th><th>{{ t("digest.column.false_positive") }}</th></tr>
+{% for rule, counts in d.rule_feedback | dictsort %}
+<tr><td><code>{{ rule }}</code></td><td class="n">{{ counts.get("confirmed", 0) + counts.get("mitigated", 0) }}</td><td class="n">{{ counts.get("false_positive", 0) }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+
+<h2>{{ t("digest.traffic") }}</h2>
+{% if not d.traffic.requests %}
+<p>{{ t("digest.no_traffic") }}</p>
+{% else %}
+<p>{{ t("digest.traffic_summary", requests=f.integer(d.traffic.requests), denied=f.integer(d.traffic.denied), failed=f.integer(d.traffic.failed)) }}</p>
+{% for currency, amount in d.traffic.cost | dictsort %}
+<p>{{ t("digest.traffic_cost", amount=f.amount(amount), currency=currency) }}</p>
+{% endfor %}
+{% if d.traffic.unpriced %}
+<p>{{ t("digest.traffic_unpriced", count=f.integer(d.traffic.unpriced)) }}</p>
+{% endif %}
+{% endif %}
+
+<h2>{{ t("digest.audit") }}</h2>
+{% if d.audit_hash %}
+<p>{{ t("digest.audit_head", seq=d.audit_seq, hash=d.audit_hash) }}</p>
+{% else %}
+<p>{{ t("digest.audit_empty") }}</p>
+{% endif %}
+
+<footer>{{ t("disclaimer") }}</footer>
+</body>
+</html>

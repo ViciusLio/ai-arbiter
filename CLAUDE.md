@@ -33,7 +33,7 @@ Update this list at every commit of the phase.
 | 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Service and tests done; CLI and API missing |
 | 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Service and tests done; CLI and API missing |
 | 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Service and tests done; CLI and API missing |
-| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Not started |
+| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Model, rendering and tests done; CLI and API missing |
 | 5 | `arbiter worker`: outbox dispatcher; systems classified when declared or changed | Not started |
 | 6 | Retention: `arbiter retention purge` (ADR-0038) | Not started; settings exist |
 | 7 | CLI: `systems`, `classify`, `scan`, `findings`, `digest`; HTTP under `/api/v1`, wired in `gateway.api` (the import contract needs an exception for `gateway.api -> compliance`) | Not started |
