@@ -16,6 +16,7 @@ from ai_arbiter.cli import findings as findings_commands
 from ai_arbiter.cli import keys as keys_commands
 from ai_arbiter.cli import operations as operations_commands
 from ai_arbiter.cli import pii as pii_commands
+from ai_arbiter.cli import reports as reports_commands
 from ai_arbiter.cli import serve as serve_command
 from ai_arbiter.cli import systems as systems_commands
 from ai_arbiter.cli import usage as usage_commands
@@ -107,6 +108,7 @@ app.add_typer(systems_commands.app, name="systems")
 app.add_typer(findings_commands.app, name="findings")
 app.add_typer(operations_commands.digest_app, name="digest")
 app.add_typer(operations_commands.retention_app, name="retention")
+app.add_typer(reports_commands.app, name="report")
 app.command(name="classify")(systems_commands.classify)
 app.command(name="scan")(findings_commands.scan)
 app.command(name="worker")(operations_commands.worker)

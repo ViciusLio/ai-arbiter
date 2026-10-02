@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ t("report.audit.title") }}: {{ r.tenant_name }}</title>
+<style>
+body { font-family: system-ui, sans-serif; line-height: 1.45; max-width: 60rem; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+table { border-collapse: collapse; margin: 0.75rem 0 1.5rem; width: 100%; }
+th, td { border: 1px solid #c8c8c8; padding: 0.35rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: #f0f0f0; }
+td.n { text-align: right; }
+.note { border-left: 4px solid #8a6d00; background: #fff8dc; padding: 0.6rem 0.9rem; margin: 1rem 0; }
+code { font-size: 0.9em; }
+footer { margin-top: 2rem; border-top: 1px solid #c8c8c8; padding-top: 0.75rem; font-style: italic; }
+</style>
+</head>
+<body>
+<h1>{{ t("report.audit.title") }}</h1>
+<ul>
+<li><strong>{{ t("digest.tenant") }}</strong>: {{ r.tenant_name }}</li>
+<li><strong>{{ t("digest.period") }}</strong>: {{ t("digest.period_value", start=f.timestamp(r.period_start), end=f.timestamp(r.period_end)) }}</li>
+<li><strong>{{ t("digest.generated") }}</strong>: {{ f.timestamp(r.generated_at) }}</li>
+</ul>
+
+<h2>{{ t("report.audit.integrity") }}</h2>
+{% if r.verification.ok %}
+<p>{{ t("report.audit.verified", entries=f.integer(r.verification.entries)) }}</p>
+{% if r.verification.head_hash %}
+<p>{{ t("digest.audit_head", seq=r.verification.head_seq, hash=r.verification.head_hash) }}</p>
+{% endif %}
+{% else %}
+<p><strong>{{ t("report.audit.broken", seq=r.verification.first_broken_seq, problem=r.verification.problem, entries=f.integer(r.verification.entries)) }}</strong></p>
+{% endif %}
+<div class="note"><p>{{ t("report.audit.limit_note") }}</p></div>
+
+<h2>{{ t("report.audit.activity") }}</h2>
+{% if not r.actions %}
+<p>{{ t("report.audit.no_entries") }}</p>
+{% else %}
+<p>{{ t("report.audit.entries_in_period", count=f.integer(r.total_in_period)) }}</p>
+<table>
+<tr><th>{{ t("report.audit.action") }}</th><th>{{ t("report.audit.count") }}</th></tr>
+{% for action, count in r.actions %}
+<tr><td><code>{{ action }}</code></td><td class="n">{{ f.integer(count) }}</td></tr>
+{% endfor %}
+</table>
+<table>
+<tr><th>#</th><th>{{ t("report.system.when") }}</th><th>{{ t("report.audit.action") }}</th><th>{{ t("report.audit.outcome") }}</th><th>{{ t("report.audit.resource") }}</th><th>{{ t("report.audit.actor") }}</th></tr>
+{% for entry in r.entries %}
+<tr><td class="n">{{ entry.seq }}</td><td>{{ f.timestamp(entry.occurred_at) }}</td><td><code>{{ entry.action }}</code></td><td>{{ entry.outcome }}</td><td>{{ entry.resource_type or "-" }} {{ entry.resource_id or "" }}</td><td>{{ entry.actor_id or "-" }}</td></tr>
+{% endfor %}
+</table>
+{% if r.truncated %}
+<p>{{ t("report.audit.truncated", shown=r.entries | length, total=f.integer(r.total_in_period)) }}</p>
+{% endif %}
+{% endif %}
+
+<footer>{{ t("disclaimer") }}</footer>
+</body>
+</html>

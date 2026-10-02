@@ -1,0 +1,85 @@
+# {{ t("report.system.title") }}: {{ r.system.name }}
+
+- **{{ t("digest.tenant") }}**: {{ r.tenant_name }}
+- **{{ t("report.system.key") }}**: `{{ r.system.key }}`
+- **{{ t("report.system.lifecycle") }}**: {{ r.system.lifecycle }}
+- **{{ t("report.system.roles") }}**: {% for role in r.roles %}{{ role.role }}{% if role.basis %} ({{ role.basis }}){% endif %}{{ ", " if not loop.last }}{% else %}-{% endfor %}
+
+{% if r.system.purpose %}
+- **{{ t("report.system.purpose") }}**: {{ r.system.purpose }}
+{% endif %}
+- **{{ t("digest.generated") }}**: {{ f.timestamp(r.generated_at) }}
+
+> {{ t("digest.indicative_note") }}
+{% if r.pack_review != "confirmed" %}
+>
+> {{ t("digest.review_pending_note") }}
+{% endif %}
+
+## {{ t("report.system.classification") }}
+
+{% if r.tier is none %}
+{{ t("scan.system_not_classified") }}
+{% else %}
+- **{{ t("digest.column.tier") }}**: {{ t("tier." + r.tier) }}
+- **{{ t("digest.column.review") }}**: {{ t("review." + r.review_status) }}
+{% if r.engine_tier != r.tier %}
+- **{{ t("report.system.engine_tier") }}**: {{ t("tier." + r.engine_tier) }}
+{% endif %}
+{% if r.review_reason %}
+- **{{ t("report.system.review_reason") }}**: {{ r.review_reason }}
+{% endif %}
+- **{{ t("digest.rule_pack") }}**: {{ t("digest.rule_pack_value", pack=r.rulepack, version=r.rulepack_version, as_of=f.date(r.regulation_as_of) if r.regulation_as_of else "-") }}
+{% if r.obligations %}
+
+| {{ t("report.system.obligation") }} | {{ t("digest.column.reference") }} | {{ t("report.system.addressed_to") }} | {{ t("digest.column.applies_from") }} |
+|---|---|---|---|
+{% for item in r.obligations %}
+| {{ t(item.message_key) }} | {{ item.legal_refs | join(", ") or "-" }} | {{ item.roles | join(", ") or t("report.system.every_role") }}{% if not item.addressed_to_us %} ({{ t("report.system.not_our_role") }}){% endif %} | {% if item.applies_from %}{{ f.date(item.applies_from) }}{% if not item.applicable %} ({{ t("digest.readiness") }}){% endif %}{% else %}-{% endif %} |
+{% endfor %}
+{% endif %}
+{% if r.missing_facts %}
+
+### {{ t("report.system.missing") }}
+
+{% for name in r.missing_facts %}
+- {{ t("fact." + name) }} (`{{ name }}`)
+{% endfor %}
+{% endif %}
+{% if r.history | length > 1 %}
+
+### {{ t("report.system.history") }}
+
+| {{ t("report.system.when") }} | {{ t("digest.column.tier") }} | {{ t("digest.rule_pack") }} |
+|---|---|---|
+{% for item in r.history %}
+| {{ f.timestamp(item.created_at) }} | {{ t("tier." + item.tier) }}{% if item.current %} ({{ t("report.system.current") }}){% endif %} | {{ item.rulepack_version }} |
+{% endfor %}
+{% endif %}
+{% endif %}
+
+## {{ t("digest.findings") }}
+
+{% if not r.findings %}
+{{ t("digest.no_findings") }}
+{% else %}
+| {{ t("digest.column.severity") }} | {{ t("report.system.status") }} | {{ t("digest.column.finding") }} | {{ t("digest.column.reference") }} | {{ t("report.system.last_seen") }} |
+|---|---|---|---|---|
+{% for finding in r.findings %}
+| {{ t("severity." + finding.severity) }} | {{ t("finding_status." + finding.status) }} | {{ t(finding.message_key) }} `{{ finding.rule_id }}` | {{ finding.legal_refs | map(attribute="article") | join(", ") or "-" }} | {{ f.date(finding.last_seen.date()) }} |
+{% endfor %}
+{% endif %}
+
+## {{ t("report.system.traffic") }}
+
+{{ t("report.system.traffic_summary", requests=f.integer(r.traffic.requests), days=r.traffic.window_days) }}
+{% if r.traffic.undeclared_models %}
+{{ t("report.system.undeclared_models", models=r.traffic.undeclared_models | join(", ")) }}
+{% endif %}
+{% if r.traffic.pii_categories %}
+{{ t("report.system.pii_categories", categories=r.traffic.pii_categories | join(", ")) }}
+{% endif %}
+
+---
+
+*{{ t("disclaimer") }}*

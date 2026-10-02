@@ -29,6 +29,8 @@ arbiter systems questions marketing-copy-generator   # what is still to answer
 arbiter scan                                     # compare declarations, classification, traffic
 arbiter findings list
 arbiter digest run --locale it                   # or: --locale all --format both -o out/
+arbiter report system cv-screening               # everything recorded about one system
+arbiter report audit                             # the audit log of the last 30 days
 ```
 
 Everything is also available over HTTP under `/api/v1` when `arbiter serve` runs; see
@@ -208,6 +210,70 @@ is what makes a later rewrite of the log detectable (see [the audit log](audit.m
 Scheduling is external: run the command from cron or a container job. Delivery by e-mail
 is planned for v0.1.x.
 
+## Reports
+
+Two documents meant for people outside the tool, in Markdown or HTML, in English or
+Italian. They read what is recorded and change nothing.
+
+```bash
+arbiter report system cv-screening                      # Markdown, English, standard output
+arbiter report system cv-screening --locale all --format both -o out/
+arbiter report audit                                    # the last 30 days
+arbiter report audit --since 2026-09-01 --until 2026-09-30 --format html -o out/
+```
+
+| Report | Holds |
+|---|---|
+| System | The declaration with its AI Act roles; the indicative tier, its review, and the tier the rules computed when a reviewer set another; what follows from the classification, each with its provision, the role it is addressed to and the date it applies from; the questions still open; earlier classifications; every finding with its status; traffic of the last 30 days |
+| Audit | Whether the hash chain verifies, recomputed from its first entry whatever the period; the head of the chain; the entries of the period counted by action, and listed (the first 500: the export holds them all) |
+
+- The system report says "indicative" and carries the note on the pending review of the
+  rule pack, like every other output.
+- The reviewer's reason is printed; the reviewer is not named.
+- The audit report lists entries by identifier, as the log stores them. Dates of
+  `--since` and `--until` are UTC days, both included.
+- A chain that verifies is internally consistent, not proven untouched: see
+  [the audit log](audit.md).
+
+Over HTTP: `GET /api/v1/systems/{key}/report` and `GET /api/v1/audit/report`, with
+`format`, `locale` and, for the audit report, `days`. Both need the auditor or the admin
+role.
+
+## Importing the records of another gateway
+
+Traffic that did not go through Arbiter can still be counted and scanned (ADR-0019).
+
+```bash
+arbiter ingest examples/interactions.jsonl                    # Arbiter's own format
+arbiter ingest examples/litellm-logs.jsonl --source litellm   # LiteLLM standard logging payload
+```
+
+- One JSON record per line. Prompt and completion text is **dropped on the way in**: of
+  a LiteLLM record, the importer keeps the metadata and the categories of personal data
+  its messages contain, never the messages.
+- Safe to repeat: a record already imported, recognised by its source and its
+  identifier there, is skipped.
+- A record that cannot be read is counted and its line number printed, without its
+  content; `--strict` stops at the first one.
+- Imported records enter the usage totals and the scan like the gateway's own, and the
+  import is one entry of the audit log.
+
+A record is attributed to a declared system in one of three ways: the `system` field of
+the canonical format; in LiteLLM, the request tag `arbiter:system=<key>`; or a mapping in
+the configuration, matched on labels of the source (LiteLLM records carry `key_alias` and
+`team_alias`):
+
+```yaml
+ingest:
+  mappings:
+    - source: litellm
+      labels: { team_alias: hr }
+      system: cv-screening
+```
+
+The LiteLLM mapping was written from the specification LiteLLM documents for its
+standard logging payload. It has not been run against the output of a live LiteLLM.
+
 ## The gateway and the inventory
 
 When both halves run in one process (`arbiter serve`):
@@ -262,6 +328,7 @@ cut-off dates (ADR-0038).
   text, and the pack's review against EUR-Lex is pending.
 - Deployer obligations only. A provider gets a tier and no list of its obligations
   beyond Article 50.
-- Thirteen scan rules. Discovery of systems from traffic, importers for other gateways,
-  reports, the local agent and e-mail delivery are planned for v0.1.x (ADR-0009).
+- Thirteen scan rules. Discovery of systems from traffic, the local agent and e-mail
+  delivery are planned for v0.1.x (ADR-0009).
+- Reports are Markdown and HTML only: no PDF.
 - Personal data in traffic is detected by format only (see [the gateway](gateway.md)).

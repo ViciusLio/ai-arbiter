@@ -19,6 +19,8 @@ from ai_arbiter.compliance.digest.render import render_digest
 from ai_arbiter.compliance.findings.model import Finding, FindingStatus, SuppressionScope
 from ai_arbiter.compliance.inventory.declarations import SystemDeclaration
 from ai_arbiter.compliance.inventory.model import AISystem
+from ai_arbiter.compliance.reports.model import build_audit_report, build_system_report
+from ai_arbiter.compliance.reports.render import render_audit_report, render_system_report
 from ai_arbiter.compliance.runtime import ComplianceRuntime
 from ai_arbiter.core.domain.risk import RiskTier
 from ai_arbiter.core.errors import ConflictError, PermissionDeniedError
@@ -551,3 +553,73 @@ async def build_digest_now(
     return PlainTextResponse(
         render_digest(digest, locale=locale, output=output), media_type=f"{media}; charset=utf-8"
     )
+
+
+# --- reports -----------------------------------------------------------------------------
+
+Output = Annotated[Literal["markdown", "html"], Query(alias="format")]
+
+
+def _document(text: str, output: str) -> PlainTextResponse:
+    media = "text/html" if output == "html" else "text/markdown"
+    return PlainTextResponse(text, media_type=f"{media}; charset=utf-8")
+
+
+def _locale(locale: str) -> str:
+    if locale not in SUPPORTED_LOCALES:
+        raise ConflictError(f"unsupported locale '{locale}'")
+    return locale
+
+
+@router.get(
+    "/systems/{key}/report",
+    tags=["reports"],
+    summary="Everything recorded about one system",
+    description="Declaration, indicative classification with its obligations and dates, "
+    "review, findings and traffic of the last 30 days, as Markdown or HTML.",
+    response_class=PlainTextResponse,
+)
+async def system_report(
+    key: str,
+    runtime: Runtime,
+    compliance: Compliance,
+    caller: Reader,
+    locale: Annotated[str, Query()] = "en",
+    output: Output = "markdown",
+) -> PlainTextResponse:
+    locale = _locale(locale)
+    async with runtime.database.session() as session:
+        tenant = await session.get_one(Tenant, caller.context.tenant_id)
+        report = await build_system_report(session, tenant, compliance, key)
+    return _document(render_system_report(report, locale=locale, output=output), output)
+
+
+@router.get(
+    "/audit/report",
+    tags=["reports"],
+    summary="The audit log over a period",
+    description="Whether the whole chain verifies, and the entries of the last days, as "
+    "Markdown or HTML. The chain is recomputed from its first entry.",
+    response_class=PlainTextResponse,
+)
+async def audit_report(
+    runtime: Runtime,
+    compliance: Compliance,
+    caller: Reader,
+    locale: Annotated[str, Query()] = "en",
+    output: Output = "markdown",
+    days: Annotated[int, Query(ge=1, le=366)] = 30,
+) -> PlainTextResponse:
+    locale = _locale(locale)
+    now = compliance.clock.now()
+    async with runtime.database.session() as session:
+        tenant = await session.get_one(Tenant, caller.context.tenant_id)
+        report = await build_audit_report(
+            session,
+            tenant,
+            runtime.audit,
+            period_start=now - timedelta(days=days),
+            period_end=now,
+            generated_at=now,
+        )
+    return _document(render_audit_report(report, locale=locale, output=output), output)

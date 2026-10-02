@@ -11,6 +11,17 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Added
 
+- **Deferrable items of v0.1** (Phase 4b,
+  [ADR-0040](docs/adr/0040-deferrable-items-before-0-1-0.md)).
+  - Importers for the records of another gateway: Arbiter's canonical JSON lines and
+    the LiteLLM standard logging payload, with `arbiter ingest`. Content is dropped on
+    the way in, a repeated import adds nothing, and records are attributed to declared
+    systems by a tag or by configured mappings
+    ([ADR-0019](docs/adr/0019-external-telemetry-ingestion.md)). The LiteLLM mapping follows its
+    documented specification and was not run against a live LiteLLM.
+  - System report and audit report, in Markdown and HTML, in English and Italian:
+    `arbiter report system KEY`, `arbiter report audit`, and
+    `GET /api/v1/systems/{key}/report`, `GET /api/v1/audit/report`.
 - **Compliance toolkit** (Phase 4). Guide: `docs/compliance.md`.
   - Inventory of AI systems declared in YAML, through the API or the CLI, with their AI
     Act roles ([ADR-0007](docs/adr/0007-ai-act-role-explicit-deployer-first.md),

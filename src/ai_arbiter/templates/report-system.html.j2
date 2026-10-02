@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ t("report.system.title") }}: {{ r.system.name }}</title>
+<style>
+body { font-family: system-ui, sans-serif; line-height: 1.45; max-width: 60rem; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+table { border-collapse: collapse; margin: 0.75rem 0 1.5rem; width: 100%; }
+th, td { border: 1px solid #c8c8c8; padding: 0.35rem 0.6rem; text-align: left; vertical-align: top; }
+th { background: #f0f0f0; }
+td.n { text-align: right; }
+.note { border-left: 4px solid #8a6d00; background: #fff8dc; padding: 0.6rem 0.9rem; margin: 1rem 0; }
+code { font-size: 0.9em; }
+footer { margin-top: 2rem; border-top: 1px solid #c8c8c8; padding-top: 0.75rem; font-style: italic; }
+</style>
+</head>
+<body>
+<h1>{{ t("report.system.title") }}: {{ r.system.name }}</h1>
+<ul>
+<li><strong>{{ t("digest.tenant") }}</strong>: {{ r.tenant_name }}</li>
+<li><strong>{{ t("report.system.key") }}</strong>: <code>{{ r.system.key }}</code></li>
+<li><strong>{{ t("report.system.lifecycle") }}</strong>: {{ r.system.lifecycle }}</li>
+<li><strong>{{ t("report.system.roles") }}</strong>: {% for role in r.roles %}{{ role.role }}{% if role.basis %} ({{ role.basis }}){% endif %}{{ ", " if not loop.last }}{% else %}-{% endfor %}</li>
+{% if r.system.purpose %}
+<li><strong>{{ t("report.system.purpose") }}</strong>: {{ r.system.purpose }}</li>
+{% endif %}
+<li><strong>{{ t("digest.generated") }}</strong>: {{ f.timestamp(r.generated_at) }}</li>
+</ul>
+<div class="note">
+<p>{{ t("digest.indicative_note") }}</p>
+{% if r.pack_review != "confirmed" %}
+<p>{{ t("digest.review_pending_note") }}</p>
+{% endif %}
+</div>
+
+<h2>{{ t("report.system.classification") }}</h2>
+{% if r.tier is none %}
+<p>{{ t("scan.system_not_classified") }}</p>
+{% else %}
+<ul>
+<li><strong>{{ t("digest.column.tier") }}</strong>: {{ t("tier." + r.tier) }}</li>
+<li><strong>{{ t("digest.column.review") }}</strong>: {{ t("review." + r.review_status) }}</li>
+{% if r.engine_tier != r.tier %}
+<li><strong>{{ t("report.system.engine_tier") }}</strong>: {{ t("tier." + r.engine_tier) }}</li>
+{% endif %}
+{% if r.review_reason %}
+<li><strong>{{ t("report.system.review_reason") }}</strong>: {{ r.review_reason }}</li>
+{% endif %}
+<li><strong>{{ t("digest.rule_pack") }}</strong>: {{ t("digest.rule_pack_value", pack=r.rulepack, version=r.rulepack_version, as_of=f.date(r.regulation_as_of) if r.regulation_as_of else "-") }}</li>
+</ul>
+{% if r.obligations %}
+<table>
+<tr><th>{{ t("report.system.obligation") }}</th><th>{{ t("digest.column.reference") }}</th><th>{{ t("report.system.addressed_to") }}</th><th>{{ t("digest.column.applies_from") }}</th></tr>
+{% for item in r.obligations %}
+<tr><td>{{ t(item.message_key) }}</td><td>{{ item.legal_refs | join(", ") or "-" }}</td><td>{{ item.roles | join(", ") or t("report.system.every_role") }}{% if not item.addressed_to_us %} ({{ t("report.system.not_our_role") }}){% endif %}</td><td>{% if item.applies_from %}{{ f.date(item.applies_from) }}{% if not item.applicable %} ({{ t("digest.readiness") }}){% endif %}{% else %}-{% endif %}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+{% if r.missing_facts %}
+<h3>{{ t("report.system.missing") }}</h3>
+<ul>
+{% for name in r.missing_facts %}
+<li>{{ t("fact." + name) }} (<code>{{ name }}</code>)</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if r.history | length > 1 %}
+<h3>{{ t("report.system.history") }}</h3>
+<table>
+<tr><th>{{ t("report.system.when") }}</th><th>{{ t("digest.column.tier") }}</th><th>{{ t("digest.rule_pack") }}</th></tr>
+{% for item in r.history %}
+<tr><td>{{ f.timestamp(item.created_at) }}</td><td>{{ t("tier." + item.tier) }}{% if item.current %} ({{ t("report.system.current") }}){% endif %}</td><td>{{ item.rulepack_version }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+{% endif %}
+
+<h2>{{ t("digest.findings") }}</h2>
+{% if not r.findings %}
+<p>{{ t("digest.no_findings") }}</p>
+{% else %}
+<table>
+<tr><th>{{ t("digest.column.severity") }}</th><th>{{ t("report.system.status") }}</th><th>{{ t("digest.column.finding") }}</th><th>{{ t("digest.column.reference") }}</th><th>{{ t("report.system.last_seen") }}</th></tr>
+{% for finding in r.findings %}
+<tr><td>{{ t("severity." + finding.severity) }}</td><td>{{ t("finding_status." + finding.status) }}</td><td>{{ t(finding.message_key) }} <code>{{ finding.rule_id }}</code></td><td>{{ finding.legal_refs | map(attribute="article") | join(", ") or "-" }}</td><td>{{ f.date(finding.last_seen.date()) }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+
+<h2>{{ t("report.system.traffic") }}</h2>
+<p>{{ t("report.system.traffic_summary", requests=f.integer(r.traffic.requests), days=r.traffic.window_days) }}</p>
+{% if r.traffic.undeclared_models %}
+<p>{{ t("report.system.undeclared_models", models=r.traffic.undeclared_models | join(", ")) }}</p>
+{% endif %}
+{% if r.traffic.pii_categories %}
+<p>{{ t("report.system.pii_categories", categories=r.traffic.pii_categories | join(", ")) }}</p>
+{% endif %}
+
+<footer>{{ t("disclaimer") }}</footer>
+</body>
+</html>

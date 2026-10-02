@@ -79,6 +79,9 @@ arbiter systems show cv-screening                # indicative tier, obligations,
 arbiter scan                                     # declarations against classification and traffic
 arbiter findings list
 arbiter digest run --locale it                   # the daily digest, here in Italian
+arbiter report system cv-screening               # everything recorded about one system
+arbiter report audit --format html -o out/       # the audit log of the last 30 days
+arbiter ingest examples/litellm-logs.jsonl --source litellm   # records of another gateway
 ```
 
 Any client that speaks the OpenAI API works: point its base URL at
@@ -229,8 +232,8 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | I-22 | 4 | Have the AI Act rule pack reviewed by a person with legal training | The rules summarise provisions; nobody qualified has checked them | Before 1.0 | Open |
 | I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |
 | I-24 | 4 | Cover provider obligations (Chapter III, Sections 2 and 3) and general-purpose models | Only deployer obligations are evaluated | After 0.1 | Open |
-| I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Open |
-| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Open |
+| I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Partly done in Phase 4b: the importers exist (`arbiter ingest`), the LiteLLM one not yet run against a live LiteLLM. Discovery is open: it waits for a decision |
+| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Partly done in Phase 4b: both reports exist (`arbiter report`). E-mail delivery is open |
 | I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Open |
 | I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |
 | I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Open |

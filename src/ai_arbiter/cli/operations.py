@@ -11,9 +11,11 @@ from ai_arbiter.cli.common import (
     compliance_for,
     fail,
     open_database,
+    output_choices,
     run,
     settings_from,
     tenant_for,
+    write_outputs,
 )
 from ai_arbiter.cli.systems import TenantSlug
 from ai_arbiter.compliance.digest.model import build_digest, record_digest_run
@@ -26,7 +28,6 @@ from ai_arbiter.core.domain.tenancy import LOCAL_TENANT_SLUG
 from ai_arbiter.core.domain.time import utcnow
 from ai_arbiter.core.errors import ArbiterError
 from ai_arbiter.core.events.bus import InProcessEventBus
-from ai_arbiter.core.i18n import SUPPORTED_LOCALES
 from ai_arbiter.core.persistence.tenant import Tenant
 from ai_arbiter.core.plugins.registry import PII_DETECTORS, TELEMETRY_SOURCES, PluginRegistry
 from ai_arbiter.gateway.finops.catalogue import load_catalogue
@@ -86,8 +87,6 @@ def ingest(
 digest_app = typer.Typer(help="Build the daily digest.", no_args_is_help=True)
 retention_app = typer.Typer(help="Apply the retention periods.", no_args_is_help=True)
 
-_EXTENSION: dict[DigestFormat, str] = {"markdown": "md", "html": "html"}
-
 
 async def _digest(
     settings: Settings, tenant: str, days: int, locales: list[str], formats: list[DigestFormat]
@@ -132,31 +131,9 @@ def digest_run(
 
     Scheduling is external: run this from cron or from a container job.
     """
-    locales = list(SUPPORTED_LOCALES) if locale == "all" else [locale]
-    if not set(locales) <= set(SUPPORTED_LOCALES):
-        raise fail(ArbiterError(f"unsupported locale '{locale}': use en, it or all"))
-    formats: list[DigestFormat]
-    if output_format == "both":
-        formats = ["markdown", "html"]
-    elif output_format in ("markdown", "html"):
-        formats = [output_format]  # type: ignore[list-item]
-    else:
-        raise fail(
-            ArbiterError(f"unsupported format '{output_format}': use markdown, html or both")
-        )
-    if output_dir is None and len(locales) * len(formats) > 1:
-        raise fail(ArbiterError("several outputs need a directory: --output-dir DIR"))
-
+    locales, formats = output_choices(locale, output_format, to_directory=output_dir is not None)
     rendered = run(_digest(settings_from(ctx), tenant, days, locales, formats))
-    if output_dir is None:
-        typer.echo(next(iter(rendered.values())), nl=False)
-        return
-    output_dir.mkdir(parents=True, exist_ok=True)
-    stamp = utcnow().strftime("%Y-%m-%d")
-    for (language, kind), text in rendered.items():
-        path = output_dir / f"digest-{stamp}.{language}.{_EXTENSION[kind]}"
-        path.write_text(text, encoding="utf-8", newline="\n")
-        typer.echo(f"Wrote {path}")
+    write_outputs(rendered, output_dir, "digest")
 
 
 async def _work(settings: Settings, once: bool, interval: int) -> int:

@@ -13,11 +13,14 @@ from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ai_arbiter.compliance.digest.render import DigestFormat
 from ai_arbiter.compliance.runtime import ComplianceRuntime, build_compliance
 from ai_arbiter.core.audit import DatabaseAuditLog
 from ai_arbiter.core.config.settings import Settings, load_settings
 from ai_arbiter.core.domain.tenancy import LOCAL_TENANT_SLUG
+from ai_arbiter.core.domain.time import utcnow
 from ai_arbiter.core.errors import ArbiterError, NotFoundError
+from ai_arbiter.core.i18n import SUPPORTED_LOCALES
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.persistence.tenant import Tenant
 from ai_arbiter.core.plugins.registry import EVENT_BUSES, PluginRegistry
@@ -108,3 +111,44 @@ async def reviewer_for(session: AsyncSession, tenant_id: UUID, name: str) -> UUI
         session.add(principal)
         await session.flush()
     return principal.id
+
+
+_EXTENSION: dict[DigestFormat, str] = {"markdown": "md", "html": "html"}
+
+
+def output_choices(
+    locale: str, output_format: str, *, to_directory: bool
+) -> tuple[list[str], list[DigestFormat]]:
+    """The languages and formats asked for a digest or a report."""
+    locales = list(SUPPORTED_LOCALES) if locale == "all" else [locale]
+    if not set(locales) <= set(SUPPORTED_LOCALES):
+        raise fail(ArbiterError(f"unsupported locale '{locale}': use en, it or all"))
+    formats: list[DigestFormat]
+    if output_format == "both":
+        formats = ["markdown", "html"]
+    elif output_format == "markdown":
+        formats = ["markdown"]
+    elif output_format == "html":
+        formats = ["html"]
+    else:
+        raise fail(
+            ArbiterError(f"unsupported format '{output_format}': use markdown, html or both")
+        )
+    if not to_directory and len(locales) * len(formats) > 1:
+        raise fail(ArbiterError("several outputs need a directory: --output-dir DIR"))
+    return locales, formats
+
+
+def write_outputs(
+    rendered: dict[tuple[str, DigestFormat], str], output_dir: Path | None, name: str
+) -> None:
+    """Print the only output, or write each as ``<name>-<date>.<locale>.<extension>``."""
+    if output_dir is None:
+        typer.echo(next(iter(rendered.values())), nl=False)
+        return
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = utcnow().strftime("%Y-%m-%d")
+    for (language, kind), text in rendered.items():
+        path = output_dir / f"{name}-{stamp}.{language}.{_EXTENSION[kind]}"
+        path.write_text(text, encoding="utf-8", newline="\n")
+        typer.echo(f"Wrote {path}")

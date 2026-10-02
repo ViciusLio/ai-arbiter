@@ -31,7 +31,7 @@ Update this list at every commit of the phase.
 | # | Item | State |
 |---|---|---|
 | 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` (`compliance/ingest`) | Done. The LiteLLM mapping was written from its documented specification, not checked against output of a running LiteLLM |
-| 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Not started |
+| 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Done: `arbiter report system KEY`, `arbiter report audit`, the two HTTP endpoints, `compliance/reports`. Verified by the automated tests only: the commands were not run by hand |
 | 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Not started |
 | 4 | Discovery of systems from traffic | Waits for the owner's decision on what identifies a discovered system |
 | 5 | Simulation scenarios and `arbiter demo` | Waits for the owner's decision on their form |
@@ -175,6 +175,8 @@ uv run arbiter systems show KEY   # indicative tier, obligations, provisions, da
 uv run arbiter scan               # findings from inventory, classification and traffic
 uv run arbiter findings list      # then: findings review ID --to confirmed --reviewer NAME
 uv run arbiter digest run --locale it   # daily digest; --locale all --format both -o DIR
+uv run arbiter report system KEY  # one system in full; report audit: the audit log
+uv run arbiter ingest FILE --source litellm   # records of another gateway; default jsonl
 uv run python scripts/measure_latency.py   # time the gateway adds to a request
 uv run alembic revision --autogenerate -m "..." --rev-id 000N   # new migration
 ```

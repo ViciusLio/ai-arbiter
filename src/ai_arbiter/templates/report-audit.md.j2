@@ -1,0 +1,46 @@
+# {{ t("report.audit.title") }}
+
+- **{{ t("digest.tenant") }}**: {{ r.tenant_name }}
+- **{{ t("digest.period") }}**: {{ t("digest.period_value", start=f.timestamp(r.period_start), end=f.timestamp(r.period_end)) }}
+- **{{ t("digest.generated") }}**: {{ f.timestamp(r.generated_at) }}
+
+## {{ t("report.audit.integrity") }}
+
+{% if r.verification.ok %}
+{{ t("report.audit.verified", entries=f.integer(r.verification.entries)) }}
+{% if r.verification.head_hash %}
+{{ t("digest.audit_head", seq=r.verification.head_seq, hash=r.verification.head_hash) }}
+{% endif %}
+{% else %}
+**{{ t("report.audit.broken", seq=r.verification.first_broken_seq, problem=r.verification.problem, entries=f.integer(r.verification.entries)) }}**
+{% endif %}
+
+> {{ t("report.audit.limit_note") }}
+
+## {{ t("report.audit.activity") }}
+
+{% if not r.actions %}
+{{ t("report.audit.no_entries") }}
+{% else %}
+{{ t("report.audit.entries_in_period", count=f.integer(r.total_in_period)) }}
+
+| {{ t("report.audit.action") }} | {{ t("report.audit.count") }} |
+|---|---:|
+{% for action, count in r.actions %}
+| `{{ action }}` | {{ f.integer(count) }} |
+{% endfor %}
+
+| # | {{ t("report.system.when") }} | {{ t("report.audit.action") }} | {{ t("report.audit.outcome") }} | {{ t("report.audit.resource") }} | {{ t("report.audit.actor") }} |
+|---:|---|---|---|---|---|
+{% for entry in r.entries %}
+| {{ entry.seq }} | {{ f.timestamp(entry.occurred_at) }} | `{{ entry.action }}` | {{ entry.outcome }} | {{ entry.resource_type or "-" }} {{ entry.resource_id or "" }} | {{ entry.actor_id or "-" }} |
+{% endfor %}
+{% if r.truncated %}
+
+{{ t("report.audit.truncated", shown=r.entries | length, total=f.integer(r.total_in_period)) }}
+{% endif %}
+{% endif %}
+
+---
+
+*{{ t("disclaimer") }}*

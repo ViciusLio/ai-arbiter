@@ -18,7 +18,8 @@ def _load(name: str) -> str:
 
 
 @cache
-def _environment() -> Environment:
+def environment() -> Environment:
+    """The template environment shared by the digest and the reports."""
     return Environment(
         loader=FunctionLoader(_load),
         # HTML output escapes every value: names and purposes are typed by people.
@@ -35,5 +36,5 @@ def render_digest(
 ) -> str:
     """The digest as text. Raises ``LocalisationError`` for an unsupported locale."""
     translator = Translator(locale)
-    template = _environment().get_template(_TEMPLATES[output])
+    template = environment().get_template(_TEMPLATES[output])
     return template.render(d=digest, t=translator.text, f=translator, locale=locale)
