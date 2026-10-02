@@ -64,7 +64,11 @@ resolved by the active secret store; the default one reads `ARBITER_SECRET_NAME`
 
 ## Development
 
-Requires Python 3.12 or newer and [uv](https://docs.astral.sh/uv/).
+The quickest way to a complete environment is the dev container in `.devcontainer/`:
+open the repository in GitHub Codespaces, or with any Dev Container tool, and you get
+Python 3.12, 3.13 and 3.14, uv, Docker and a PostgreSQL test database.
+
+Without it, you need Python 3.12 or newer and [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync --all-extras
@@ -74,10 +78,13 @@ uv run mypy
 uv run lint-imports
 ```
 
-Tests run on SQLite by default. To run them on PostgreSQL as well, set
-`ARBITER_TEST_DATABASE_URL` to an empty database.
+`scripts/check.sh` runs all of the above on every supported Python version;
+`scripts/check.sh --containers` also builds the image and starts the Compose stack.
 
-A container image and a Compose file are in `deploy/`; they are built and tested in CI.
+Tests run on SQLite by default. To run them on PostgreSQL as well, set
+`ARBITER_TEST_DATABASE_URL` to an empty database; the dev container does this for you.
+
+A container image and a Compose file are in `deploy/`.
 
 ## Roadmap
 

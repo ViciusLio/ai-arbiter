@@ -1,0 +1,56 @@
+// Development environment for GitHub Codespaces and any Dev Container tool (ADR-0026).
+//
+// Two services (see compose.yaml): `dev`, where you work, and `postgres`, the test
+// database. Docker-in-Docker lets you build the project image and start the project's
+// own Compose stack from inside `dev`.
+{
+  "name": "ai-arbiter",
+  "dockerComposeFile": "compose.yaml",
+  "service": "dev",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:2": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+
+  // Installs Python 3.12, 3.13 and 3.14 and the project with every extra.
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // 8080: arbiter serve. 8025: Mailpit web UI of the project Compose stack.
+  "forwardPorts": [8080, 8025],
+  "portsAttributes": {
+    "8080": { "label": "Arbiter", "onAutoForward": "notify" },
+    "8025": { "label": "Mailpit", "onAutoForward": "silent" }
+  },
+
+  "remoteUser": "vscode",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker",
+        "bierner.markdown-mermaid"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${containerWorkspaceFolder}/.venv/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests"],
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": { "source.organizeImports": "explicit" }
+        },
+        "files.eol": "\n",
+        "editor.rulers": [100]
+      }
+    }
+  }
+}

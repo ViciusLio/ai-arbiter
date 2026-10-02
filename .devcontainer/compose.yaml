@@ -1,0 +1,38 @@
+# Services of the development container (ADR-0026). This is not the project's Compose
+# stack: that one is deploy/compose/compose.yaml and is started from inside `dev`.
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+    environment:
+      # Makes `uv run pytest` run every database test on PostgreSQL as well as SQLite.
+      ARBITER_TEST_DATABASE_URL: postgresql+asyncpg://arbiter:arbiter-dev-only@postgres:5432/arbiter_test
+      # The uv cache and the workspace are on different filesystems.
+      UV_LINK_MODE: copy
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    # Test database only; the password is a throwaway default for this environment.
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: arbiter
+      POSTGRES_PASSWORD: arbiter-dev-only
+      POSTGRES_DB: arbiter_test
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arbiter -d arbiter_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  postgres-data:
