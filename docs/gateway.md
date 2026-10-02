@@ -6,9 +6,10 @@ hash-chained audit log. Prompt and completion text is never stored.
 
 > Arbiter is a support tool. It does not provide legal advice.
 
-Status: `0.1.0-alpha` scope (Phase 3). The mock provider is exercised end to end. The
-adapters for OpenAI-compatible endpoints and for Azure OpenAI are tested against a
-simulated HTTP transport and **have not been run against a real provider**.
+Status: `0.1.0a1`, not published. The mock provider is exercised end to end by the test
+suite. The OpenAI-compatible adapter was checked by hand against a local Ollama server;
+the Azure OpenAI adapter is tested against a simulated HTTP transport and **has not been
+run against a real endpoint**.
 
 ## Quickstart
 

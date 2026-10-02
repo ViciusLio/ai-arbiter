@@ -116,13 +116,38 @@ the code costs, not what a deployment will deliver.
 
 | Item | Why |
 |---|---|
-| `openai_compat` and `azure_openai` against a real provider | No provider credentials; no Azure resources before Phase 6 (ADR-0008). Both are tested against a simulated HTTP transport: request shape, headers, error mapping, stream parsing |
+| `azure_openai` against a real endpoint | No Azure resources before Phase 6 (ADR-0008). Tested against a simulated HTTP transport: URL shape, key header, error mapping |
+| `openai_compat` against hosted services | Checked against one local server only, see below. Other OpenAI-compatible services may differ in details |
 | Precision and recall of the PII detectors | Needs a labelled data set; planned with the simulation scenarios |
 | Behaviour under load, with several processes and a network | Out of reach of a Codespace; planned for the Azure phase |
 | A real OpenAI client library against `/v1` | Only `curl` and the test client were used |
 | Client disconnection in the middle of a stream over a real socket | The abandoned-stream path is tested by closing the generator, not by dropping a connection |
 | Windows | CI runs the suite on Windows; nothing was run there by hand |
 | Release workflow, CodeQL alert list | As at the end of Phase 2 |
+
+### Check of the OpenAI-compatible adapter against a real server
+
+Done by hand on 2026-10-02, after the phase was approved (ADR-0033). Ollama 0.35.0 ran as
+a container in the Codespace with the model `smollm2:135m` (270 MB), reachable on
+`127.0.0.1` only. Prompts were synthetic.
+
+| Check | Result |
+|---|---|
+| Completion through the adapter | Answer received; usage reported, cached tokens included |
+| Stream through the adapter | Text received in chunks; the server honours `stream_options.include_usage`, so the token counts of a stream are measured, not estimated |
+| A model the server does not have | HTTP 404, mapped to a provider error |
+| The whole gateway in front of it, on SQLite and PostgreSQL | Completion and stream answered; the e-mail address in the prompt was redacted before it left; both interactions recorded with measured token counts |
+| `arbiter serve` as a real process, with `curl` | Same, plus: fallback from a deployment with an unreachable endpoint to the working one, recorded attempt by attempt in the routing decision; cost computed from a configured price; 502 with the decision id when the only deployment fails; audit chain verified afterwards |
+
+The same checks are kept as opt-in tests in `tests/live/`, skipped unless
+`ARBITER_LIVE_OPENAI_BASE_URL` is set. No CI job sets it.
+
+Not covered by this check: authentication with an API key (the local server needs none;
+the header is tested against the simulated transport), rate limiting (429), timeouts,
+tool calls, images, and any hosted service.
+
+Afterwards the container, its image (9.3 GB) and the model were removed: 9.55 GB freed,
+free space back to what it was before.
 
 ## Things that turned out differently from the design
 

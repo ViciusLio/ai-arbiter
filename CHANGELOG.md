@@ -54,6 +54,9 @@ Entries link to the decision record that motivated them, where one exists.
   provider; `arbiter serve` checks the configuration before starting.
 - Message catalogues in English and Italian, with Babel for numbers and dates
   ([ADR-0021](docs/adr/0021-i18n-message-catalogs.md)).
+- Opt-in tests of the OpenAI-compatible adapter against a real server (`tests/live/`),
+  skipped unless an endpoint is named in the environment
+  ([ADR-0033](docs/adr/0033-real-models-only-in-manual-checks.md)).
 - `scripts/measure_latency.py`: the time the gateway adds to a request, against the mock
   provider; run by `scripts/check.sh` and in CI.
 - "Release improvement tracking" in the README: strengths, weaknesses and improvements

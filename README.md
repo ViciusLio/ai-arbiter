@@ -97,8 +97,9 @@ How to configure and use each of them: [the gateway](docs/gateway.md) and
   prices for real providers.
 - **The audit log is tamper-evident, not tamper-proof.** Someone who can write to the
   database can rewrite the whole chain; keep a copy of the head elsewhere.
-- **The provider adapters for OpenAI-compatible endpoints and Azure OpenAI have been
-  tested against a simulated transport only**, not against a real provider.
+- **Provider adapters.** The OpenAI-compatible adapter was checked by hand against one
+  local server (Ollama); the Azure OpenAI adapter only against a simulated transport.
+  Neither has been run against a hosted service.
 
 ## Configuration
 
@@ -180,7 +181,7 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | I-09 | 2 | Give each CI job its own uv cache key; pin the runner image | Jobs race to save one cache; `ubuntu-latest` changes on 19 October 2026 | Phase 3 | Done: `ubuntu-24.04`, one cache per job |
 | I-10 | 2 | Add metrics, log export and request-path instrumentation | Only tracing is bootstrapped | 0.1.x, then 0.3 | Open: not done in Phase 3 |
 | I-11 | 2 | Reduce the image size (316 MB) | Faster pulls and cold starts | 0.3 | Open |
-| I-12 | 3 | Run the OpenAI-compatible and Azure OpenAI adapters against real endpoints | They were tested against a simulated transport only | Before 0.1.0 | Open: needs provider credentials from the owner |
+| I-12 | 3 | Run the OpenAI-compatible and Azure OpenAI adapters against real endpoints | They were tested against a simulated transport only | Before 0.1.0; Azure in Phase 6 | Partly done: `openai_compat` checked by hand against a local Ollama server (ADR-0033). Hosted services and Azure OpenAI still open |
 | I-13 | 3 | Measure precision and recall of the PII detectors on a labelled set | Redaction is on by default and its error rates are unknown | 0.1.x, with the simulation scenarios | Open |
 | I-14 | 3 | Add the deferred detectors: identity documents, phone and VAT formats of other member states | Coverage promised by ADR-0014, deferred by ADR-0027 | 0.1.x | Open |
 | I-15 | 3 | Reduce the statements on the request path: one statement for the roll-ups, one audit entry per request | 17 statements and about 20 ms per request | 0.1.x | Open |
