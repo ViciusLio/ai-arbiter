@@ -8,10 +8,11 @@ evidence and enforces constraints derived from the classification; a compliance 
 turns the evidence into classified systems, findings and a daily digest. Either half works
 without the other.
 
-> **Status: alpha, not released yet.** The gateway works end to end: an OpenAI-compatible
-> endpoint with policy, redaction of personal data, routing, metering, budgets and a
-> hash-chained audit log. The compliance toolkit (inventory, AI Act classifier, findings,
-> digest) is the next phase. See the [roadmap](#roadmap).
+> **Status: alpha, not released yet.** Both halves work end to end. The gateway: an
+> OpenAI-compatible endpoint with policy, redaction of personal data, routing, metering,
+> budgets and a hash-chained audit log. The compliance toolkit: an inventory of AI
+> systems, an indicative AI Act classification that a person reviews, findings and a daily
+> digest. See the [roadmap](#roadmap).
 
 > Arbiter is a support tool. It does not provide legal advice.
 
@@ -66,6 +67,16 @@ arbiter pii detectors       # what is detected in prompts, and what is not
 The response header `X-Arbiter-Redacted: email` says the address was replaced before the
 prompt left the gateway. Nothing of the prompt is stored.
 
+Then the compliance side, with seven invented systems (from a clone of the repository):
+
+```bash
+arbiter systems apply -f examples/systems.yaml   # declare and classify
+arbiter systems show cv-screening                # indicative tier, obligations, provisions, dates
+arbiter scan                                     # declarations against classification and traffic
+arbiter findings list
+arbiter digest run --locale it                   # the daily digest, here in Italian
+```
+
 Any client that speaks the OpenAI API works: point its base URL at
 `http://127.0.0.1:8080/v1` and use the Arbiter key as the API key.
 
@@ -86,8 +97,27 @@ The command is `arbiter`; `ai-arbiter` is an alias for it.
 How to configure and use each of them: [the gateway](docs/gateway.md) and
 [the audit log](docs/audit.md).
 
+## What the compliance toolkit does
+
+| Capability | In short |
+|---|---|
+| Inventory | AI systems declared in YAML, through the API or the CLI, with their AI Act roles |
+| Classifier | Deterministic rules as data, written from the Official Journal text: out of scope, prohibited, high-risk, transparency, minimal. Each outcome cites its provision and the date it applies from |
+| Review | A classification is indicative until a named person confirms or overrides it |
+| Scanner | Thirteen rules compare what was declared with the classification and with the gateway traffic |
+| Findings | Deduplicated, reviewed, accepted with an expiry or suppressed with a reason; all audited |
+| Digest | Inventory, findings, traffic and the audit head, in Markdown and HTML, in English and Italian |
+| Link to the gateway | A system classified as a prohibited practice gets no model; routing can be limited by risk tier |
+
+How it works and what it does not cover: [the compliance toolkit](docs/compliance.md).
+
 ### Limits you should know
 
+- **A classification is indicative, not a legal conclusion.** It follows from the facts
+  you declare; nothing checks that they are true. The rule pack covers the obligations
+  of deployers, not of providers, and not general-purpose AI models. It was written from
+  the Official Journal text; its comparison with EUR-Lex by the project owner is still
+  pending, and every output says so.
 - **Detection of personal data is by format, not by meaning.** The built-in detectors
   find e-mail addresses, phone numbers (international and Italian), IBANs, payment cards,
   Italian fiscal codes and VAT numbers, IP addresses and common credential formats. They
@@ -144,7 +174,7 @@ A container image and a Compose file are in `deploy/`.
 
 | Version | Content |
 |---|---|
-| 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log): **built, not released**. Compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI): next |
+| 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI): **built, not released** |
 | 0.2 | A2A and MCP: agent registry, governed MCP catalogue and proxy, multi-agent demo |
 | 0.3 | Azure: Bicep, Container Apps, Entra ID, observability, hardening |
 | 1.0 | Documentation, quickstart, demo scenarios |
@@ -165,6 +195,7 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | 1: Architecture | 26 decision records with option tables. Module boundaries, data model, interfaces and a first threat model are written down | No prototype was built, so the interfaces are untested. Default PII detection has low recall on names and free text. The audit chain is tamper-evident, not tamper-proof |
 | 2: Scaffolding | Every check passes on Python 3.12, 3.13 and 3.14, on SQLite and PostgreSQL, with 98% coverage. The image and the Compose stack run. CI is green on Linux and Windows | The release workflow has never run and `0.0.1` is not published. No product feature exists yet. Telemetry is limited to a tracer bootstrap |
 | 3: Gateway | A request goes end to end: key, policy, redaction, routing, metering, audit. Every outcome is an explained decision in a verifiable chain. No prompt text is stored, and a test searches the whole database to prove it. The same tests run on SQLite and PostgreSQL. Decisions were taken before the code and recorded (ADR-0027 to ADR-0031) | The adapters for real providers were never run against one. PII detection misses names and free text, and its precision and recall are not measured. About 20 ms and 17 database statements are added to each request, and the requests of one tenant queue on its audit chain. Nothing is instrumented yet. Deferrable items of ADR-0009 are not started |
+| 4: Compliance | The product's idea is now real: a declared system gets an indicative tier with the provision and the date behind every outcome, traffic that contradicts the declaration becomes a finding, and the classification steers the gateway. An unanswered question is never read as "no". Nothing is presented as settled until a person reviewed it. The rule pack was written from the Official Journal text, pinned by checksum. The six acceptance steps of v0.1 run in under a minute | The rule pack has not been read by a lawyer, and its comparison with EUR-Lex is pending. Only deployer obligations are covered. A classification is as good as the declared facts. The questions are summaries written by hand in two languages. Thirteen scan rules. No discovery from traffic, no importers, no reports, no e-mail delivery: the deferrable items of ADR-0009 |
 
 ### Improvements
 
@@ -186,11 +217,20 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | I-14 | 3 | Add the deferred detectors: identity documents, phone and VAT formats of other member states | Coverage promised by ADR-0014, deferred by ADR-0027 | 0.1.x | Open |
 | I-15 | 3 | Reduce the statements on the request path: one statement for the roll-ups, one audit entry per request | 17 statements and about 20 ms per request | 0.1.x | Open |
 | I-16 | 3 | Raise the write rate of one tenant: seal audit entries in batches (ADR-0017, option B) | Requests of one tenant queue on its chain | When a tenant needs it | Open |
-| I-17 | 3 | Routing constraints by risk class | The link between classification and routing; first deferrable item of ADR-0009 | 0.1.x, after Phase 4 | Open |
+| I-17 | 3 | Routing constraints by risk class | The link between classification and routing; first deferrable item of ADR-0009 | 0.1.x, after Phase 4 | Done in Phase 4: `router.constraints`, and no model for a system classified as prohibited |
 | I-18 | 3 | Post-call policy: detection on completions | Completions are not scanned | 0.1.x | Open |
-| I-19 | 3 | Run the outbox dispatcher (`arbiter worker`) | Events are written and nothing consumes them yet | Phase 4 | Open |
+| I-19 | 3 | Run the outbox dispatcher (`arbiter worker`) | Events are written and nothing consumes them yet | Phase 4 | Done |
 | I-20 | 3 | Budgets from the command line; a cache of key lookups with a short lifetime | Budgets need the HTTP API; every request reads the key | 0.1.x | Open |
 | I-21 | 3 | Measure latency with a real network hop and several processes | The measurement is in process, on one core | 0.3 | Open |
+| I-22 | 4 | Have the AI Act rule pack reviewed by a person with legal training | The rules summarise provisions; nobody qualified has checked them | Before 1.0 | Open |
+| I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |
+| I-24 | 4 | Cover provider obligations (Chapter III, Sections 2 and 3) and general-purpose models | Only deployer obligations are evaluated | After 0.1 | Open |
+| I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Open |
+| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Open |
+| I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Open |
+| I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |
+| I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Open |
+| I-30 | 4 | Read `pii_categories` for the scanner without sampling 5,000 rows per system | A portable query on a JSON column was not found | 0.1.x | Open |
 
 ## Licence
 

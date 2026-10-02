@@ -4,7 +4,9 @@ Status: **accepted** on 2026-10-02 (Phase 1). Column lists show the fields that 
 for the design; the complete schema is produced with the migrations in Phases 2–4.
 Implemented so far: `tenant`, `outbox_event` (Phase 2); `team`, `project`, `principal`,
 `role_binding`, `api_key`, `audit_chain_head`, `audit_entry`, `interaction`,
-`usage_rollup`, `budget` (Phase 3).
+`usage_rollup`, `budget` (Phase 3); `ai_system`, `ai_system_role`, `classification`,
+`classification_review`, `scan_run`, `finding`, `finding_evidence`, `finding_review`,
+`suppression`, `digest_run` (Phase 4).
 
 Where the schema built in Phase 3 differs from the diagrams below:
 
@@ -19,6 +21,14 @@ Where the schema built in Phase 3 differs from the diagrams below:
 | `BUDGET.soft_threshold` as a decimal | `soft_threshold_percent`, an integer | No fractional amounts outside money |
 | `AUDIT_ENTRY.resource_id` as a UUID | A string | API keys are named by their public key id |
 | `PAYLOAD_BLOB` | Not created | The opt-in store of redacted content is deferrable (ADR-0009) |
+| `API_KEY.ai_system_id` | Now a foreign key to `ai_system` | Phase 4 |
+| `AI_SYSTEM` | `purpose` and `updated_at` added; `owner_principal_id` and `project_id` are plain columns | The compliance toolkit does not import the gateway's identity tables |
+| `AI_SYSTEM_ROLE` | `tenant_id` added | ADR-0015 |
+| `CLASSIFICATION` | As drawn; the review is a separate table, `classification_review` (decision, tier, reviewer, reason) | ADR-0037: the engine's result is never altered |
+| `FINDING.confidence` | Not created; `message_key` and `accepted_until` added | No float where a rule is either matched or not; an accepted risk expires |
+| `FINDING_REVIEW.reviewer_id` | Nullable | Null when the scanner made the move |
+| `SCAN_RUN.consent` | Not created | Local scans are deferrable |
+| `FINDING_EVIDENCE`, `SUPPRESSION`, `DIGEST_RUN` | `tenant_id` added where missing; `SUPPRESSION.created_at` added | ADR-0015 |
 
 Conventions (ADR-0015):
 

@@ -11,6 +11,42 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Added
 
+- **Compliance toolkit** (Phase 4). Guide: `docs/compliance.md`.
+  - Inventory of AI systems declared in YAML, through the API or the CLI, with their AI
+    Act roles ([ADR-0007](docs/adr/0007-ai-act-role-explicit-deployer-first.md),
+    [ADR-0022](docs/adr/0022-ai-act-roles-one-to-many.md)); example declarations in
+    `examples/systems.yaml`.
+  - AI Act rule pack written from the Official Journal texts of Regulation (EU)
+    2024/1689 and of the amending Regulation (EU) 2026/1744, pinned by checksum
+    ([ADR-0034](docs/adr/0034-legal-text-from-the-publications-office.md)): scope,
+    prohibited practices, high-risk by Annex I and by each point of Annex III, the
+    Article 6(3) derogation as claimed by the provider
+    ([ADR-0036](docs/adr/0036-derogation-recorded-from-the-provider.md)), transparency,
+    and the obligations of deployers, each with its provision and application date.
+  - Deterministic classifier: an indicative tier that stays undetermined while an
+    answer is missing, with the questions to answer listed in stages
+    ([ADR-0035](docs/adr/0035-staged-classification-facts.md)); a classification is a
+    proposal until a named person confirms or overrides it
+    ([ADR-0037](docs/adr/0037-classification-is-a-proposal-until-reviewed.md)).
+  - Scanner with thirteen rules over the inventory, the classification and the gateway
+    traffic metadata; findings deduplicated by fingerprint, with evidence, a reviewed
+    lifecycle, accepted risks that expire and suppressions.
+  - Daily digest in Markdown and HTML, in English and Italian, with the head of the
+    audit chain.
+  - `arbiter worker` delivers outbox events and classifies systems when they are
+    declared or changed; `arbiter retention purge` applies the retention periods, with a
+    six-month floor for high-risk systems
+    ([ADR-0038](docs/adr/0038-retention-defaults-and-purge.md)).
+  - The gateway denies the requests of a system classified as a prohibited practice
+    (policy pack `2026.10.1`) and can limit deployments and regions by risk tier
+    (`router.constraints`).
+  - CLI: `arbiter systems apply|list|show|questions|facts|classify|review`,
+    `arbiter scan`, `arbiter findings list|show|review`, `arbiter digest run`,
+    `arbiter keys create --system`. HTTP: `/api/v1/systems`, `/scans`, `/findings`,
+    `/suppressions`, `/digests`.
+- Rule engine: three-valued evaluation, in which a rule whose facts are missing is
+  reported as open with the facts to ask for next; facts with a stage and a provision;
+  severities on outcomes; legal sources with checksums on a pack.
 - **Gateway** (Phase 3). An OpenAI-compatible endpoint, `POST /v1/chat/completions` with
   streaming and `GET /v1/models`, that authenticates, applies policy, routes, meters and
   audits every request. Prompt and completion text is not stored
@@ -159,6 +195,9 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Changed
 
+- The event dispatcher no longer holds a transaction while handlers run: delivery stays
+  at least once, and a handler that writes to the database no longer waits on SQLite.
+- New base dependency: Jinja2, for the digest templates.
 - Version `0.1.0a1`; development status Alpha. `0.0.1` was never published and is
   skipped ([ADR-0032](docs/adr/0032-first-release-is-the-alpha.md)).
 - The em-dash character is no longer used anywhere in the repository; a check in

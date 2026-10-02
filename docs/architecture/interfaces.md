@@ -8,11 +8,11 @@ All ports are `typing.Protocol` classes in `ai_arbiter.core.ports`. Implementati
 in `adapters` or in the module that owns the capability, and are selected by
 configuration (ADR-0011). A port is added to the code together with its first
 implementation: so far `Clock`, `SecretStore`, `EventBus`, `AuditLog`, `LLMProvider`,
-`PIIDetector` and `PolicyEngine`.
+`PIIDetector`, `PolicyEngine` and `SystemDirectory`.
 
 ## 0. Where the code differs from these sketches
 
-Reviewed at the end of Phase 3 against what was built. The sketches below are kept as
+Reviewed at the end of Phases 3 and 4 against what was built. The sketches below are kept as
 written in Phase 1; this table is what changed.
 
 | Sketch | In the code | Why |
@@ -28,10 +28,14 @@ written in Phase 1; this table is what changed.
 | `RoutingStrategy` protocol | Two strategies inside `Router` | Same reason as `RuleEngine` |
 | `UsageMeter.record(interaction, session=...)`, `BudgetGuard.status(ctx)` | `UsageMeter.record(session, interaction)`, `BudgetService.status(session, ctx)` | Naming and argument order |
 | `PriceCatalogue.price(provider, model, region)` | As sketched, on a class, not a protocol | One implementation |
-| `SystemDirectory`, `Notifier` | Not in the code yet | Their first implementations are in Phase 4 |
-| Events: `PolicyDenied`, `BudgetThresholdReached` | Only `InteractionRecorded` is published | The others have no consumer before Phase 4 |
+| `SystemDirectory.resolve(ctx, ai_system_id)` | `resolve(session, tenant_id, ai_system_id)`, returning tier, whether it was reviewed and the classification id; `NoSystemDirectory` when the toolkit is absent | Phase 4. Constraints are configuration by tier (`router.constraints`), not part of the profile |
+| `Classifier.classify(system, pack, on=date)` | `classify(pack, facts, roles)`: the date is not an input | Obligations carry `applies_from`; whether one applies today is decided when it is shown |
+| `Detector`, `LocalCollector`, `FindingService.report(candidate)` | `ScannerService.observe` computes facts per system; `FindingService.report(session, tenant_id, candidate, scan_run_id=...)` | One scanner over inventory and traffic; local collectors are deferrable |
+| `DigestRenderer` protocol | `render_digest(model, locale=, output=)` | One implementation |
+| `Notifier` | Not in the code yet | E-mail delivery is deferrable |
+| Events | Published: `InteractionRecorded`, `SystemDeclared`, `SystemChanged`, `SystemClassified`. Consumed: the two system events, by the classifier | The others have no consumer yet |
 | HTTP: `/api/v1/tenants` | Not implemented; `/api/v1/me`, `/principals`, `/audit/fail-mode` added | A key acts inside one tenant; tenants are created from the CLI |
-| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit` added; `arbiter worker` not yet | The outbox has no consumer before Phase 4 |
+| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit`, `arbiter retention` added; `arbiter ingest`, `arbiter report` and `arbiter demo` not yet | Importers, reports and scenarios are deferrable (ADR-0009) |
 
 ## 1. Shared types
 

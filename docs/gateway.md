@@ -123,6 +123,10 @@ router:
   retry_backoff_ms: 200
 ```
 
+`router.constraints` limits the deployments and regions that systems of a risk tier may
+use; see [the compliance toolkit](compliance.md). To attribute traffic to a declared
+system, issue its key with `arbiter keys create --system KEY`.
+
 A provider answer of 400 or 422 means the request itself is at fault: it is not retried
 and not sent elsewhere. For a stream, retry and fallback happen only until the first
 chunk arrives.
@@ -186,6 +190,7 @@ The default policy is a rule pack shipped with the package:
 | Rule | When | Outcome |
 |---|---|---|
 | `POL-MODEL-NOT-ALLOWED` | The model is not in `policy.allowed_models` | deny |
+| `POL-SYSTEM-PROHIBITED` | The API key belongs to a system classified as a prohibited practice | deny |
 | `POL-BUDGET-EXCEEDED` | A hard budget that covers the request is used up | deny |
 | `POL-PII-REDACT` | The detectors found personal data or credentials in the prompt | redact |
 
@@ -208,6 +213,8 @@ executed (ADR-0012). The facts available to policy rules:
 | `pii.detected` | boolean |
 | `pii.categories` | list |
 | `system.declared` | boolean: the API key is tied to an AI system |
+| `system.tier` | string: the effective tier of that system's classification, when the compliance toolkit runs in the same process |
+| `system.reviewed` | boolean: a person confirmed or overrode that classification |
 
 A denied request returns 403 with the decision id and the rules that matched, in English
 or Italian according to `Accept-Language`.
@@ -301,6 +308,30 @@ RFC 9457 problem details, with an `error` object in the shape OpenAI clients rea
 | 502 | `upstream_error` | Every deployment that was tried failed; `decision_id` is included |
 | 503 | `audit_unavailable` | The request could not be recorded and the fail mode is `closed` |
 
+## A real model for a demo
+
+The mock provider answers with a fixed sentence. For a demo with a real model, run a
+local OpenAI-compatible server and point a deployment at it (ADR-0039):
+
+```bash
+docker run -d --name arbiter-ollama -p 127.0.0.1:11434:11434 ollama/ollama
+docker exec arbiter-ollama ollama pull smollm2:135m
+```
+
+```yaml
+deployments:
+  - name: ollama-local
+    provider: openai_compat
+    model: "smollm2:135m"
+    serves: [small]
+    settings:
+      base_url: http://127.0.0.1:11434/v1
+```
+
+Remove it afterwards (`docker rm -f -v arbiter-ollama && docker rmi ollama/ollama`): the
+image is 9.3 GB. With a local server nothing leaves the machine. With a hosted provider,
+prompts are sent to that provider after redaction: say so to whoever uses the gateway.
+
 ## Performance
 
 `scripts/measure_latency.py` measures the time the gateway adds to a request, against the
@@ -320,8 +351,8 @@ the request path makes seventeen database statements.
 ## Limits of this release
 
 - Chat completions only: no embeddings, no other endpoints.
-- Routing constraints by risk class, post-call policy, external anchoring of the audit
-  chain and the opt-in store of redacted content are planned for v0.1.x (ADR-0009).
+- Post-call policy, external anchoring of the audit chain and the opt-in store of
+  redacted content are planned for v0.1.x (ADR-0009).
 - No cache of key lookups: every request reads the key, which is what makes revocation
   immediate.
 - One reporting currency, at a fixed configured rate.

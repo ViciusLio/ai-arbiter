@@ -185,10 +185,13 @@ migrations differ.
 - Conversation with the owner is in Italian. Code, comments, docs, ADRs and commit
   messages are in English (ADR-0004).
 - User-facing outputs (digest, reports, classifier text) exist in EN and IT.
-- AI Act rules are written only from the official EU sources on EUR-Lex
-  (<https://eur-lex.europa.eu/>). Before Phase 4, verify the current text and the status
-  of any pending change to the application calendar, and record the verification date in
-  the rule pack. Dates in the Phase 0 analysis come from secondary sources.
+- AI Act rules are written only from the official text. The EUR-Lex website refuses
+  automated access, so the Official Journal documents are retrieved by CELEX number from
+  the Publications Office (`https://publications.europa.eu/resource/celex/<CELEX>`), and
+  the owner confirms the quoted articles on EUR-Lex (ADR-0034). A legal rule pack lists
+  its sources with retrieval date and SHA-256, and carries `review: pending` until that
+  confirmation; outputs say so. Repeat the check, with a search for corrigenda and later
+  amending acts, at every release of the pack.
 - Every user-facing output states that Arbiter is a support tool and not legal advice.
   Never write "compliant"; use "indicative" and "no findings".
 - An LLM may suggest classification inputs, never decide a classification (ADR-0003).
