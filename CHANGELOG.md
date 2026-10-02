@@ -44,6 +44,9 @@ Entries link to the decision record that motivated them, where one exists.
     uses the standard library and takes its password from a secret reference. Each
     delivery is an audit entry without addresses. The `smtp` notifier was not run
     against a real mail server.
+- **Improvements after Phase 4b.**
+  - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
+    delivery over HTTP.
 - **Compliance toolkit** (Phase 4). Guide: `docs/compliance.md`.
   - Inventory of AI systems declared in YAML, through the API or the CLI, with their AI
     Act roles ([ADR-0007](docs/adr/0007-ai-act-role-explicit-deployer-first.md),
@@ -232,6 +235,10 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Changed
 
+- The scanner and discovery read the categories of personal data detected in traffic as
+  distinct combinations instead of a sample of 5,000 rows: no category can be missed.
+- The message of a missing extra gives the way from a clone first, and the `pip`
+  command as "once published".
 - The event dispatcher no longer holds a transaction while handlers run: delivery stays
   at least once, and a handler that writes to the database no longer waits on SQLite.
 - New base dependency: Jinja2, for the digest templates.
@@ -255,6 +262,8 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Fixed
 
+- A system name with a `|` or a line break broke the inventory table of the Markdown
+  digest. Names are now escaped in table cells.
 - A PostgreSQL database URL on an install without the `gateway` extra failed with an
   import error and a traceback. It now reports which extra to install
   ([ADR-0010](docs/adr/0010-single-distribution-with-enforced-boundaries.md)).

@@ -37,7 +37,7 @@ What is being done now, step by step:
 | Step | State |
 |---|---|
 | Record the approval of Phase 4b; bring this whole README up to date | Done |
-| Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | Not started |
+| Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | In progress. Done: I-30, I-34, I-37, I-38. Next: budgets from the command line (I-20), a script that repeats the check of the legal sources (I-29), an English summary of the Phase 0 analysis (I-02) |
 | Phase 5: check the current state of A2A and MCP on their official sources | Not started |
 | Phase 5: decisions for the owner, as numbered option tables | Not started |
 
@@ -285,13 +285,15 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Partly done in Phase 4b: three scenarios state the tier and the findings expected of eight systems, and the test suite runs them (`arbiter demo`, ADR-0043). They are regression checks on a few cases, not a measurement of precision, and they hold no text, so they say nothing about the PII detectors (I-13 stays open) |
 | I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |
 | I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Open |
-| I-30 | 4 | Read `pii_categories` for the scanner without sampling 5,000 rows per system | A portable query on a JSON column was not found | 0.1.x | Open |
+| I-30 | 4 | Read `pii_categories` for the scanner without sampling 5,000 rows per system | A portable query on a JSON column was not found | 0.1.x | Done after Phase 4b: the scanner and discovery read the distinct combinations of categories through the text of the column, on SQLite and PostgreSQL. No sample, so no category can be missed; verified by the scanner, discovery and scenario tests on both engines |
 | I-31 | 4b | Run the LiteLLM importer against the output of a live LiteLLM proxy, as a container, and pin the version it was checked with | The mapping was written from the documented specification, which states no version | 0.1.x | Open |
 | I-32 | 4b | Attribute imported records to a system after the import, so that a candidate from an external source closes when its system is declared | Imported records are attributed at import only; the candidate stays until the records leave the 30-day window | 0.1.x | Open |
 | I-33 | 4b | Let a declaration name several projects, and let the gateway resolve the system of a key from its project | A project that runs several systems shows as one candidate; the gateway applies a tier only to keys tied to the system | 0.1.x | Open |
-| I-34 | 4b | Reports, discovery and digest delivery over HTTP where they are missing (`systems discover`, `digest --send`) | They exist on the command line only | 0.2 | Open |
+| I-34 | 4b | Reports, discovery and digest delivery over HTTP where they are missing (`systems discover`, `digest --send`) | They exist on the command line only | 0.2 | Done after Phase 4b: `GET /api/v1/candidates` (auditor or admin) and `POST /api/v1/digests/deliveries` (admin; 409 when the configuration cannot deliver, 502 when the server refuses). Reports were already served. Verified by tests on both engines |
 | I-35 | 4b | More scenarios, with expected outcomes written by someone other than the author of the rules | Three scenarios, written together with the rules they check | 0.1.x | Open |
 | I-36 | 4b | PDF output of the reports as an optional extra | ADR-0044 chose printing the HTML; a scheduled job cannot print | When asked for | Open |
+| I-37 | 4b | Escape text typed by people in the cells of Markdown tables | A system name with a `|` or a line break broke the inventory table of the digest | 0.1.x | Done after Phase 4b: a `cell` filter in the templates, with a test |
+| I-38 | 2 | Make the message of a missing extra true before publication | It told users to `pip install "ai-arbiter[...]"`, which does not exist yet | 0.1.x | Done after Phase 4b: the message gives the way from a clone first, then the `pip` command "once published" |
 
 ## Licence
 

@@ -27,7 +27,7 @@
 | {{ t("digest.column.system") }} | {{ t("digest.column.tier") }} | {{ t("digest.column.review") }} | {{ t("digest.column.missing") }} |
 |---|---|---|---:|
 {% for system in d.systems %}
-| {{ system.name }} (`{{ system.key }}`) | {{ t("tier." + system.tier) }} | {{ t("review." + system.status) }} | {{ system.missing_facts }} |
+| {{ system.name | cell }} (`{{ system.key }}`) | {{ t("tier." + system.tier) }} | {{ t("review." + system.status) }} | {{ system.missing_facts }} |
 {% endfor %}
 {% endif %}
 

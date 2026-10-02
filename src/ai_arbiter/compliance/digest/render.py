@@ -17,10 +17,15 @@ def _load(name: str) -> str:
     return resources.files("ai_arbiter").joinpath("templates", name).read_text(encoding="utf-8")
 
 
+def table_cell(value: object) -> str:
+    """Text typed by a person, made safe for one cell of a Markdown table."""
+    return " ".join(str(value).split()).replace("|", "\\|")
+
+
 @cache
 def environment() -> Environment:
     """The template environment shared by the digest and the reports."""
-    return Environment(
+    env = Environment(
         loader=FunctionLoader(_load),
         # HTML output escapes every value: names and purposes are typed by people.
         autoescape=select_autoescape(enabled_extensions=("html.j2",), default=False),
@@ -29,6 +34,8 @@ def environment() -> Environment:
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
+    env.filters["cell"] = table_cell
+    return env
 
 
 def render_digest(

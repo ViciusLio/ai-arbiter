@@ -9,24 +9,45 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 
 from ai_arbiter.compliance.classifier.model import Classification, ReviewDecision
 from ai_arbiter.compliance.classifier.service import EffectiveClassification
+from ai_arbiter.compliance.digest.delivery import (
+    check_delivery_settings,
+    digest_messages,
+    record_delivery,
+    send_messages,
+)
 from ai_arbiter.compliance.digest.model import build_digest, record_digest_run
 from ai_arbiter.compliance.digest.render import render_digest
 from ai_arbiter.compliance.findings.model import Finding, FindingStatus, SuppressionScope
 from ai_arbiter.compliance.inventory.declarations import SystemDeclaration
+from ai_arbiter.compliance.inventory.discovery import (
+    discover,
+    draft_declaration,
+    ungrouped_requests,
+)
 from ai_arbiter.compliance.inventory.model import AISystem
 from ai_arbiter.compliance.reports.model import build_audit_report, build_system_report
 from ai_arbiter.compliance.reports.render import render_audit_report, render_system_report
 from ai_arbiter.compliance.runtime import ComplianceRuntime
+from ai_arbiter.compliance.scanner.service import TRAFFIC_WINDOW_DAYS
 from ai_arbiter.core.domain.risk import RiskTier
-from ai_arbiter.core.errors import ConflictError, PermissionDeniedError
+from ai_arbiter.core.errors import (
+    ConfigurationError,
+    ConflictError,
+    PermissionDeniedError,
+    PluginError,
+)
 from ai_arbiter.core.i18n import SUPPORTED_LOCALES, Translator, negotiate
 from ai_arbiter.core.persistence.tenant import Tenant
+from ai_arbiter.core.plugins.notifiers import load_notifier
+from ai_arbiter.core.plugins.registry import PluginRegistry
 from ai_arbiter.gateway.api.deps import Admin, Reader, Runtime
+from ai_arbiter.gateway.identity.model import Project, Team
 
 router = APIRouter(prefix="/api/v1")
 
@@ -623,3 +644,157 @@ async def audit_report(
             generated_at=now,
         )
     return _document(render_audit_report(report, locale=locale, output=output), output)
+
+
+# --- discovery ---------------------------------------------------------------------------
+
+
+class CandidateOut(BaseModel):
+    reference: str
+    kind: Literal["project", "source"]
+    project_id: UUID | None
+    # Team and project as the gateway names them; null for imported records.
+    project: str | None
+    source: str | None
+    group: str | None
+    requests: int
+    models: list[str]
+    providers: list[str]
+    pii_categories: list[str]
+    first_seen: datetime
+    last_seen: datetime
+    # A declaration for a person to complete. It answers no question of the rule packs.
+    draft: dict[str, Any]
+
+
+class DiscoveryOut(BaseModel):
+    window_days: int
+    candidates: list[CandidateOut]
+    # Requests tied to no declared system that nothing groups into a candidate.
+    ungrouped_requests: int
+    note: str = (
+        "A candidate is a proposal: nothing is declared until a person completes a "
+        "declaration. Arbiter is a support tool and does not provide legal advice."
+    )
+
+
+@router.get(
+    "/candidates",
+    tags=["inventory"],
+    summary="What in the traffic looks like an AI system nobody declared",
+    description="Requests of the last 30 days that belong to no declared system, grouped by "
+    "project of the gateway or by group of an imported source (ADR-0042).",
+)
+async def list_candidates(runtime: Runtime, compliance: Compliance, caller: Reader) -> DiscoveryOut:
+    tenant_id = caller.context.tenant_id
+    since = compliance.clock.now() - timedelta(days=TRAFFIC_WINDOW_DAYS)
+    async with runtime.database.session() as session:
+        found = await discover(session, tenant_id, since)
+        rest = await ungrouped_requests(session, tenant_id, since)
+        projects = [item.project_id for item in found if item.project_id is not None]
+        names: dict[UUID, str] = {}
+        if projects:
+            rows = await session.execute(
+                select(Project.id, Team.name, Project.name)
+                .join(Team, Team.id == Project.team_id)
+                .where(Project.tenant_id == tenant_id, Project.id.in_(projects))
+            )
+            names = {project_id: f"{team} / {name}" for project_id, team, name in rows}
+    candidates = []
+    for item in found:
+        name = names.get(item.project_id) if item.project_id is not None else None
+        candidates.append(
+            CandidateOut(
+                reference=item.reference,
+                kind="project" if item.project_id is not None else "source",
+                project_id=item.project_id,
+                project=name,
+                source=item.source,
+                group=item.group,
+                requests=item.requests,
+                models=item.models,
+                providers=item.providers,
+                pii_categories=item.pii_categories,
+                first_seen=item.first_seen,
+                last_seen=item.last_seen,
+                draft=draft_declaration(item, name),
+            )
+        )
+    return DiscoveryOut(
+        window_days=TRAFFIC_WINDOW_DAYS, candidates=candidates, ungrouped_requests=rest
+    )
+
+
+# --- digest delivery ---------------------------------------------------------------------
+
+
+class DeliveryOut(BaseModel):
+    sent: bool
+    notifier: str
+    messages: int
+    expected: int
+    recipients: int
+    # The kind of failure when a message could not be delivered; never the server's words.
+    error: str | None
+
+
+@router.post(
+    "/digests/deliveries",
+    tags=["digest"],
+    summary="Build the digest and send it to the configured recipients",
+    description="One message per language, through the notifier named in the configuration. "
+    "The default notifier writes files and sends nothing. Answers 502 when a message "
+    "could not be delivered.",
+    responses={502: {"model": DeliveryOut}},
+)
+async def deliver_digest(
+    runtime: Runtime,
+    compliance: Compliance,
+    caller: Admin,
+    days: Annotated[int, Query(ge=1, le=92)] = 1,
+) -> JSONResponse:
+    settings = runtime.settings
+    # Everything that can be wrong with the configuration is found before any work, and
+    # told to the caller: it is the operator's to fix, not a fault of the server.
+    try:
+        check_delivery_settings(settings.notifications)
+        notifier = load_notifier(
+            PluginRegistry(),
+            settings.plugins.notifier,
+            settings.notifications.settings,
+            runtime.secrets,
+        )
+    except (ConfigurationError, PluginError) as error:
+        raise ConflictError(str(error)) from error
+    now = compliance.clock.now()
+    tenant_id = caller.context.tenant_id
+    async with runtime.database.transaction() as session:
+        tenant = await session.get_one(Tenant, tenant_id)
+        digest = await build_digest(
+            session,
+            tenant,
+            classifier=compliance.classifier,
+            findings=compliance.findings,
+            period_start=now - timedelta(days=days),
+            period_end=now,
+            generated_at=now,
+        )
+        locales = sorted({recipient.locale for recipient in settings.notifications.recipients})
+        run = await record_digest_run(session, tenant, digest, locales)
+    # No transaction is open while the mail server is being talked to.
+    messages = digest_messages(digest, settings.notifications)
+    report = await send_messages(notifier, messages)
+    async with runtime.database.transaction() as session:
+        await record_delivery(session, compliance.audit, tenant_id, run.id, report, len(messages))
+    body = DeliveryOut(
+        sent=report.error is None,
+        notifier=report.notifier,
+        messages=report.messages,
+        expected=len(messages),
+        recipients=report.recipients,
+        error=report.error,
+    )
+    return JSONResponse(
+        body.model_dump(mode="json"),
+        status_code=status.HTTP_200_OK if body.sent else status.HTTP_502_BAD_GATEWAY,
+    )

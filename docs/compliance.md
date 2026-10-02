@@ -200,6 +200,9 @@ arbiter systems apply -f drafts.yaml
 - A scan pack from before `2026.10.1` keeps the earlier behaviour: all such traffic in
   one finding.
 
+Over HTTP: `GET /api/v1/candidates` lists the candidates with a draft declaration for
+each; it needs the auditor or the admin role.
+
 ### Lifecycle
 
 ```text
@@ -277,9 +280,12 @@ notifications:
   and only the kind of failure is kept.
 - With `--send` the digest is printed only when `-o DIR` is given.
 
-Sending is available from the command line only, not over HTTP. The `smtp` notifier is
-covered by tests that replace the SMTP client; it has not been run against a real mail
-server.
+Over HTTP: `POST /api/v1/digests/deliveries`, for the admin role. It answers 409 when
+the configuration cannot deliver, and 502 when a message could not be delivered.
+
+The `smtp` notifier delivers to the mail catcher of the Compose stack in the container
+check, over plain SMTP (ADR-0045). STARTTLS, TLS and authentication are covered by tests
+that replace the SMTP client, not by a server.
 
 ## Reports
 

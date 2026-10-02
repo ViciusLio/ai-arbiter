@@ -8,6 +8,7 @@ import pytest
 from sqlalchemy import update
 
 from ai_arbiter.compliance.classifier.model import ReviewDecision
+from ai_arbiter.compliance.digest.render import render_digest
 from ai_arbiter.compliance.inventory.declarations import SystemDeclaration, load_declarations
 from ai_arbiter.compliance.reports import model as reports_model
 from ai_arbiter.compliance.reports.model import (
@@ -31,6 +32,7 @@ from tests.integration.test_compliance import (
     FixedClock,
     audit_actions,
     declare,
+    digest_for,
     interactions,
     review,
     scan,
@@ -306,3 +308,17 @@ async def test_an_audit_report_holds_the_entries_of_its_tenant_only(
     assert report.total_in_period == 0
     assert report.verification.entries == 0
     assert "No audit entry in this period." in render_audit_report(report)
+
+
+async def test_a_name_with_a_pipe_or_a_line_break_does_not_break_the_digest_table(
+    compliance: ComplianceRuntime,
+    database: Database,
+    tenant_id: UUID,
+    declarations: dict[str, SystemDeclaration],
+) -> None:
+    named = declarations["cv-screening"].model_copy(update={"name": "CV | screening\nv2"})
+    await declare(compliance, database, tenant_id, {"cv-screening": named})
+
+    text = render_digest(await digest_for(compliance, database, tenant_id))
+
+    assert "| CV \\| screening v2 (`cv-screening`) | High-risk |" in text

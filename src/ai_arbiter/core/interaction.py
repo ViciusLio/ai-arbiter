@@ -5,6 +5,7 @@ read by FinOps and by the compliance toolkit; hence its place in the shared kern
 holds metadata only: no prompt and no completion text (ADR-0018).
 """
 
+import json
 from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -13,7 +14,18 @@ from typing import Any, ClassVar, Protocol
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import JSON, Boolean, ForeignKey, Index, Integer, String, UniqueConstraint, Uuid
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    Uuid,
+    cast,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ai_arbiter.core.domain.ids import new_id
@@ -75,6 +87,18 @@ class Interaction(Base):
     # Categories of personal data found in the prompt. Never the values.
     pii_categories: Mapped[list[Any]] = mapped_column(JSON, default=list)
     decision_id: Mapped[UUID | None] = mapped_column(Uuid, default=None)
+
+
+# The categories of an interaction as text, so that a query can ask for the distinct
+# combinations instead of reading every row: JSON columns cannot be compared in a
+# portable way, their text can.
+PII_CATEGORIES_AS_TEXT = cast(Interaction.pii_categories, Text)
+
+
+def read_categories(text: str | None) -> list[str]:
+    """The categories in a value selected through ``PII_CATEGORIES_AS_TEXT``."""
+    value = json.loads(text) if text else []
+    return [str(item) for item in value] if isinstance(value, list) else []
 
 
 class InteractionRecorded(Event):

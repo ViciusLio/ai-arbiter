@@ -31,7 +31,7 @@ Update this list at every commit.
 | # | Item | State |
 |---|---|---|
 | 1 | Record the approval of Phase 4b; bring the whole README up to date | Done |
-| 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | Not started |
+| 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | In progress. Done: I-30, I-34, I-37, I-38. Next: I-20 (budgets from the CLI), I-29 (script for the legal sources), I-02 (English summary of Phase 0). Left open because they need a decision or real effort: I-15, I-31, I-32, I-33, I-35 |
 | 3 | Phase 5: check the current state of A2A and MCP on their official sources | Not started |
 | 4 | Phase 5: decisions for the owner as numbered option tables, then wait | Not started |
 

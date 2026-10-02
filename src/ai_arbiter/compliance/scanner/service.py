@@ -17,7 +17,7 @@ from ai_arbiter.compliance.inventory.model import AISystem, AISystemRole
 from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.domain.risk import ActorRole
 from ai_arbiter.core.domain.time import Clock, SystemClock
-from ai_arbiter.core.interaction import Interaction
+from ai_arbiter.core.interaction import PII_CATEGORIES_AS_TEXT, Interaction, read_categories
 from ai_arbiter.core.ports import AuditLog
 from ai_arbiter.core.rules import Facts, FactType, RuleKind, RuleMatch, RulePack, evaluate
 
@@ -25,7 +25,6 @@ TRAFFIC_WINDOW_DAYS = 30
 CANDIDATE_FACT = "candidate.requests_30d"
 # Declared facts the scan rules read as they are from the declaration.
 _DECLARED_PREFIXES = ("controls.", "data.")
-_PII_SAMPLE = 5000
 
 
 def severity_on(match: RuleMatch, today: date) -> str:
@@ -91,11 +90,9 @@ class ScannerService:
             }
         )
         categories: set[str] = set()
-        rows = await session.scalars(
-            select(Interaction.pii_categories).where(*base).limit(_PII_SAMPLE)
-        )
-        for value in rows:
-            categories.update(str(item) for item in value or [])
+        # Every distinct combination, not a sample of rows: a few values, whatever the traffic.
+        for value in await session.scalars(select(PII_CATEGORIES_AS_TEXT).where(*base).distinct()):
+            categories.update(read_categories(value))
         return {
             "requests": requests,
             "undeclared_models": undeclared,

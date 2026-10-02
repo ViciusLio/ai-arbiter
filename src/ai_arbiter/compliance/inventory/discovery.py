@@ -17,9 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
 from ai_arbiter.compliance.inventory.model import AISystem
-from ai_arbiter.core.interaction import Interaction
-
-_PII_SAMPLE = 5000
+from ai_arbiter.core.interaction import PII_CATEGORIES_AS_TEXT, Interaction, read_categories
 
 
 @dataclass
@@ -146,16 +144,16 @@ async def discover(
         if use is not None and use not in candidate.uses:
             candidate.uses.append(use)
 
-    sample = await session.execute(
-        select(Interaction.project_id, source, group, Interaction.pii_categories)
+    detected = await session.execute(
+        select(Interaction.project_id, source, group, PII_CATEGORIES_AS_TEXT)
         .where(*undeclared, _GROUPED)
-        .limit(_PII_SAMPLE)
+        .distinct()
     )
-    for project_id, source_name, group_name, categories in sample:
+    for project_id, source_name, group_name, categories in detected:
         candidate = candidates[key_of(project_id, source_name, group_name)]
-        for category in categories or []:
+        for category in read_categories(categories):
             if category not in candidate.pii_categories:
-                candidate.pii_categories.append(str(category))
+                candidate.pii_categories.append(category)
 
     for candidate in candidates.values():
         candidate.models.sort()
