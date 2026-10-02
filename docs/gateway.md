@@ -179,6 +179,16 @@ curl -X POST http://127.0.0.1:8080/api/v1/budgets \
        "limit_amount": "50.00", "soft_threshold_percent": 80, "hard": true}'
 ```
 
+From the command line, on the local database:
+
+```bash
+arbiter budgets create --limit 50 --hard                 # on the tenant, per month
+arbiter budgets create --system cv-screening --limit 10.50 --period day
+arbiter budgets create --scope project --id <project id> --limit 20
+arbiter budgets list                                     # with what was spent so far
+arbiter budgets delete 1a2b3c4d                          # the id, or its first characters
+```
+
 - Scopes: `tenant`, `team`, `project`, `principal`, `ai_system`. Periods: `day`, `month`.
 - A **soft** budget reports (`X-Arbiter-Budget: soft`, and `GET /api/v1/budgets`). A
   **hard** budget denies requests once the limit is reached.

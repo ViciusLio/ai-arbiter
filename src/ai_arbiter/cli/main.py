@@ -12,6 +12,7 @@ import yaml
 from ai_arbiter import __version__
 from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
 from ai_arbiter.cli import audit as audit_commands
+from ai_arbiter.cli import budgets as budgets_commands
 from ai_arbiter.cli import demo as demo_commands
 from ai_arbiter.cli import findings as findings_commands
 from ai_arbiter.cli import keys as keys_commands
@@ -106,6 +107,7 @@ app.add_typer(audit_commands.app, name="audit")
 app.add_typer(pii_commands.app, name="pii")
 app.add_typer(keys_commands.app, name="keys")
 app.add_typer(usage_commands.app, name="usage")
+app.add_typer(budgets_commands.app, name="budgets")
 app.add_typer(systems_commands.app, name="systems")
 app.add_typer(findings_commands.app, name="findings")
 app.add_typer(operations_commands.digest_app, name="digest")

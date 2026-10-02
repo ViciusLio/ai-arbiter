@@ -37,7 +37,7 @@ What is being done now, step by step:
 | Step | State |
 |---|---|
 | Record the approval of Phase 4b; bring this whole README up to date | Done |
-| Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | In progress. Done: I-30, I-34, I-37, I-38. Next: budgets from the command line (I-20), a script that repeats the check of the legal sources (I-29), an English summary of the Phase 0 analysis (I-02) |
+| Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | Done: I-02, I-30, I-34, I-37, I-38 closed; I-20 and I-29 closed in part. Left open because they need a decision, a real endpoint or real effort: see the table |
 | Phase 5: check the current state of A2A and MCP on their official sources | Not started |
 | Phase 5: decisions for the owner, as numbered option tables | Not started |
 
@@ -93,6 +93,7 @@ curl http://127.0.0.1:8080/v1/chat/completions \
   -d '{"model": "mock-small", "messages": [{"role": "user", "content": "Write to mario.rossi@example.com"}]}'
 
 arbiter usage report        # what was used and its estimated cost; --locale it for Italian
+arbiter budgets create --limit 50 --hard   # a monthly limit on the tenant; budgets list
 arbiter audit verify        # recomputes the hash chain of the audit log
 arbiter pii detectors       # what is detected in prompts, and what is not
 ```
@@ -128,7 +129,7 @@ The command is `arbiter`; `ai-arbiter` is an alias for it.
 | Policy | Rules as data: model allowlist, hard budgets, redaction. A denial explains itself |
 | Redaction | Personal data and credentials in prompts are masked before the provider sees them |
 | Routing | Deployments ordered by priority or cost, with retry and fallback |
-| FinOps | Tokens and estimated cost per tenant, team, project, principal and AI system; soft and hard budgets |
+| FinOps | Tokens and estimated cost per tenant, team, project, principal and AI system; soft and hard budgets, set over HTTP or from the command line |
 | Audit | One hash chain per tenant, verifiable and exportable; no content, no names |
 | Providers | OpenAI-compatible endpoints, Azure OpenAI, and a mock |
 
@@ -257,7 +258,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | ID | Phase | Improvement | Why | Target | Status |
 |---|---|---|---|---|---|
 | I-01 | 0 | Verify AI Act dates and the amending regulation on EUR-Lex, article by article | The rule pack must rest on the official text | Before Phase 4 | Done against the Official Journal texts from the Publications Office: dates and act number confirmed. A spot check on EUR-Lex itself is pending with the owner |
-| I-02 | 0 | Add an English summary of the Phase 0 analysis | One language across the documentation | 1.0 | Open |
+| I-02 | 0 | Add an English summary of the Phase 0 analysis | One language across the documentation | 1.0 | Done after Phase 4b: `docs/phases/phase-0-analysis.en.md`, a summary; the Italian text stays the reference |
 | I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Done: both documents list where the code differs |
 | I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Open |
 | I-05 | 1 | Anchor the audit chain head outside the database, then sign checkpoints | A full rewrite of the chain is otherwise undetectable | 0.1.x, then 0.3 | Open |
@@ -275,7 +276,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-17 | 3 | Routing constraints by risk class | The link between classification and routing; first deferrable item of ADR-0009 | 0.1.x, after Phase 4 | Done in Phase 4: `router.constraints`, and no model for a system classified as prohibited |
 | I-18 | 3 | Post-call policy: detection on completions | Completions are not scanned | 0.1.x | Open |
 | I-19 | 3 | Run the outbox dispatcher (`arbiter worker`) | Events are written and nothing consumes them yet | Phase 4 | Done |
-| I-20 | 3 | Budgets from the command line; a cache of key lookups with a short lifetime | Budgets need the HTTP API; every request reads the key | 0.1.x | Open |
+| I-20 | 3 | Budgets from the command line; a cache of key lookups with a short lifetime | Budgets need the HTTP API; every request reads the key | 0.1.x | Partly done after Phase 4b: `arbiter budgets create`, `list` and `delete`, audited, with tests. Open: the cache of key lookups, which delays the effect of revoking a key and so needs a decision |
 | I-21 | 3 | Measure latency with a real network hop and several processes | The measurement is in process, on one core | 0.3 | Open |
 | I-22 | 4 | Have the AI Act rule pack reviewed by a person with legal training | The rules summarise provisions; nobody qualified has checked them | Before 1.0 | Open |
 | I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |
@@ -284,7 +285,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Done in Phase 4b: both reports (`arbiter report`) and `arbiter digest run --send` with a file and an SMTP notifier. The SMTP notifier delivers to the mail catcher of the Compose stack in the container check (ADR-0045). STARTTLS, TLS and authentication are covered only by tests that replace the client |
 | I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Partly done in Phase 4b: three scenarios state the tier and the findings expected of eight systems, and the test suite runs them (`arbiter demo`, ADR-0043). They are regression checks on a few cases, not a measurement of precision, and they hold no text, so they say nothing about the PII detectors (I-13 stays open) |
 | I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |
-| I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Open |
+| I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Partly done after Phase 4b: `scripts/check_legal_sources.py` retrieves each source and compares its checksum; run on 2026-10-02, the three sources were unchanged. Open: the search for corrigenda and later amending acts is still done by a person |
 | I-30 | 4 | Read `pii_categories` for the scanner without sampling 5,000 rows per system | A portable query on a JSON column was not found | 0.1.x | Done after Phase 4b: the scanner and discovery read the distinct combinations of categories through the text of the column, on SQLite and PostgreSQL. No sample, so no category can be missed; verified by the scanner, discovery and scenario tests on both engines |
 | I-31 | 4b | Run the LiteLLM importer against the output of a live LiteLLM proxy, as a container, and pin the version it was checked with | The mapping was written from the documented specification, which states no version | 0.1.x | Open |
 | I-32 | 4b | Attribute imported records to a system after the import, so that a candidate from an external source closes when its system is declared | Imported records are attributed at import only; the candidate stays until the records leave the 30-day window | 0.1.x | Open |

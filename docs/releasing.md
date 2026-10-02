@@ -31,6 +31,22 @@ Done by the project owner, before the first release.
    A pending publisher does not reserve the name. The name is taken only when the first
    release is published.
 
+## Before a release that ships a legal rule pack
+
+The check of the legal text is repeated at every release of the pack (ADR-0034):
+
+```bash
+uv run python scripts/check_legal_sources.py
+```
+
+It retrieves each source of the newest AI Act pack from the Publications Office, as
+XHTML in English, and compares its SHA-256 with the one in the pack. It needs the
+network, so it is run by hand and is not part of CI.
+
+A checksum that matches does not mean the law is unchanged. A corrigendum or an amending
+act is a new document with its own CELEX number: a person searches EUR-Lex for acts
+published after the date of the pack. The script ends by saying so.
+
 ## Releasing a version
 
 1. Make sure `main` is green in CI.

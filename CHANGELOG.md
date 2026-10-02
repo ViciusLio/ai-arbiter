@@ -47,6 +47,11 @@ Entries link to the decision record that motivated them, where one exists.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.
+  - `arbiter budgets create`, `list` and `delete`: budgets from the command line.
+  - `scripts/check_legal_sources.py`: retrieves the legal sources of a rule pack again
+    and compares their checksums
+    ([ADR-0034](docs/adr/0034-legal-text-from-the-publications-office.md)).
+  - An English summary of the Phase 0 analysis.
 - **Compliance toolkit** (Phase 4). Guide: `docs/compliance.md`.
   - Inventory of AI systems declared in YAML, through the API or the CLI, with their AI
     Act roles ([ADR-0007](docs/adr/0007-ai-act-role-explicit-deployer-first.md),

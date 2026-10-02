@@ -31,7 +31,7 @@ Update this list at every commit.
 | # | Item | State |
 |---|---|---|
 | 1 | Record the approval of Phase 4b; bring the whole README up to date | Done |
-| 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | In progress. Done: I-30, I-34, I-37, I-38. Next: I-20 (budgets from the CLI), I-29 (script for the legal sources), I-02 (English summary of Phase 0). Left open because they need a decision or real effort: I-15, I-31, I-32, I-33, I-35 |
+| 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | Done: I-02, I-30, I-34, I-37, I-38; in part I-20 (budgets CLI; the key cache needs a decision) and I-29 (checksum script; corrigenda still by hand). Left open: I-15, I-31, I-32, I-33, I-35 and everything that needs the owner, Azure or a decision |
 | 3 | Phase 5: check the current state of A2A and MCP on their official sources | Not started |
 | 4 | Phase 5: decisions for the owner as numbered option tables, then wait | Not started |
 
@@ -175,6 +175,7 @@ uv run arbiter init               # local workspace: arbiter.yaml, SQLite databa
 uv run arbiter keys create --name demo --role admin   # prints an API key once
 uv run arbiter serve              # HTTP application on 127.0.0.1:8080, docs at /docs
 uv run arbiter usage report       # usage and estimated cost; --locale it
+uv run arbiter budgets list       # budgets create --limit 50 --hard; budgets delete ID
 uv run arbiter audit verify       # recompute the audit chain
 uv run arbiter pii detectors      # what PII detection validates and misses
 uv run arbiter systems apply -f examples/systems.yaml   # declare and classify systems
@@ -187,6 +188,7 @@ uv run arbiter digest run --locale it   # daily digest; --locale all --format bo
 uv run arbiter report system KEY  # one system in full; report audit: the audit log
 uv run arbiter ingest FILE --source litellm   # records of another gateway; default jsonl
 uv run python scripts/measure_latency.py   # time the gateway adds to a request
+uv run python scripts/check_legal_sources.py   # legal sources of the pack, by checksum
 uv run alembic revision --autogenerate -m "..." --rev-id 000N   # new migration
 ```
 
