@@ -85,7 +85,22 @@ Entries link to the decision record that motivated them, where one exists.
   - metadata-only persistence by default
     ([ADR-0018](docs/adr/0018-metadata-only-by-default.md));
   - ingestion of external gateway data through source adapters
-    ([ADR-0019](docs/adr/0019-external-telemetry-ingestion.md)).
+    ([ADR-0019](docs/adr/0019-external-telemetry-ingestion.md));
+  - the v0.1 split confirmed, with the built-in PII detectors divided between the core
+    and v0.1.x ([ADR-0027](docs/adr/0027-pii-detectors-core-and-deferrable.md));
+  - API keys with a recognisable format, stored as an HMAC keyed with a pepper
+    ([ADR-0028](docs/adr/0028-api-keys-hmac-with-pepper.md));
+  - in-house RFC 8785 canonical JSON without floats for the audit hash
+    ([ADR-0029](docs/adr/0029-canonical-json-in-house.md));
+  - prices in a versioned YAML catalogue, currency converted only when reporting
+    ([ADR-0030](docs/adr/0030-price-catalogue-as-versioned-file.md));
+  - token counts left unknown when a provider returns no usage, with an opt-in estimate
+    ([ADR-0031](docs/adr/0031-token-counts-unknown-by-default.md)).
+
+### Changed
+
+- The em-dash character is no longer used anywhere in the repository; a check in
+  `scripts/check.sh` and in CI fails when a tracked file contains one.
 
 ### Fixed
 

@@ -36,6 +36,11 @@ supersedes the old one.
 | [0024](0024-development-tooling-baseline.md) | Development tooling baseline | Accepted | 2 |
 | [0025](0025-docker-free-local-development.md) | Develop locally without Docker; build and test containers in CI only | Accepted, extended by 0026 | 2 |
 | [0026](0026-codespaces-development-environment.md) | Develop in GitHub Codespaces with a dev container | Accepted | 2 |
+| [0027](0027-pii-detectors-core-and-deferrable.md) | Confirm the v0.1 split; divide the built-in PII detectors between core and v0.1.x | Accepted | 3 |
+| [0028](0028-api-keys-hmac-with-pepper.md) | Random API keys with a recognisable format, stored as an HMAC keyed with a pepper | Accepted | 3 |
+| [0029](0029-canonical-json-in-house.md) | In-house RFC 8785 canonicaliser without floats for the audit hash | Accepted | 3 |
+| [0030](0030-price-catalogue-as-versioned-file.md) | Prices in a versioned YAML catalogue; currency converted only when reporting | Accepted | 3 |
+| [0031](0031-token-counts-unknown-by-default.md) | Token counts unknown when a provider returns no usage, with an opt-in estimate | Accepted | 3 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -99,11 +104,21 @@ Decided by the project owner on 2026-10-02:
   what they depend on) and components that may slip to v0.1.x (among them routing by risk
   class, the LiteLLM importer and the simulation scenarios).
 
+## Phase 3: decisions at the start
+
+Decided by the project owner on 2026-10-02, each from an option table with a
+recommendation; in every case the recommended option was chosen.
+
+- Q1 closed by ADR-0027: the split of ADR-0009 is confirmed, and the built-in PII
+  detectors are divided between the core and v0.1.x.
+- ADR-0028 to ADR-0031: API keys, canonical JSON, price catalogue, token counts.
+- The owner approved Phase 2 by giving the go-ahead for Phase 3.
+
 ## Open questions
 
 | # | Question | Blocks |
 |---|---|---|
-| Q1 | In ADR-0009 the owner named the core and three deferrable examples; the placement of the items not named (policy and PII detection in the core; reports, local agent, traffic discovery, anchoring among the deferrable) follows the same rule and can be corrected | Phase 3 planning |
+| Q1 | Closed on 2026-10-02 by ADR-0027 | - |
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
 | Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
@@ -112,11 +127,7 @@ Decided by the project owner on 2026-10-02:
 
 | Topic | When |
 |---|---|
-| API key format, hashing and rotation | Phase 3, first |
-| Canonical JSON implementation for the audit hash | Phase 3, first |
-| Price catalogue format and currency handling | Phase 3, first |
-| Token counts when a provider returns no usage | Phase 3, first |
-| Anchoring sink details for the audit chain | Phase 3 |
+| Anchoring sink details for the audit chain | v0.1.x, with external anchoring (ADR-0009) |
 | Retention defaults and legal minimums | Phase 4 |
 | A2A and MCP module design, MCP revision support matrix | Phase 5 |
 | IaC tool (Bicep preferred by the brief), networking, identity, signed audit checkpoints, row-level security, container image scanning | Phase 6 |
