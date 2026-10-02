@@ -17,6 +17,7 @@ from ai_arbiter.core.audit.log import AuditReceipt, AuditRecord
 from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.events.model import Event
+from ai_arbiter.core.ports.llm import LLMProvider
 
 E = TypeVar("E", bound=Event)
 Handler = Callable[[E], Awaitable[None]]
@@ -54,4 +55,4 @@ class AuditLog(Protocol):
         ...
 
 
-__all__ = ["AuditLog", "Clock", "EventBus", "Handler", "SecretStore"]
+__all__ = ["AuditLog", "Clock", "EventBus", "Handler", "LLMProvider", "SecretStore"]

@@ -94,6 +94,47 @@ class IdentitySettings(_Section):
     api_key_pepper: PepperSettings = PepperSettings()
 
 
+class DeploymentSettings(_Section):
+    """One place a model can be called (ADR-0013).
+
+    ``provider`` names a plugin of the ``llm_providers`` group; ``settings`` is validated
+    by that plugin's own settings model when the gateway starts (ADR-0011).
+    """
+
+    name: str = Field(pattern=r"^[a-z0-9][a-z0-9._-]*$")
+    provider: str
+    # The model name at the provider. For Azure OpenAI, the name of the Azure deployment.
+    model: str
+    # The model names clients may ask for that this deployment answers. Default: ``model``.
+    serves: tuple[str, ...] = ()
+    region: str | None = None
+    # Lower is tried first.
+    priority: int = 100
+    # The catalogue entry that prices this deployment. Default: ``model``.
+    priced_as: str | None = None
+    # What to do when the provider returns no token counts (ADR-0031).
+    usage_fallback: Literal["none", "estimate"] = "none"
+    chars_per_token: int = Field(default=4, ge=1)
+    settings: dict[str, Any] = {}
+
+    @property
+    def served_models(self) -> tuple[str, ...]:
+        return self.serves or (self.model,)
+
+    @property
+    def price_model(self) -> str:
+        return self.priced_as or self.model
+
+
+class RouterSettings(_Section):
+    strategy: Literal["priority", "cost"] = "priority"
+    # How many deployments are tried for one request before giving up.
+    max_attempts: int = Field(default=3, ge=1)
+    # Extra calls to the same deployment after a failure that may be transient.
+    retries: int = Field(default=1, ge=0)
+    retry_backoff_ms: int = Field(default=200, ge=0)
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -116,8 +157,18 @@ class Settings(BaseSettings):
     server: ServerSettings = ServerSettings()
     plugins: PluginSettings = PluginSettings()
     identity: IdentitySettings = IdentitySettings()
+    deployments: tuple[DeploymentSettings, ...] = ()
+    router: RouterSettings = RouterSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
+
+    @model_validator(mode="after")
+    def _unique_deployments(self) -> "Settings":
+        names = [deployment.name for deployment in self.deployments]
+        duplicates = sorted({name for name in names if names.count(name) > 1})
+        if duplicates:
+            raise ValueError(f"deployment names are used twice: {', '.join(duplicates)}")
+        return self
 
     @classmethod
     def settings_customise_sources(

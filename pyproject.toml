@@ -68,6 +68,11 @@ env = "ai_arbiter.adapters.local.secrets:EnvSecretStore"
 [project.entry-points."ai_arbiter.event_buses"]
 in_process = "ai_arbiter.core.events.bus:InProcessEventBus"
 
+[project.entry-points."ai_arbiter.llm_providers"]
+mock = "ai_arbiter.adapters.mock.provider:MockProvider"
+openai_compat = "ai_arbiter.adapters.openai_compat.provider:OpenAICompatProvider"
+azure_openai = "ai_arbiter.adapters.azure.openai:AzureOpenAIProvider"
+
 [dependency-groups]
 dev = [
     "import-linter>=2.1",
