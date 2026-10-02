@@ -8,13 +8,14 @@ holds metadata only: no prompt and no completion text (ADR-0018).
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any
+from typing import Any, ClassVar
 from uuid import UUID
 
 from sqlalchemy import JSON, Boolean, ForeignKey, Index, Integer, String, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ai_arbiter.core.domain.ids import new_id
+from ai_arbiter.core.events.model import Event
 from ai_arbiter.core.persistence.base import Base
 from ai_arbiter.core.persistence.types import DecimalAmount, UTCDateTime
 
@@ -69,3 +70,11 @@ class Interaction(Base):
     # Categories of personal data found in the prompt. Never the values.
     pii_categories: Mapped[list[Any]] = mapped_column(JSON, default=list)
     decision_id: Mapped[UUID | None] = mapped_column(Uuid, default=None)
+
+
+class InteractionRecorded(Event):
+    """Published when an interaction is stored. Carries its identifier, nothing else."""
+
+    event_type: ClassVar[str] = "interaction.recorded"
+
+    interaction_id: UUID

@@ -50,3 +50,18 @@ def stream_text(chunks: Sequence[ChatChunk]) -> str:
         for chunk in chunks
         for choice in chunk.data.get("choices", [])
     )
+
+
+async def text_in_database(database: Any, needle: str) -> list[str]:
+    """Names of the tables where ``needle`` appears in any column. For privacy tests."""
+    from sqlalchemy import text
+
+    from ai_arbiter.migrations.metadata import target_metadata
+
+    hits: list[str] = []
+    async with database.session() as session:
+        for table in target_metadata.sorted_tables:
+            rows = (await session.execute(text(f'SELECT * FROM "{table.name}"'))).all()  # noqa: S608
+            if any(needle in str(value) for row in rows for value in row):
+                hits.append(table.name)
+    return hits

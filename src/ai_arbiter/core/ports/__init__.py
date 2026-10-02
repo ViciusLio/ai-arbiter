@@ -19,6 +19,8 @@ from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.events.model import Event
 from ai_arbiter.core.ports.llm import LLMProvider
 from ai_arbiter.core.redaction.model import PIIDetector
+from ai_arbiter.core.rules.decision import Decision
+from ai_arbiter.core.rules.engine import Facts
 
 E = TypeVar("E", bound=Event)
 Handler = Callable[[E], Awaitable[None]]
@@ -56,6 +58,16 @@ class AuditLog(Protocol):
         ...
 
 
+class PolicyEngine(Protocol):
+    """Decides what happens to a request from facts about it.
+
+    The default implementation evaluates a rule pack; another engine, such as OPA, can
+    take its place (ADR-0012). ``stage`` is ``pre_call`` or ``post_call``.
+    """
+
+    async def evaluate(self, stage: str, facts: Facts) -> Decision: ...
+
+
 __all__ = [
     "AuditLog",
     "Clock",
@@ -63,5 +75,6 @@ __all__ = [
     "Handler",
     "LLMProvider",
     "PIIDetector",
+    "PolicyEngine",
     "SecretStore",
 ]
