@@ -22,6 +22,12 @@ Entries link to the decision record that motivated them, where one exists.
   - System report and audit report, in Markdown and HTML, in English and Italian:
     `arbiter report system KEY`, `arbiter report audit`, and
     `GET /api/v1/systems/{key}/report`, `GET /api/v1/audit/report`.
+  - Digest delivery: `arbiter digest run --send` sends the digest to the configured
+    recipients, each in their language, through the `Notifier` port. Two notifiers:
+    `file`, the default, which writes `.eml` files and sends nothing, and `smtp`, which
+    uses the standard library and takes its password from a secret reference. Each
+    delivery is an audit entry without addresses. The `smtp` notifier was not run
+    against a real mail server.
 - **Compliance toolkit** (Phase 4). Guide: `docs/compliance.md`.
   - Inventory of AI systems declared in YAML, through the API or the CLI, with their AI
     Act roles ([ADR-0007](docs/adr/0007-ai-act-role-explicit-deployer-first.md),

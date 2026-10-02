@@ -32,7 +32,7 @@ Update this list at every commit of the phase.
 |---|---|---|
 | 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` (`compliance/ingest`) | Done. The LiteLLM mapping was written from its documented specification, not checked against output of a running LiteLLM |
 | 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Done: `arbiter report system KEY`, `arbiter report audit`, the two HTTP endpoints, `compliance/reports`. Verified by the automated tests only: the commands were not run by hand |
-| 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Not started |
+| 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Done: `core/notification.py`, `adapters/local/notifiers.py`, `compliance/digest/delivery.py`, settings `plugins.notifier` and `notifications`. Not verified: the `smtp` notifier against a real server (Mailpit of the Compose stack); the tests replace the SMTP client |
 | 4 | Discovery of systems from traffic | Waits for the owner's decision on what identifies a discovered system |
 | 5 | Simulation scenarios and `arbiter demo` | Waits for the owner's decision on their form |
 | 6 | Phase summary `docs/phases/phase-4b-*.md`, README tracking, changelog, full check | Not started |

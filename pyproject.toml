@@ -82,6 +82,10 @@ builtin = "ai_arbiter.core.redaction.builtin:BuiltinDetector"
 jsonl = "ai_arbiter.compliance.ingest.sources:JsonlSource"
 litellm = "ai_arbiter.compliance.ingest.sources:LiteLLMSource"
 
+[project.entry-points."ai_arbiter.notifiers"]
+file = "ai_arbiter.adapters.local.notifiers:FileNotifier"
+smtp = "ai_arbiter.adapters.local.notifiers:SmtpNotifier"
+
 [dependency-groups]
 dev = [
     "import-linter>=2.1",

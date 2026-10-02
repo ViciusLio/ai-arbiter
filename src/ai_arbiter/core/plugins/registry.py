@@ -19,6 +19,7 @@ EVENT_BUSES = "event_buses"
 LLM_PROVIDERS = "llm_providers"
 PII_DETECTORS = "pii_detectors"
 TELEMETRY_SOURCES = "telemetry_sources"
+NOTIFIERS = "notifiers"
 
 # Port groups known to this version, in display order.
 GROUPS: tuple[str, ...] = (
@@ -27,6 +28,7 @@ GROUPS: tuple[str, ...] = (
     LLM_PROVIDERS,
     PII_DETECTORS,
     TELEMETRY_SOURCES,
+    NOTIFIERS,
 )
 
 EntryPointSource = Callable[[str], Iterable[EntryPoint]]

@@ -10,6 +10,7 @@ import typer
 from ai_arbiter.cli.common import (
     compliance_for,
     fail,
+    notifier_for,
     open_database,
     output_choices,
     run,
@@ -18,6 +19,13 @@ from ai_arbiter.cli.common import (
     write_outputs,
 )
 from ai_arbiter.cli.systems import TenantSlug
+from ai_arbiter.compliance.digest.delivery import (
+    DeliveryReport,
+    check_delivery_settings,
+    digest_messages,
+    record_delivery,
+    send_messages,
+)
 from ai_arbiter.compliance.digest.model import build_digest, record_digest_run
 from ai_arbiter.compliance.digest.render import DigestFormat, render_digest
 from ai_arbiter.compliance.ingest.service import IngestReport, IngestService
@@ -89,10 +97,23 @@ retention_app = typer.Typer(help="Apply the retention periods.", no_args_is_help
 
 
 async def _digest(
-    settings: Settings, tenant: str, days: int, locales: list[str], formats: list[DigestFormat]
-) -> dict[tuple[str, DigestFormat], str]:
+    settings: Settings,
+    tenant: str,
+    days: int,
+    locales: list[str],
+    formats: list[DigestFormat],
+    send: bool,
+) -> tuple[dict[tuple[str, DigestFormat], str], DeliveryReport | None, int]:
     compliance = compliance_for(settings)
     now = utcnow()
+    notifier = None
+    if send:
+        # Everything that can be wrong with the configuration is found before any work.
+        check_delivery_settings(settings.notifications)
+        notifier = notifier_for(settings)
+        locales = sorted({*locales, *(r.locale for r in settings.notifications.recipients)})
+    delivery: DeliveryReport | None = None
+    expected = 0
     async with open_database(settings) as database:
         row = await tenant_for(database, tenant)
         async with database.transaction() as session:
@@ -105,12 +126,22 @@ async def _digest(
                 period_end=now,
                 generated_at=now,
             )
-            await record_digest_run(session, row, model, locales)
-    return {
+            digest_run_row = await record_digest_run(session, row, model, locales)
+        if notifier is not None:
+            # No transaction is open while the mail server is being talked to.
+            messages = digest_messages(model, settings.notifications)
+            expected = len(messages)
+            delivery = await send_messages(notifier, messages)
+            async with database.transaction() as session:
+                await record_delivery(
+                    session, compliance.audit, row.id, digest_run_row.id, delivery, expected
+                )
+    rendered = {
         (locale, output): render_digest(model, locale=locale, output=output)
         for locale in locales
         for output in formats
     }
+    return rendered, delivery, expected
 
 
 @digest_app.command("run")
@@ -125,15 +156,37 @@ def digest_run(
         Path | None,
         typer.Option("--output-dir", "-o", help="Directory to write to. Default: standard output."),
     ] = None,
+    send: Annotated[
+        bool,
+        typer.Option(
+            "--send", help="Send it to the configured recipients, each in their language."
+        ),
+    ] = False,
     tenant: TenantSlug = LOCAL_TENANT_SLUG,
 ) -> None:
     """Build the digest of the last day: inventory, findings, traffic, audit head.
 
-    Scheduling is external: run this from cron or from a container job.
+    Scheduling is external: run this from cron or from a container job. With --send the
+    digest goes through the notifier named in the configuration and is printed only when
+    a directory is given.
     """
-    locales, formats = output_choices(locale, output_format, to_directory=output_dir is not None)
-    rendered = run(_digest(settings_from(ctx), tenant, days, locales, formats))
-    write_outputs(rendered, output_dir, "digest")
+    to_directory = output_dir is not None or send
+    locales, formats = output_choices(locale, output_format, to_directory=to_directory)
+    rendered, delivery, expected = run(
+        _digest(settings_from(ctx), tenant, days, locales, formats, send)
+    )
+    if delivery is None:
+        write_outputs(rendered, output_dir, "digest")
+        return
+    if output_dir is not None:
+        chosen = {key: text for key, text in rendered.items() if key[0] in locales}
+        write_outputs(chosen, output_dir, "digest")
+    typer.echo(
+        f"Sent {delivery.messages} of {expected} messages to {delivery.recipients} "
+        f"recipients through the '{delivery.notifier}' notifier."
+    )
+    if delivery.error is not None:
+        raise fail(ArbiterError(f"a message could not be delivered ({delivery.error})"))
 
 
 async def _work(settings: Settings, once: bool, interval: int) -> int:

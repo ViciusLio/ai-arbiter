@@ -37,6 +37,7 @@ from ai_arbiter.core.plugins.registry import (
     EVENT_BUSES,
     GROUPS,
     LLM_PROVIDERS,
+    NOTIFIERS,
     PII_DETECTORS,
     SECRET_STORES,
     PluginRegistry,
@@ -257,6 +258,7 @@ def plugins_list(ctx: typer.Context) -> None:
         EVENT_BUSES: {settings.plugins.event_bus},
         LLM_PROVIDERS: {deployment.provider for deployment in settings.deployments},
         PII_DETECTORS: {settings.plugins.pii_detector},
+        NOTIFIERS: {settings.plugins.notifier},
     }
     registry = PluginRegistry()
     for group in GROUPS:

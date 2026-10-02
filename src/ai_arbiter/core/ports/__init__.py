@@ -19,6 +19,7 @@ from ai_arbiter.core.domain.risk import SystemRiskProfile
 from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.events.model import Event
 from ai_arbiter.core.interaction import TelemetrySource
+from ai_arbiter.core.notification import Notifier
 from ai_arbiter.core.ports.llm import LLMProvider
 from ai_arbiter.core.redaction.model import PIIDetector
 from ai_arbiter.core.rules.decision import Decision
@@ -98,6 +99,7 @@ __all__ = [
     "Handler",
     "LLMProvider",
     "NoSystemDirectory",
+    "Notifier",
     "PIIDetector",
     "PolicyEngine",
     "SecretStore",

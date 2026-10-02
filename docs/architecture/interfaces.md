@@ -8,7 +8,7 @@ All ports are `typing.Protocol` classes in `ai_arbiter.core.ports`. Implementati
 in `adapters` or in the module that owns the capability, and are selected by
 configuration (ADR-0011). A port is added to the code together with its first
 implementation: so far `Clock`, `SecretStore`, `EventBus`, `AuditLog`, `LLMProvider`,
-`PIIDetector`, `PolicyEngine` and `SystemDirectory`.
+`PIIDetector`, `PolicyEngine`, `SystemDirectory`, `TelemetrySource` and `Notifier`.
 
 ## 0. Where the code differs from these sketches
 
@@ -32,10 +32,11 @@ written in Phase 1; this table is what changed.
 | `Classifier.classify(system, pack, on=date)` | `classify(pack, facts, roles)`: the date is not an input | Obligations carry `applies_from`; whether one applies today is decided when it is shown |
 | `Detector`, `LocalCollector`, `FindingService.report(candidate)` | `ScannerService.observe` computes facts per system; `FindingService.report(session, tenant_id, candidate, scan_run_id=...)` | One scanner over inventory and traffic; local collectors are deferrable |
 | `DigestRenderer` protocol | `render_digest(model, locale=, output=)` | One implementation |
-| `Notifier` | Not in the code yet | E-mail delivery is deferrable |
+| `Notifier.send(message)` | As sketched, in `core.notification`, with `name` and `settings_model`; `file` and `smtp` in `adapters.local.notifiers` | Phase 4b. The file notifier is the default, so that nothing is sent until an operator names a server |
+| `TelemetrySource` | `parse(payload) -> InteractionRecord` in `core.interaction`; `jsonl` and `litellm` in `compliance.ingest` | Phase 4b |
 | Events | Published: `InteractionRecorded`, `SystemDeclared`, `SystemChanged`, `SystemClassified`. Consumed: the two system events, by the classifier | The others have no consumer yet |
 | HTTP: `/api/v1/tenants` | Not implemented; `/api/v1/me`, `/principals`, `/audit/fail-mode` added | A key acts inside one tenant; tenants are created from the CLI |
-| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit`, `arbiter retention` added; `arbiter ingest`, `arbiter report` and `arbiter demo` not yet | Importers, reports and scenarios are deferrable (ADR-0009) |
+| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit`, `arbiter retention` added; `arbiter ingest` and `arbiter report` added in Phase 4b; `arbiter demo` not yet | Scenarios are deferrable (ADR-0009) |
 
 ## 1. Shared types
 

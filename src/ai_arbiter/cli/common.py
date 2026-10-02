@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 import typer
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,11 +20,17 @@ from ai_arbiter.core.audit import DatabaseAuditLog
 from ai_arbiter.core.config.settings import Settings, load_settings
 from ai_arbiter.core.domain.tenancy import LOCAL_TENANT_SLUG
 from ai_arbiter.core.domain.time import utcnow
-from ai_arbiter.core.errors import ArbiterError, NotFoundError
+from ai_arbiter.core.errors import ArbiterError, ConfigurationError, NotFoundError
 from ai_arbiter.core.i18n import SUPPORTED_LOCALES
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.persistence.tenant import Tenant
-from ai_arbiter.core.plugins.registry import EVENT_BUSES, PluginRegistry
+from ai_arbiter.core.plugins.registry import (
+    EVENT_BUSES,
+    NOTIFIERS,
+    SECRET_STORES,
+    PluginRegistry,
+)
+from ai_arbiter.core.ports import Notifier
 from ai_arbiter.gateway.identity.model import Principal, PrincipalKind
 
 DISCLAIMER = "Arbiter is a support tool. It does not provide legal advice."
@@ -88,6 +95,30 @@ def compliance_for(settings: Settings) -> ComplianceRuntime:
     """The compliance services as the command line uses them."""
     bus = PluginRegistry().load(EVENT_BUSES, settings.plugins.event_bus)()
     return build_compliance(settings, audit=DatabaseAuditLog(), bus=bus)
+
+
+def notifier_for(settings: Settings) -> Notifier:
+    """The notifier named in the configuration, with its settings checked.
+
+    Raises ``PluginError`` for an unknown notifier and ``ConfigurationError`` for
+    settings it rejects, before anything is sent.
+    """
+    registry = PluginRegistry()
+    name = settings.plugins.notifier
+    plugin = registry.load(NOTIFIERS, name)
+    try:
+        options = plugin.settings_model.model_validate(settings.notifications.settings)
+    except ValidationError as exc:
+        problems = "; ".join(
+            f"{'.'.join(str(part) for part in error['loc']) or 'settings'}: {error['msg']}"
+            for error in exc.errors(include_input=False, include_url=False)
+        )
+        raise ConfigurationError(
+            f"notifications.settings: invalid settings for notifier '{name}': {problems}"
+        ) from exc
+    secrets = registry.load(SECRET_STORES, settings.plugins.secret_store)()
+    notifier: Notifier = plugin(secrets, options)
+    return notifier
 
 
 async def reviewer_for(session: AsyncSession, tenant_id: UUID, name: str) -> UUID:

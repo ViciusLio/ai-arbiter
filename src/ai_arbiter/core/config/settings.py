@@ -12,7 +12,14 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -24,6 +31,7 @@ from sqlalchemy.exc import ArgumentError
 
 from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.errors import ConfigurationError
+from ai_arbiter.core.notification import check_address
 
 DEFAULT_CONFIG_FILE = Path("arbiter.yaml")
 DEFAULT_DATABASE_URL = "sqlite+aiosqlite:///./.arbiter/arbiter.db"
@@ -66,6 +74,8 @@ class PluginSettings(_Section):
     secret_store: str = "env"  # noqa: S105 - a plugin name, not a secret
     event_bus: str = "in_process"
     pii_detector: str = "builtin"
+    # "file" writes messages to a directory: nothing leaves the machine by default.
+    notifier: str = "file"
 
 
 def _secret_reference(value: str) -> str:
@@ -274,6 +284,31 @@ class RetentionSettings(_Section):
     outbox_days: int = Field(default=7, ge=1)
 
 
+class NotificationRecipient(_Section):
+    address: str
+    # The language this person reads the digest in.
+    locale: str = "en"
+
+    @field_validator("address")
+    @classmethod
+    def _address(cls, value: str) -> str:
+        return check_address(value)
+
+
+class NotificationSettings(_Section):
+    """Who receives the digest, and how the notifier named in ``plugins`` is set up."""
+
+    sender: str | None = None
+    recipients: tuple[NotificationRecipient, ...] = ()
+    # Checked by the notifier plugin against its own settings model (ADR-0011).
+    settings: dict[str, Any] = {}
+
+    @field_validator("sender")
+    @classmethod
+    def _sender(cls, value: str | None) -> str | None:
+        return value if value is None else check_address(value)
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -305,6 +340,7 @@ class Settings(BaseSettings):
     compliance: ComplianceSettings = ComplianceSettings()
     ingest: IngestSettings = IngestSettings()
     retention: RetentionSettings = RetentionSettings()
+    notifications: NotificationSettings = NotificationSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

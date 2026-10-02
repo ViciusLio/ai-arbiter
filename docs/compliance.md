@@ -207,8 +207,49 @@ reviewer feedback per rule, gateway traffic of the period with estimated cost, a
 head of the audit chain. Printing the head puts a copy of it outside the database, which
 is what makes a later rewrite of the log detectable (see [the audit log](audit.md)).
 
-Scheduling is external: run the command from cron or a container job. Delivery by e-mail
-is planned for v0.1.x.
+Scheduling is external: run the command from cron or a container job.
+
+### Sending it
+
+`arbiter digest run --send` sends the digest to the configured recipients, each in their
+language, as one message per language with a plain text part (the Markdown) and an HTML
+part.
+
+```yaml
+plugins:
+  notifier: smtp                  # default: file
+notifications:
+  sender: arbiter@example.org
+  recipients:
+    - { address: ada@example.org, locale: it }
+    - { address: grace@example.org }          # locale: en
+  settings:                       # of the notifier named above
+    host: mail.example.org
+    port: 587
+    security: starttls            # starttls, tls (port 465) or none
+    username: arbiter
+    password: secret://smtp-password   # ARBITER_SECRET_SMTP_PASSWORD, never the value
+```
+
+| Notifier | Does | Settings |
+|---|---|---|
+| `file` (default) | Writes each message as an `.eml` file. Nothing leaves the machine | `directory` (default `.arbiter/outbox`) |
+| `smtp` | Sends through an SMTP server, with the standard library | `host`, `port`, `security`, `username`, `password`, `timeout_seconds` |
+
+- The default sends nothing: a digest holds the names of systems and their findings,
+  and it goes to a mail server only when an operator names one.
+- Credentials are refused on a connection without encryption (`security: none`).
+- The configuration is checked before the digest is built. The database holds no open
+  transaction while the mail server is being talked to.
+- Each delivery is one audit entry, `digest.sent` or `digest.send_failed`, with the
+  number of messages and of recipients and never the addresses. When a message fails,
+  the command stops there and exits with an error; the server's own words are dropped
+  and only the kind of failure is kept.
+- With `--send` the digest is printed only when `-o DIR` is given.
+
+Sending is available from the command line only, not over HTTP. The `smtp` notifier is
+covered by tests that replace the SMTP client; it has not been run against a real mail
+server.
 
 ## Reports
 
@@ -328,7 +369,7 @@ cut-off dates (ADR-0038).
   text, and the pack's review against EUR-Lex is pending.
 - Deployer obligations only. A provider gets a tier and no list of its obligations
   beyond Article 50.
-- Thirteen scan rules. Discovery of systems from traffic, the local agent and e-mail
-  delivery are planned for v0.1.x (ADR-0009).
+- Thirteen scan rules. Discovery of systems from traffic and the local agent are planned
+  for v0.1.x (ADR-0009).
 - Reports are Markdown and HTML only: no PDF.
 - Personal data in traffic is detected by format only (see [the gateway](gateway.md)).
