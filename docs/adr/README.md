@@ -43,6 +43,12 @@ supersedes the old one.
 | [0031](0031-token-counts-unknown-by-default.md) | Token counts unknown when a provider returns no usage, with an opt-in estimate | Accepted | 3 |
 | [0032](0032-first-release-is-the-alpha.md) | `0.1.0a1` is the first release; `0.0.1` is skipped | Accepted | 3 |
 | [0033](0033-real-models-only-in-manual-checks.md) | Provider adapters are checked against real models by hand; no automated test depends on one | Accepted | 3 |
+| [0034](0034-legal-text-from-the-publications-office.md) | Legal text from the Publications Office, confirmed by the owner on EUR-Lex | Accepted | 4 |
+| [0035](0035-staged-classification-facts.md) | Classification facts asked in stages; a missing answer is never a "no" | Accepted | 4 |
+| [0036](0036-derogation-recorded-from-the-provider.md) | The Article 6(3) derogation is recorded as claimed by the provider, not computed | Accepted | 4 |
+| [0037](0037-classification-is-a-proposal-until-reviewed.md) | A classification is a proposal until a named person confirms or overrides it | Accepted | 4 |
+| [0038](0038-retention-defaults-and-purge.md) | Retention defaults, a six-month floor for high-risk systems, a purge command | Accepted | 4 |
+| [0039](0039-real-provider-for-demos.md) | A local model server on demand for demos now, Azure AI Foundry in Phase 6 | Accepted | 4 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -134,14 +140,20 @@ Decided by the project owner on 2026-10-02, at the end of the phase:
   adapter; Azure OpenAI waits for Phase 6).
 - Working rules for the Codespace, recorded in `CLAUDE.md` under "Codespaces hygiene".
 
+## Phase 4: decisions at the start
+
+Decided by the project owner on 2026-10-02 from the option tables of the
+[Phase 4 preparation](../phases/phase-4-preparation.md); in every case the recommended
+option was chosen: ADR-0034 to ADR-0039.
+
 ## Open questions
 
 | # | Question | Blocks |
 |---|---|---|
 | Q1 | Closed on 2026-10-02 by ADR-0027 | - |
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
-| Q3 | The AI Act text and calendar were verified on 2026-10-02 against the Official Journal texts retrieved from the Publications Office: the dates of the Phase 0 analysis and the number of the amending act, Regulation (EU) 2026/1744, are confirmed ([Phase 4 preparation](../phases/phase-4-preparation.md)). Open: whether that source satisfies the rule that names EUR-Lex, whose website refuses automated access (decision P4-1) | The AI Act rule pack |
-| Q7 | Decisions P4-1 to P4-6 of the [Phase 4 preparation](../phases/phase-4-preparation.md): source of the legal text, fact schema, Art. 6(3) derogation, review and override, retention, a real provider for demos | Phase 4 |
+| Q3 | The owner's spot check on EUR-Lex of the articles the AI Act rule pack quotes (ADR-0034). Until then the pack carries `review: pending` | The `0.1.0` release |
+| Q7 | Closed on 2026-10-02 by ADR-0034 to ADR-0039 | - |
 | Q8 | The CodeQL alert list cannot be read with the Codespace token; Dependabot alerts are disabled for the repository. Both are for the owner to look at | - |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
 | Q5 | Closed on 2026-10-02 by ADR-0033 for the OpenAI-compatible adapter. The Azure OpenAI adapter is checked against a real endpoint in Phase 6 | Phase 6 |
@@ -152,7 +164,6 @@ Decided by the project owner on 2026-10-02, at the end of the phase:
 | Topic | When |
 |---|---|
 | Anchoring sink details for the audit chain | v0.1.x, with external anchoring (ADR-0009) |
-| Retention defaults and legal minimums | Phase 4 |
 | A2A and MCP module design, MCP revision support matrix | Phase 5 |
 | IaC tool (Bicep preferred by the brief), networking, identity, signed audit checkpoints, row-level security, container image scanning | Phase 6 |
 | Web dashboard | After v0.1 |

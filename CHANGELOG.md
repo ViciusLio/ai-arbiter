@@ -150,7 +150,12 @@ Entries link to the decision record that motivated them, where one exists.
     ([ADR-0032](docs/adr/0032-first-release-is-the-alpha.md));
   - provider adapters checked against real models by hand only; no automated test
     depends on a real model
-    ([ADR-0033](docs/adr/0033-real-models-only-in-manual-checks.md)).
+    ([ADR-0033](docs/adr/0033-real-models-only-in-manual-checks.md));
+  - the opening decisions of Phase 4: the source of the legal text, staged
+    classification facts, the Article 6(3) derogation, review of classifications,
+    retention, and a real provider for demos
+    ([ADR-0034](docs/adr/0034-legal-text-from-the-publications-office.md) to
+    [ADR-0039](docs/adr/0039-real-provider-for-demos.md)).
 
 ### Changed
 
