@@ -65,7 +65,8 @@ Constraints added by the project owner when deciding:
 - The toolkit must ingest from external gateways through adapters (ADR-0002 → ADR-0019).
 - An LLM may only ever suggest, never decide a classification (ADR-0003).
 - Digest and reports are localised in EN and IT (ADR-0004 → ADR-0021).
-- A `0.0.1` release reserves `ai-arbiter` on PyPI (ADR-0005).
+- A `0.0.1` release was to reserve `ai-arbiter` on PyPI (ADR-0005). It was never
+  published: ADR-0032 replaced it with `0.1.0a1`, which is not published either.
 - The AI Act role is an explicit field of the data model (ADR-0007).
 
 ## Phase 1: summary
@@ -86,7 +87,8 @@ Amendments made at acceptance:
 
 Other decisions of the project owner:
 
-- The owner configures the PyPI trusted publisher and triggers the `0.0.1` release.
+- The owner configures the PyPI trusted publisher and triggers the first release
+  (planned then as `0.0.1`; `0.1.0a1` since ADR-0032). Neither has happened yet.
 - AI Act sources: the official EU sources on EUR-Lex, verified before Phase 4, including
   the status of any pending change to the application calendar.
 

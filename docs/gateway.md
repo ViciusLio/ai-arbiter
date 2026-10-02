@@ -13,10 +13,12 @@ run against a real endpoint**.
 
 ## Quickstart
 
-No container, no cloud account. Needs the `gateway` extra.
+No container, no cloud account. Needs the `gateway` extra. Nothing is published on PyPI
+yet: from a clone, run `uv sync --all-extras` once and put `uv run` in front of each
+`arbiter` command.
 
 ```bash
-pip install --pre "ai-arbiter[gateway]"   # once published; from a clone: uv sync --all-extras
+pip install --pre "ai-arbiter[gateway]"   # once the first release is published
 
 arbiter init                                   # arbiter.yaml, a SQLite database, secrets in .env
 arbiter keys create --name demo --role admin   # prints the API key once

@@ -16,15 +16,16 @@ without the other.
 
 > Arbiter is a support tool. It does not provide legal advice.
 
-This project is published on PyPI as **`ai-arbiter`**. It is not related to `arbiter-ai`
-or `arbiter`, which are different projects by other authors.
+Nothing is published yet. The name of this project on PyPI will be **`ai-arbiter`**. It
+is not related to `arbiter-ai` or `arbiter`, which are different projects by other
+authors and are already on PyPI.
 
 ## Install
 
 Not on PyPI yet. Once the first release, `0.1.0a1`, is published:
 
 ```bash
-pip install --pre ai-arbiter      # --pre until 0.1.0: the current release is an alpha
+pip install --pre ai-arbiter      # --pre until 0.1.0: the first release will be an alpha
 ```
 
 Or run it without installing:
@@ -35,15 +36,18 @@ uvx ai-arbiter@0.1.0a1 --version
 
 Until then, install from a clone: `uv sync --all-extras`, then `uv run arbiter`.
 
-The base install is the offline toolkit and CLI, on SQLite. The HTTP gateway is an extra:
+The base install is the offline toolkit and CLI, on SQLite. The HTTP gateway is an extra
+(from a clone, `uv sync --all-extras` already includes it):
 
 ```bash
-pip install --pre "ai-arbiter[gateway]"
+pip install --pre "ai-arbiter[gateway]"   # once published
 ```
 
 ## Try it
 
-No Docker and no cloud account needed. The mock provider answers in place of a real
+From a clone, put `uv run` in front of each command below: until the first release there
+is no installed `arbiter` command. No Docker and no cloud account needed. The mock
+provider answers in place of a real
 model.
 
 ```bash

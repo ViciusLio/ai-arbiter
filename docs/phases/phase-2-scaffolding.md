@@ -114,7 +114,7 @@ Not verified in this run:
 
 | Item | Why |
 |---|---|
-| Release workflow and Trusted Publishing | Runs on a version tag; the owner publishes `0.0.1` |
+| Release workflow and Trusted Publishing | Runs on a version tag pushed by the owner. Nothing has been published: the `0.0.1` planned here was later replaced by `0.1.0a1` (ADR-0032) |
 | CodeQL alerts | The workflow passed, but the alert list is not readable with the Codespaces token; the owner checks the Security tab |
 | Mailpit beyond starting | Nothing sends mail before Phase 4 |
 | Dev container outside Codespaces | Only Codespaces was used |

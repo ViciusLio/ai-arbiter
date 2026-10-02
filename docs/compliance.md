@@ -17,6 +17,9 @@ the project owner is still pending**, and every output says so until it is done
 
 ## Quickstart
 
+Nothing is published on PyPI yet: from a clone, run `uv sync --all-extras` once and put
+`uv run` in front of each command.
+
 ```bash
 arbiter init
 arbiter systems apply -f examples/systems.yaml   # declare and classify seven invented systems

@@ -64,7 +64,7 @@ their official sources first: the Phase 0 analysis is from secondary sources.
 | Thing | Name |
 |---|---|
 | Brand | Arbiter |
-| Repository, PyPI distribution | `ai-arbiter` |
+| Repository; PyPI distribution, once published | `ai-arbiter` |
 | Import package | `ai_arbiter` |
 | CLI | `arbiter`, alias `ai-arbiter` |
 | Author | ViciusLio |
@@ -198,6 +198,9 @@ migrations differ.
 - No Azure resources before Phase 6 (ADR-0008).
 - Say what was verified and what was not. Never report something as tested if it only
   exists.
+- Never write that the project is published, released or available on PyPI until the
+  owner has published it. Install instructions with `pip` say "once published" and give
+  the way from a clone.
 - Publishing to PyPI or any other outward-facing action is prepared, then triggered by
   the owner.
 - At the end of each phase: phase summary in `docs/phases/`, ADR index and open questions,
