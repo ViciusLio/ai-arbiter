@@ -16,6 +16,7 @@ from ai_arbiter.core.rules.schema import (
     FactType,
     LegalRef,
     Not,
+    Rule,
     RuleKind,
     RulePack,
 )
@@ -61,6 +62,35 @@ class RuleMatch(BaseModel):
     legal_refs: tuple[LegalRef, ...] = ()
     applies_from: date | None = None
     message_key: str
+    roles: tuple[str, ...] = ()
+    severity: str | None = None
+    severity_before: str | None = None
+
+
+class OpenRule(BaseModel):
+    """A rule that cannot be told yet, and the facts to ask for next."""
+
+    model_config = ConfigDict(frozen=True)
+
+    rule_id: str
+    outcome: str
+    missing: tuple[str, ...]
+
+
+class Evaluation(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    matches: tuple[RuleMatch, ...]
+    open: tuple[OpenRule, ...]
+
+    @property
+    def missing_facts(self) -> tuple[str, ...]:
+        """Facts to ask for next, each once, in the order the rules need them."""
+        seen: dict[str, None] = {}
+        for rule in self.open:
+            for name in rule.missing:
+                seen.setdefault(name)
+        return tuple(seen)
 
 
 def _same_type(left: object, right: object) -> bool:
@@ -127,11 +157,42 @@ def _evaluate(condition: Any, facts: Facts) -> tuple[bool, list[ConditionTrace]]
     return held, [trace for result, traces in results if result == held for trace in traces]
 
 
+def _evaluate3(condition: Any, facts: Facts) -> tuple[bool | None, list[ConditionTrace], list[str]]:
+    """Three-valued evaluation (ADR-0035): holds, does not hold, or cannot be told.
+
+    Returns the value, the comparisons that explain it and, when it cannot be told, the
+    facts to ask for next. ``all`` asks for the facts of its first undecided condition
+    only: that is what makes a questionnaire staged, an area being asked before its
+    details. ``any`` needs every undecided branch.
+    """
+    if isinstance(condition, Comparison):
+        if condition.operator != "exists" and facts.get(condition.fact) is None:
+            return None, [], [condition.fact]
+        return _holds(condition, facts), [_trace(condition)], []
+    if isinstance(condition, Not):
+        value, traces, missing = _evaluate3(condition.not_, facts)
+        return (None if value is None else not value), _negate(traces), missing
+    conjunction = isinstance(condition, AllOf)
+    results = [
+        _evaluate3(child, facts) for child in (condition.all if conjunction else condition.any)
+    ]
+    decisive = not conjunction  # ``any`` is settled by a true branch, ``all`` by a false one
+    if any(value is decisive for value, _, _ in results):
+        traces = [t for value, child, _ in results if value is decisive for t in child]
+        return decisive, traces, []
+    undecided = [missing for value, _, missing in results if value is None]
+    if undecided:
+        asked = undecided[0] if conjunction else [name for item in undecided for name in item]
+        return None, [], list(dict.fromkeys(asked))
+    return (not decisive), [t for _, child, _ in results for t in child], []
+
+
 def _check_facts(pack: RulePack, facts: Facts) -> None:
     for name, value in facts.items():
-        declared = pack.facts.get(name)
-        if declared is None or value is None:
+        spec = pack.facts.get(name)
+        if spec is None or value is None:
             continue
+        declared = spec.type
         valid = {
             FactType.BOOLEAN: isinstance(value, bool),
             FactType.INTEGER: isinstance(value, int) and not isinstance(value, bool),
@@ -160,19 +221,53 @@ def evaluate(pack: RulePack, kind: RuleKind, facts: Facts) -> list[RuleMatch]:
             continue
         held, traces = _evaluate(rule.when, facts)
         if held:
-            matches.append(
-                RuleMatch(
-                    rule_id=rule.id,
-                    pack=pack.pack,
-                    pack_version=pack.version,
-                    outcome=rule.then.outcome,
-                    matched=tuple(traces),
-                    legal_refs=rule.then.legal_refs,
-                    applies_from=rule.then.applies_from,
-                    message_key=rule.then.message_key,
-                )
-            )
+            matches.append(_match(pack, rule, traces))
     return matches
+
+
+def _match(pack: RulePack, rule: Rule, traces: list[ConditionTrace]) -> RuleMatch:
+    return RuleMatch(
+        rule_id=rule.id,
+        pack=pack.pack,
+        pack_version=pack.version,
+        outcome=rule.then.outcome,
+        matched=tuple(traces),
+        legal_refs=rule.then.legal_refs,
+        applies_from=rule.then.applies_from,
+        message_key=rule.then.message_key,
+        roles=rule.roles,
+        severity=rule.then.severity,
+        severity_before=rule.then.severity_before,
+    )
+
+
+def evaluate_partial(pack: RulePack, kind: RuleKind, facts: Facts) -> Evaluation:
+    """Evaluate with missing facts allowed.
+
+    A rule whose condition cannot be told is returned as open, with the facts to ask for
+    next, instead of being counted as not matching. A fact that was not answered is
+    never read as "no".
+    """
+    _check_facts(pack, facts)
+    matches: list[RuleMatch] = []
+    undecided: list[OpenRule] = []
+    for rule in pack.rules:
+        if rule.kind is not kind:
+            continue
+        value, traces, missing = _evaluate3(rule.when, facts)
+        if value:
+            matches.append(_match(pack, rule, traces))
+        elif value is None:
+            undecided.append(
+                OpenRule(rule_id=rule.id, outcome=rule.then.outcome, missing=tuple(missing))
+            )
+    return Evaluation(matches=tuple(matches), open=tuple(undecided))
+
+
+def condition_state(condition: Any, facts: Facts) -> tuple[bool | None, list[str]]:
+    """Three-valued value of a single condition, and the facts it still needs."""
+    value, _, missing = _evaluate3(condition, facts)
+    return value, missing
 
 
 def parse_rule_pack(text: str, *, origin: str = "rule pack") -> RulePack:

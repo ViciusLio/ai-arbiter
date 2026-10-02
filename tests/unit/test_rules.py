@@ -11,7 +11,9 @@ from ai_arbiter.core.rules import (
     RuleKind,
     RulePack,
     RulePackError,
+    condition_state,
     evaluate,
+    evaluate_partial,
     facts_digest,
     load_packaged_pack,
     load_rule_pack,
@@ -338,3 +340,169 @@ def test_a_decision_serialises_for_the_audit_log_without_fact_values(pack: RuleP
         }
     ]
     assert "5000" not in str(payload)
+
+
+STAGED = """
+pack: staged
+version: "1"
+stages: [scope, area]
+facts:
+  scope.in: { type: boolean, stage: scope, ref: "Art. 2" }
+  area.jobs: { type: boolean, stage: area, ref: "Annex III(4)" }
+  area.jobs_recruitment: { type: boolean, stage: area, ref: "Annex III(4)(a)" }
+  area.school: { type: boolean, stage: area }
+  derogation: boolean
+  profiling: boolean
+  count: integer
+rules:
+  - id: OUT
+    kind: classification
+    when: { fact: scope.in, eq: false }
+    then: { outcome: out_of_scope, message_key: k }
+  - id: JOBS
+    kind: classification
+    roles: [deployer]
+    when:
+      all:
+        - { fact: area.jobs, eq: true }
+        - { fact: area.jobs_recruitment, eq: true }
+        - not: { all: [{ fact: derogation, eq: true }, { fact: profiling, eq: false }] }
+    then: { outcome: high_risk, message_key: k, severity: high, severity_before: low }
+  - id: EITHER
+    kind: classification
+    when: { any: [{ fact: area.school, eq: true }, { fact: count, gt: 3 }] }
+    then: { outcome: transparency, message_key: k }
+outcome_obligations:
+  - id: OBL
+    outcome: high_risk
+    roles: [deployer]
+    when: { fact: profiling, eq: true }
+    message_key: k
+"""
+
+
+def staged() -> RulePack:
+    return parse_rule_pack(STAGED)
+
+
+def state(facts: Facts) -> tuple[list[str], dict[str, tuple[str, ...]]]:
+    result = evaluate_partial(staged(), RuleKind.CLASSIFICATION, facts)
+    return [m.rule_id for m in result.matches], {r.rule_id: r.missing for r in result.open}
+
+
+def test_with_no_facts_every_rule_is_open_and_only_the_first_questions_are_asked() -> None:
+    matches, open_rules = state({})
+
+    assert matches == []
+    assert open_rules == {
+        "OUT": ("scope.in",),
+        "JOBS": ("area.jobs",),
+        "EITHER": ("area.school", "count"),
+    }
+
+
+def test_an_area_answered_no_settles_its_details_without_asking_them() -> None:
+    _, open_rules = state({"area.jobs": False})
+
+    assert "JOBS" not in open_rules
+
+
+def test_an_area_answered_yes_asks_for_its_details_one_step_at_a_time() -> None:
+    assert state({"area.jobs": True})[1]["JOBS"] == ("area.jobs_recruitment",)
+    assert state({"area.jobs": True, "area.jobs_recruitment": True})[1]["JOBS"] == ("derogation",)
+    assert state({"area.jobs": True, "area.jobs_recruitment": True, "derogation": True})[1][
+        "JOBS"
+    ] == ("profiling",)
+
+
+def test_a_missing_answer_is_never_read_as_no() -> None:
+    facts: Facts = {"area.jobs": True, "area.jobs_recruitment": True}
+
+    assert evaluate(staged(), RuleKind.CLASSIFICATION, facts)  # two-valued: absent means no
+    assert state(facts)[0] == []  # three-valued: absent means "ask"
+
+
+def test_a_rule_matches_once_everything_it_needs_is_answered() -> None:
+    base: Facts = {"area.jobs": True, "area.jobs_recruitment": True}
+
+    assert state({**base, "derogation": False})[0] == ["JOBS"]
+    assert state({**base, "derogation": True, "profiling": True})[0] == ["JOBS"]
+    matches, open_rules = state({**base, "derogation": True, "profiling": False})
+    assert "JOBS" not in matches
+    assert "JOBS" not in open_rules
+
+
+def test_any_is_settled_by_one_true_branch_and_otherwise_needs_them_all() -> None:
+    assert state({"count": 9})[0] == ["EITHER"]
+    assert state({"count": 1})[1]["EITHER"] == ("area.school",)
+    assert "EITHER" not in state({"count": 1, "area.school": False})[1]
+
+
+def test_missing_facts_are_listed_once_in_the_order_they_are_needed() -> None:
+    result = evaluate_partial(staged(), RuleKind.CLASSIFICATION, {})
+
+    assert result.missing_facts == ("scope.in", "area.jobs", "area.school", "count")
+
+
+def test_a_match_carries_roles_and_severities_of_its_rule() -> None:
+    result = evaluate_partial(
+        staged(),
+        RuleKind.CLASSIFICATION,
+        {"area.jobs": True, "area.jobs_recruitment": True, "derogation": False},
+    )
+
+    match = result.matches[0]
+    assert (match.roles, match.severity, match.severity_before) == (("deployer",), "high", "low")
+
+
+def test_fact_specs_carry_stage_and_provision_and_bare_types_still_work() -> None:
+    pack = staged()
+
+    assert pack.stages == ("scope", "area")
+    assert (pack.facts["scope.in"].stage, pack.facts["scope.in"].ref) == ("scope", "Art. 2")
+    assert pack.facts["derogation"].type.value == "boolean"
+    assert pack.facts["derogation"].stage is None
+
+
+def test_outcome_obligations_are_validated_like_rules() -> None:
+    pack = staged()
+
+    assert pack.outcome_obligations[0].id == "OBL"
+    assert condition_state(pack.outcome_obligations[0].when, {}) == (None, ["profiling"])
+    assert condition_state(pack.outcome_obligations[0].when, {"profiling": True}) == (True, [])
+    with pytest.raises(RulePackError, match="does not declare"):
+        parse_rule_pack(
+            STAGED.replace(
+                "when: { fact: profiling, eq: true }\n    message_key",
+                "when: { fact: nope, eq: true }\n    message_key",
+            )
+        )
+    with pytest.raises(RulePackError, match="used twice"):
+        parse_rule_pack(STAGED.replace("id: OBL", "id: JOBS"))
+
+
+def test_a_fact_in_an_unknown_stage_is_rejected() -> None:
+    with pytest.raises(RulePackError, match="unknown stage 'nowhere'"):
+        parse_rule_pack(STAGED.replace("stage: scope, ref", "stage: nowhere, ref"))
+
+
+def test_a_regulation_records_its_sources_and_whether_the_owner_reviewed_it() -> None:
+    pack = parse_rule_pack(
+        STAGED
+        + """
+regulation:
+  id: "Regulation (EU) 2024/1689"
+  as_of: 2026-10-02
+  verified_against: primary
+  sources:
+    - celex: 32024R1689
+      title: AI Act
+      retrieved: 2026-10-02
+      url: https://publications.europa.eu/resource/celex/32024R1689
+      sha256: 8f0b656302f9864cc87e040c371f209a9d65ae1a6cecc25ca5eb737e872d721a
+"""
+    )
+
+    assert pack.regulation is not None
+    assert pack.regulation.review == "pending"
+    assert pack.regulation.sources[0].celex == "32024R1689"

@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ai_arbiter.core.audit.chain import VerificationReport
 from ai_arbiter.core.audit.log import AuditReceipt, AuditRecord
 from ai_arbiter.core.config.secrets import SecretRef
+from ai_arbiter.core.domain.risk import SystemRiskProfile
 from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.events.model import Event
 from ai_arbiter.core.ports.llm import LLMProvider
@@ -58,6 +59,27 @@ class AuditLog(Protocol):
         ...
 
 
+class SystemDirectory(Protocol):
+    """Tells the gateway how the system behind a request is classified.
+
+    Implemented by the inventory of the compliance toolkit. Without it the gateway uses
+    ``NoSystemDirectory``, for which every system is undetermined.
+    """
+
+    async def resolve(
+        self, session: AsyncSession, tenant_id: UUID, ai_system_id: UUID | None
+    ) -> SystemRiskProfile: ...
+
+
+class NoSystemDirectory:
+    """The directory of a gateway that runs without the compliance toolkit."""
+
+    async def resolve(
+        self, session: AsyncSession, tenant_id: UUID, ai_system_id: UUID | None
+    ) -> SystemRiskProfile:
+        return SystemRiskProfile(ai_system_id=ai_system_id)
+
+
 class PolicyEngine(Protocol):
     """Decides what happens to a request from facts about it.
 
@@ -74,7 +96,9 @@ __all__ = [
     "EventBus",
     "Handler",
     "LLMProvider",
+    "NoSystemDirectory",
     "PIIDetector",
     "PolicyEngine",
     "SecretStore",
+    "SystemDirectory",
 ]

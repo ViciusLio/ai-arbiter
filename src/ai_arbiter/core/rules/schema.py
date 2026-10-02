@@ -118,11 +118,18 @@ class LegalRef(_Model):
     article: str
 
 
+Severity = Literal["info", "low", "medium", "high", "critical"]
+
+
 class Outcome(_Model):
     outcome: str = Field(min_length=1)
     legal_refs: tuple[LegalRef, ...] = ()
     applies_from: date | None = None
     message_key: str = Field(min_length=1)
+    # For findings. ``severity_before`` is used while the obligation the rule refers to
+    # does not apply yet: an obligation of the future is a matter of readiness.
+    severity: Severity | None = None
+    severity_before: Severity | None = None
 
 
 class Rule(_Model):
@@ -140,6 +147,16 @@ class Rule(_Model):
         return self
 
 
+class LegalSource(_Model):
+    """A text the pack was written from, pinned by checksum (ADR-0034)."""
+
+    celex: str
+    title: str
+    retrieved: date
+    url: str
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
 class Regulation(_Model):
     """Legal basis of a pack that encodes a regulation."""
 
@@ -147,6 +164,35 @@ class Regulation(_Model):
     amended_by: tuple[str, ...] = ()
     as_of: date
     verified_against: Literal["primary", "secondary"]
+    # Whether the project owner has compared the quoted articles on EUR-Lex.
+    review: Literal["pending", "confirmed"] = "pending"
+    review_date: date | None = None
+    sources: tuple[LegalSource, ...] = ()
+
+
+class FactSpec(_Model):
+    """A fact a pack may ask for. Written in a pack as a bare type or as a mapping."""
+
+    type: FactType
+    # Where in the questionnaire the fact belongs, and the provision it comes from.
+    stage: str | None = None
+    ref: str | None = None
+
+
+class OutcomeObligation(_Model):
+    """An obligation that follows from an outcome rather than from one rule.
+
+    For example, what a deployer of a high-risk system must do whichever point of
+    Annex III made the system high-risk. ``when`` narrows it further.
+    """
+
+    id: str
+    outcome: str
+    roles: tuple[str, ...] = ()
+    when: "Condition | None" = None
+    legal_refs: tuple[LegalRef, ...] = ()
+    applies_from: date | None = None
+    message_key: str = Field(min_length=1)
 
 
 def comparisons(condition: Any) -> list[Comparison]:
@@ -193,25 +239,53 @@ class RulePack(_Model):
     version: str = Field(min_length=1)
     description: str = ""
     regulation: Regulation | None = None
-    facts: dict[str, FactType]
+    # Order of the stages of the questionnaire, for packs that have one (ADR-0035).
+    stages: tuple[str, ...] = ()
+    facts: dict[str, FactSpec]
     rules: tuple[Rule, ...]
+    outcome_obligations: tuple[OutcomeObligation, ...] = ()
+
+    @model_validator(mode="before")
+    @classmethod
+    def _bare_fact_types(cls, data: Any) -> Any:
+        if isinstance(data, dict) and isinstance(data.get("facts"), dict):
+            facts = {
+                name: {"type": spec} if isinstance(spec, str) else spec
+                for name, spec in data["facts"].items()
+            }
+            return {**data, "facts": facts}
+        return data
+
+    def _check_condition(self, owner: str, condition: Any) -> None:
+        for comparison in comparisons(condition):
+            declared = self.facts.get(comparison.fact)
+            if declared is None:
+                raise ValueError(
+                    f"rule {owner} uses the fact '{comparison.fact}', which the pack "
+                    "does not declare"
+                )
+            _check_comparison(owner, comparison, declared.type)
 
     @model_validator(mode="after")
     def _check_rules(self) -> Self:
-        for name in self.facts:
+        for name, spec in self.facts.items():
             if not _FACT_NAME.fullmatch(name):
                 raise ValueError(f"invalid fact name '{name}'")
+            if spec.stage is not None and self.stages and spec.stage not in self.stages:
+                raise ValueError(f"fact '{name}' names the unknown stage '{spec.stage}'")
         seen: set[str] = set()
         for rule in self.rules:
             if rule.id in seen:
                 raise ValueError(f"rule id {rule.id} is used twice")
             seen.add(rule.id)
-            for comparison in comparisons(rule.when):
-                declared = self.facts.get(comparison.fact)
-                if declared is None:
-                    raise ValueError(
-                        f"rule {rule.id} uses the fact '{comparison.fact}', which the pack "
-                        "does not declare"
-                    )
-                _check_comparison(rule.id, comparison, declared)
+            self._check_condition(rule.id, rule.when)
+        for obligation in self.outcome_obligations:
+            if obligation.id in seen:
+                raise ValueError(f"rule id {obligation.id} is used twice")
+            seen.add(obligation.id)
+            if obligation.when is not None:
+                self._check_condition(obligation.id, obligation.when)
         return self
+
+
+OutcomeObligation.model_rebuild()
