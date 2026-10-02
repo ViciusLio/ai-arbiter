@@ -14,6 +14,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from ai_arbiter.core.errors import MissingExtraError
+
 
 def ensure_sqlite_directory(url: str) -> None:
     """Create the parent directory of a SQLite database file, if the URL names one."""
@@ -31,12 +33,26 @@ def _enable_sqlite_foreign_keys(dbapi_connection: Any, _record: Any) -> None:
     cursor.close()
 
 
+def build_engine(url: str, **kwargs: Any) -> AsyncEngine:
+    """Create the async engine for ``url``.
+
+    The PostgreSQL driver is an optional dependency (ADR-0010). A PostgreSQL URL on an
+    install without it raises ``MissingExtraError`` naming the extra, not an import error.
+    """
+    try:
+        return create_async_engine(url, **kwargs)
+    except ImportError as exc:
+        if exc.name == "asyncpg":
+            raise MissingExtraError("gateway", "PostgreSQL support") from exc
+        raise
+
+
 class Database:
     """Owns the engine. One instance per process."""
 
     def __init__(self, url: str, *, echo: bool = False) -> None:
         ensure_sqlite_directory(url)
-        self._engine = create_async_engine(url, echo=echo)
+        self._engine = build_engine(url, echo=echo)
         if self._engine.dialect.name == "sqlite":
             # SQLite does not enforce foreign keys unless asked, per connection.
             event.listen(self._engine.sync_engine, "connect", _enable_sqlite_foreign_keys)

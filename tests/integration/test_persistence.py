@@ -1,3 +1,4 @@
+import sys
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -6,8 +7,13 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from ai_arbiter.core.domain.ids import new_id
+from ai_arbiter.core.errors import MissingExtraError
 from ai_arbiter.core.events.model import OutboxEvent
-from ai_arbiter.core.persistence.database import Database, ensure_sqlite_directory
+from ai_arbiter.core.persistence.database import (
+    Database,
+    build_engine,
+    ensure_sqlite_directory,
+)
 from ai_arbiter.core.persistence.tenant import Tenant, ensure_tenant
 
 
@@ -96,3 +102,22 @@ def test_no_directory_is_created_for_urls_without_a_file(url: str, tmp_path: Pat
     ensure_sqlite_directory(url)
 
     assert list(tmp_path.iterdir()) == []
+
+
+def test_postgresql_url_without_the_driver_names_the_extra_to_install(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A ``None`` entry in ``sys.modules`` makes the import fail as if it were not installed.
+    monkeypatch.setitem(sys.modules, "asyncpg", None)
+
+    with pytest.raises(MissingExtraError, match=r"PostgreSQL support.*ai-arbiter\[gateway\]"):
+        build_engine("postgresql+asyncpg://arbiter@localhost/arbiter")
+
+
+def test_other_import_failures_are_not_disguised(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(sys.modules, "aiosqlite", None)
+
+    with pytest.raises(ImportError) as raised:
+        build_engine("sqlite+aiosqlite:///:memory:")
+
+    assert not isinstance(raised.value, MissingExtraError)

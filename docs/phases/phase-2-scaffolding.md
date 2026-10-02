@@ -51,24 +51,41 @@ every database test is written once and runs on both engines, and the PostgreSQL
 needs `ARBITER_TEST_DATABASE_URL`. In the run without extras, the skips are the
 PostgreSQL variants plus the tests that need the web stack or OpenTelemetry.
 
-**Not verified.** These exist but have never run:
+**Not verified when the phase was written.** These existed but had never run:
 
-| Item | Why | First real run |
-|---|---|---|
-| Anything on Python 3.12 | Not installed locally; 3.13 and 3.14 were used | CI |
-| Anything on PostgreSQL | No PostgreSQL and no Docker locally | CI job `test-postgres` |
-| Dockerfile, Compose file | No Docker locally (ADR-0025) | CI job `container` |
-| The GitHub Actions workflows themselves | The repository is not on GitHub yet | First push |
-| `pip-audit` | Blocked locally by TLS interception on the corporate network | CI job `security` |
-| gitleaks | Needs Docker | CI job `security` |
-| Release workflow and Trusted Publishing | Needs the repository and the PyPI publisher | The `0.0.1` release |
+| Item | Why | First real run | Outcome |
+|---|---|---|---|
+| Anything on Python 3.12 | Not installed locally; 3.13 and 3.14 were used | CI | Passed |
+| Anything on PostgreSQL | No PostgreSQL and no Docker locally | CI job `test-postgres` | Passed |
+| Dockerfile, Compose file | No Docker locally (ADR-0025) | CI job `container` | Passed |
+| The GitHub Actions workflows themselves | The repository was not on GitHub yet | First push | All jobs passed |
+| `pip-audit` | Blocked locally by TLS interception on the corporate network | CI job `security` | Passed |
+| gitleaks | Needs Docker | CI job `security` | Passed |
+| Release workflow and Trusted Publishing | Needs the repository and the PyPI publisher | The `0.0.1` release | Not run yet |
 
-Expect the first CI run to need fixes. The workflows use action versions newer than any
-that were tested here.
+The outcomes are those of the first CI run, on 2026-10-02 at commit `87199f1`. Every job
+passed; the warning that the first run would need fixes was wrong. Only step outcomes and
+annotations were read, not the job logs. Two annotations, neither blocking: jobs race to
+save the same uv cache, and `ubuntu-latest` moves to Ubuntu 26 from 19 October 2026.
 
-Added after the phase, and equally unverified: the dev container (`.devcontainer/`) and
-`scripts/check.sh`. They were written on a machine that cannot run them. The first
-codespace is their first run; the checklist is in `CLAUDE.md`, section "Resume here".
+Added after the phase: the dev container (`.devcontainer/`) and `scripts/check.sh`,
+written on a machine that cannot run them. First run in Codespaces, 2026-10-02:
+
+| Item | Outcome |
+|---|---|
+| Dev container | Builds and starts |
+| `scripts/check.sh` | Failed at the step "Tests without extras"; see below. Not yet run to the end |
+| `scripts/check.sh --containers` | Not run yet |
+
+The failure was a defect, not an environment problem. The dev container sets
+`ARBITER_TEST_DATABASE_URL`, so the PostgreSQL variants of the database tests ran in the
+environment without extras, which has no PostgreSQL driver. CI did not catch it because
+its base-install job does not set that variable. Two fixes:
+
+- the test fixture skips the PostgreSQL variants when the driver is not installed;
+- a PostgreSQL URL on an install without the `gateway` extra now raises
+  `MissingExtraError` naming the extra, and the CLI prints it as an error instead of a
+  traceback. This was a real gap for users, independent of the tests.
 
 ## Decisions made in this phase
 

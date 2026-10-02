@@ -191,3 +191,17 @@ def test_parse_roles_normalises_and_validates() -> None:
     assert parse_roles(" worker , gateway,gateway ") == ["gateway", "worker"]
     with pytest.raises(typer.BadParameter):
         parse_roles(" , ")
+
+
+@pytest.mark.parametrize("command", [["db", "upgrade"], ["db", "current"], ["init"]])
+def test_postgresql_without_the_driver_is_an_error_not_a_traceback(
+    command: list[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setitem(sys.modules, "asyncpg", None)
+    monkeypatch.setenv("ARBITER_DATABASE__URL", "postgresql+asyncpg://arbiter@localhost/arbiter")
+
+    result = runner.invoke(app, command)
+
+    assert result.exit_code == 1
+    assert "Error: PostgreSQL support needs the 'gateway' extra" in result.output
+    assert 'pip install "ai-arbiter[gateway]"' in result.output

@@ -86,3 +86,11 @@ Entries link to the decision record that motivated them, where one exists.
     ([ADR-0018](docs/adr/0018-metadata-only-by-default.md));
   - ingestion of external gateway data through source adapters
     ([ADR-0019](docs/adr/0019-external-telemetry-ingestion.md)).
+
+### Fixed
+
+- A PostgreSQL database URL on an install without the `gateway` extra failed with an
+  import error and a traceback. It now reports which extra to install
+  ([ADR-0010](docs/adr/0010-single-distribution-with-enforced-boundaries.md)).
+- PostgreSQL tests ran, and failed, in an environment without the PostgreSQL driver when
+  a test database URL was set, as it is in the dev container. They are now skipped there.

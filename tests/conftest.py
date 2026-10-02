@@ -39,6 +39,9 @@ def database_url(request: pytest.FixtureRequest, tmp_path: Path) -> str:
         url = os.environ.get(TEST_DATABASE_ENV)
         if not url:
             pytest.skip(f"set {TEST_DATABASE_ENV} to run on PostgreSQL")
+        # The driver is part of the gateway extra. An environment without extras skips
+        # these tests even when a database is available, as in the dev container.
+        pytest.importorskip("asyncpg", reason="PostgreSQL tests need the gateway extra")
         return url
     return sqlite_url(tmp_path)
 

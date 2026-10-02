@@ -12,9 +12,22 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 start until the steps below are complete and the owner says so.
 
 Phase 2 was built on a corporate Windows machine without Docker, uv or PostgreSQL
-installed. Development now moves to GitHub Codespaces (ADR-0026). The dev container, the
-project Dockerfile, the Compose stack, the PostgreSQL tests, Python 3.12 and every GitHub
-Actions workflow were written but **have never run**. Treat them as unverified drafts.
+installed. Development now moves to GitHub Codespaces (ADR-0026).
+
+What has run since, on 2026-10-02:
+
+- **CI on the first push (commit `87199f1`): every job passed.** Lint, types, import
+  rules; tests on Linux for Python 3.12, 3.13, 3.14 and on Windows for 3.12; tests on
+  PostgreSQL; tests without extras; dependency audit and secret scan; image build and
+  Compose smoke test; CodeQL. Job logs were not read (they need a login), only step
+  outcomes and annotations: check the CodeQL alerts in the Security tab.
+- **The dev container builds and starts in Codespaces.** The owner ran
+  `scripts/check.sh` there. It failed at the step "Tests without extras": the dev
+  container sets `ARBITER_TEST_DATABASE_URL`, and the environment without extras has no
+  PostgreSQL driver. Fixed: those tests are now skipped without the driver, and a
+  PostgreSQL URL without the `gateway` extra raises `MissingExtraError`.
+- **Still never run:** `scripts/check.sh` to the end, its `--containers` part inside the
+  dev container, and the release workflow.
 
 ### Step 1 — Verify the environment (first task in Codespaces)
 
@@ -24,12 +37,10 @@ Actions workflow were written but **have never run**. Treat them as unverified d
 2. `scripts/check.sh --containers` passes. It runs lint, types, import rules, tests on
    SQLite and PostgreSQL for every supported Python, tests without extras, then builds
    the image and starts the Compose stack.
-3. The first CI run on GitHub is green. Read it with `gh run list` and `gh run view`.
-4. Fix what fails, in small `fix:` / `ci:` / `build:` commits. Expect failures: the
-   workflows use action versions that were never exercised, and `pip-audit` and gitleaks
-   have never run.
-5. Update the "Not verified" table in `docs/phases/phase-2-scaffolding.md` with what was
-   actually verified, and the Phase 2 status line.
+3. The latest CI run on GitHub is green. Read it with `gh run list` and `gh run view`.
+4. Fix what fails, in small `fix:` / `ci:` / `build:` commits.
+5. Update the verification tables in `docs/phases/phase-2-scaffolding.md` with what was
+   actually verified in Codespaces, and the Phase 2 status line.
 
 ### Step 2 — Decisions waiting for the owner
 

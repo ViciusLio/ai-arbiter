@@ -138,10 +138,10 @@ def init(
 
     try:
         settings = load_settings(config_path)
+        migrate.upgrade(settings.database.url)
+        asyncio.run(_create_local_tenant(settings))
     except ArbiterError as error:
         raise fail(error) from error
-    migrate.upgrade(settings.database.url)
-    asyncio.run(_create_local_tenant(settings))
     typer.echo(f"Database ready: {settings.redacted()['database']['url']}")
     typer.echo("")
     typer.echo(DISCLAIMER)
@@ -151,7 +151,10 @@ def init(
 def db_upgrade(ctx: typer.Context) -> None:
     """Apply all pending schema migrations."""
     settings = settings_from(ctx)
-    migrate.upgrade(settings.database.url)
+    try:
+        migrate.upgrade(settings.database.url)
+    except ArbiterError as error:
+        raise fail(error) from error
     typer.echo(f"Schema is at revision {migrate.head_revision()}")
 
 
@@ -167,7 +170,10 @@ async def _current_revision(settings: Settings) -> str | None:
 def db_current(ctx: typer.Context) -> None:
     """Show the schema revision of the database and the one this version expects."""
     settings = settings_from(ctx)
-    current = asyncio.run(_current_revision(settings))
+    try:
+        current = asyncio.run(_current_revision(settings))
+    except ArbiterError as error:
+        raise fail(error) from error
     head = migrate.head_revision()
     typer.echo(f"database: {current or 'not migrated'}")
     typer.echo(f"expected: {head}")

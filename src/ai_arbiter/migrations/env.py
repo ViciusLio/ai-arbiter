@@ -9,10 +9,10 @@ from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.pool import NullPool
 
 from ai_arbiter.core.config.settings import load_settings
+from ai_arbiter.core.persistence.database import build_engine
 from ai_arbiter.migrations.metadata import target_metadata
 
 config = context.config
@@ -50,7 +50,7 @@ def _run(connection: Connection) -> None:
 
 
 async def _run_async() -> None:
-    engine = create_async_engine(_database_url(), poolclass=NullPool)
+    engine = build_engine(_database_url(), poolclass=NullPool)
     try:
         async with engine.connect() as connection:
             await connection.run_sync(_run)
