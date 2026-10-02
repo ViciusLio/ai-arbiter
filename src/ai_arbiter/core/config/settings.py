@@ -6,6 +6,8 @@ Precedence, highest first: explicit overrides, environment variables (``ARBITER_
 
 import os
 from contextvars import ContextVar
+from datetime import date
+from decimal import Decimal, InvalidOperation
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Literal
@@ -135,6 +137,60 @@ class RouterSettings(_Section):
     retry_backoff_ms: int = Field(default=200, ge=0)
 
 
+def parse_decimal(value: str, *, positive: bool = False) -> Decimal:
+    """Read a decimal written as a string. Numbers are refused: a YAML float is inexact."""
+    if not isinstance(value, str):
+        raise ValueError('write the amount as a string, for example "0.15"')
+    try:
+        amount = Decimal(value)
+    except InvalidOperation as exc:
+        raise ValueError(f"'{value}' is not a decimal number") from exc
+    if not amount.is_finite() or amount < 0 or (positive and amount == 0):
+        raise ValueError(f"'{value}' must be {'greater than zero' if positive else 'zero or more'}")
+    return amount
+
+
+class PriceSettings(_Section):
+    """One price, per million tokens, as decimal strings (ADR-0030)."""
+
+    provider: str
+    model: str
+    region: str | None = None
+    input_per_million: str
+    output_per_million: str
+    cached_input_per_million: str | None = None
+
+    @model_validator(mode="after")
+    def _amounts(self) -> "PriceSettings":
+        parse_decimal(self.input_per_million)
+        parse_decimal(self.output_per_million)
+        if self.cached_input_per_million is not None:
+            parse_decimal(self.cached_input_per_million)
+        return self
+
+
+class ReportingCurrencySettings(_Section):
+    """The currency reports are also shown in, with the rate used to convert."""
+
+    currency: str = Field(pattern=r"^[A-Z]{3}$")
+    # Units of this currency for one unit of the catalogue's currency.
+    rate: str
+    rate_as_of: date
+
+    @model_validator(mode="after")
+    def _rate(self) -> "ReportingCurrencySettings":
+        parse_decimal(self.rate, positive=True)
+        return self
+
+
+class FinOpsSettings(_Section):
+    # A catalogue file to use instead of the one shipped with the package.
+    catalogue_file: Path | None = None
+    # Prices added to the catalogue, or replacing the ones it has.
+    prices: tuple[PriceSettings, ...] = ()
+    reporting: ReportingCurrencySettings | None = None
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -159,6 +215,7 @@ class Settings(BaseSettings):
     identity: IdentitySettings = IdentitySettings()
     deployments: tuple[DeploymentSettings, ...] = ()
     router: RouterSettings = RouterSettings()
+    finops: FinOpsSettings = FinOpsSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

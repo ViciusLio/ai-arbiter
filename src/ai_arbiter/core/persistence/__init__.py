@@ -7,11 +7,12 @@ from ai_arbiter.core.persistence.database import (
     ensure_sqlite_directory,
 )
 from ai_arbiter.core.persistence.tenant import Tenant, ensure_tenant
-from ai_arbiter.core.persistence.types import UTCDateTime
+from ai_arbiter.core.persistence.types import DecimalAmount, UTCDateTime
 
 __all__ = [
     "Base",
     "Database",
+    "DecimalAmount",
     "Tenant",
     "UTCDateTime",
     "build_engine",
