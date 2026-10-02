@@ -11,16 +11,9 @@ on its own.
 
 Done by the project owner, before the first release.
 
-1. **Push the repository to GitHub** as `ai-arbiter`.
-2. **Add the repository URL to `pyproject.toml`**, so the PyPI page links back to the
-   source:
-
-   ```toml
-   [project.urls]
-   Repository = "https://github.com/<owner>/ai-arbiter"
-   Changelog = "https://github.com/<owner>/ai-arbiter/blob/main/CHANGELOG.md"
-   ```
-
+1. **Push the repository to GitHub**: <https://github.com/ViciusLio/ai-arbiter>. The
+   project links in `pyproject.toml` already point there.
+2. **Get CI green on `main`.** The workflows have not run before the first push.
 3. **Create the `pypi` environment** in the repository settings (Settings → Environments).
    Adding yourself as a required reviewer makes every publication wait for your approval.
 4. **Register a pending trusted publisher on PyPI**
@@ -29,7 +22,7 @@ Done by the project owner, before the first release.
    | Field | Value |
    |---|---|
    | PyPI project name | `ai-arbiter` |
-   | Owner | your GitHub user or organisation |
+   | Owner | `ViciusLio` |
    | Repository name | `ai-arbiter` |
    | Workflow name | `release.yml` |
    | Environment name | `pypi` |

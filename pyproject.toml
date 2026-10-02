@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
-authors = [{ name = "The Arbiter authors" }]
+authors = [{ name = "ViciusLio" }]
 keywords = ["ai-governance", "ai-act", "compliance", "llm-gateway", "finops", "audit"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -36,6 +36,12 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.36",
     "typer>=0.15",
 ]
+
+[project.urls]
+Repository = "https://github.com/ViciusLio/ai-arbiter"
+Documentation = "https://github.com/ViciusLio/ai-arbiter/tree/main/docs"
+Changelog = "https://github.com/ViciusLio/ai-arbiter/blob/main/CHANGELOG.md"
+Issues = "https://github.com/ViciusLio/ai-arbiter/issues"
 
 [project.optional-dependencies]
 gateway = [
