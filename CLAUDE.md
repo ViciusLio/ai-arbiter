@@ -8,47 +8,40 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0, 1 and 2 are done. Phase 3 has not started and must not
-start until the steps below are complete and the owner says so.
+**State on 2026-10-02.** Phases 0, 1 and 2 are done and verified. Phase 3 is open: the
+owner gave the go-ahead, and **no Phase 3 code is written until the owner answers the
+questions in Step 2**. They were presented on 2026-10-02; if the answers are not in this
+file, present them again.
 
-Phase 2 was built on a corporate Windows machine without Docker, uv or PostgreSQL
-installed. Development now moves to GitHub Codespaces (ADR-0026).
+### Step 1 — Environment: verified
 
-What has run since, on 2026-10-02:
+Verified in Codespaces on 2026-10-02, at commit `c8ccce3`:
 
-- **CI on the first push (commit `87199f1`): every job passed.** Lint, types, import
-  rules; tests on Linux for Python 3.12, 3.13, 3.14 and on Windows for 3.12; tests on
-  PostgreSQL; tests without extras; dependency audit and secret scan; image build and
-  Compose smoke test; CodeQL. Job logs were not read (they need a login), only step
-  outcomes and annotations: check the CodeQL alerts in the Security tab.
-- **The dev container builds and starts in Codespaces.** The owner ran
-  `scripts/check.sh` there. It failed at the step "Tests without extras": the dev
-  container sets `ARBITER_TEST_DATABASE_URL`, and the environment without extras has no
-  PostgreSQL driver. Fixed: those tests are now skipped without the driver, and a
-  PostgreSQL URL without the `gateway` extra raises `MissingExtraError`.
-- **Still never run:** `scripts/check.sh` to the end, its `--containers` part inside the
-  dev container, and the release workflow.
+- The dev container has uv, Python 3.12, 3.13 and 3.14, Docker and the PostgreSQL sidecar.
+- `scripts/check.sh --containers` passes to the end with no change needed: lint, types,
+  import rules; 121 tests on each of Python 3.12, 3.13 and 3.14, the database tests on
+  SQLite and PostgreSQL; 98% coverage; 90 tests without extras; image build, non-root
+  user, Compose stack healthy, `/healthz` and `/readyz`.
+- CI on GitHub is green at the same commit, CodeQL included.
 
-### Step 1 — Verify the environment (first task in Codespaces)
+Not verified: the release workflow (it runs on the `0.0.1` tag, which the owner pushes),
+and the CodeQL alert list (not readable with the Codespaces token; the owner checks the
+Security tab). Details in `docs/phases/phase-2-scaffolding.md`.
 
-1. The dev container came up: `uv --version`, `uv python list --only-installed` (3.12,
-   3.13, 3.14), `docker version`, `pg_isready -h postgres -U arbiter -d arbiter_test`,
-   `echo $ARBITER_TEST_DATABASE_URL`.
-2. `scripts/check.sh --containers` passes. It runs lint, types, import rules, tests on
-   SQLite and PostgreSQL for every supported Python, tests without extras, then builds
-   the image and starts the Compose stack.
-3. The latest CI run on GitHub is green. Read it with `gh run list` and `gh run view`.
-4. Fix what fails, in small `fix:` / `ci:` / `build:` commits.
-5. Update the verification tables in `docs/phases/phase-2-scaffolding.md` with what was
-   actually verified in Codespaces, and the Phase 2 status line.
+In a new codespace, repeat the quick check before working: `git config user.email`,
+`pg_isready -h postgres -U arbiter -d arbiter_test`, `scripts/check.sh`.
 
 ### Step 2 — Decisions waiting for the owner
 
 | # | Decision | Needed by |
 |---|---|---|
-| 1 | Approval of Phase 2 once Step 1 is done, and the go-ahead for Phase 3 | Phase 3 |
-| 2 | Placement of the scope items the owner did not name explicitly (ADR-0009, question Q1 in the ADR index) | Phase 3 planning |
-| 3 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+| 1 | Q1: confirm the split of v0.1 between core and deferrable components (ADR-0009). PII detection is the heaviest core item | Phase 3 code |
+| 2 | The four opening decisions of Phase 3 (Step 3), each presented with numbered options | Phase 3 code |
+| 3 | Publish `0.0.1` to reserve the name on PyPI (`docs/releasing.md`) | Before `0.1.0-alpha` |
+| 4 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+
+After the answers: record one ADR per decision, update the ADR index and `CHANGELOG.md`,
+then implement the core of Phase 3 in the order of Step 4. Stop at the end of the phase.
 
 The v0.1 scope is accepted (ADR-0009). It has a **core** that `0.1.0` cannot ship without
 and **deferrable** components that may follow in v0.1.x. Plan Phases 3 and 4 core first;
@@ -56,9 +49,10 @@ start a deferrable item only when the core of that phase is done.
 
 ### Step 3 — Phase 3: four decisions to bring first
 
-Phase 3 opens by presenting these to the owner, each as an option table with the seven
-criteria and a recommendation, then waiting. The options below are a starting point, not
-decisions.
+Presented to the owner on 2026-10-02, each as an option table with the seven criteria and
+a recommendation; answers pending. The options below are a summary, not decisions.
+Recommended: 1 — HMAC-SHA-256 with a pepper; 2 — in-house canonicaliser without floats;
+3 — versioned YAML file; 4 — unknown and unpriced, with an opt-in flagged estimate.
 
 1. **API key format and hashing.** Options: random high-entropy token with a recognisable
    prefix and a key id, stored as a plain SHA-256 digest; the same with HMAC-SHA-256 and
@@ -195,6 +189,23 @@ uv run alembic revision --autogenerate -m "..."   # new migration
   the owner.
 - At the end of each phase: phase summary in `docs/phases/`, ADR index and open questions,
   `CHANGELOG.md`, and this file's "Resume here" section.
+- When a phase is nearly done, list for the owner what is good and what is weak about
+  where it stands and the possible improvements, and record them in the "Release
+  improvement tracking" table of `README.md`. Update the status of earlier rows.
+
+### Session rules (set by the owner on 2026-10-02)
+
+- Commit and push to `main` without asking each time, with Conventional Commits. Ask
+  for confirmation only for actions that cannot be undone or that reach outside the
+  repository other than a push: publishing to PyPI, creating resources, changing
+  repository settings.
+- When bringing a decision, number the options. The owner answers by number, for example
+  "1: accept, 2: option B".
+- Before closing a working session, or when the owner writes "chiudiamo": update the
+  "Resume here" section with state, open decisions and next steps, commit, push, and
+  remind the owner to stop the codespace.
+- When the owner writes "riprendi" in a new session, resume from this file without
+  asking for context.
 
 ## Technical constraints (from the brief)
 
