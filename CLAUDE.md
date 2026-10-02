@@ -280,7 +280,10 @@ migrations differ.
   `gateway`; a provider or detector declares its own settings model (ADR-0011).
 - Test fixtures that look like secrets (keys, tokens, private key blocks) are assembled
   from parts, or the secret scan in CI flags them. Run the gitleaks command of
-  `ci.yml` locally before pushing such a change.
+  `ci.yml` locally before pushing such a change, and before pushing a new or changed
+  rule pack: `.gitleaks.toml` allows `message_key:` lines and nothing else.
+- CI cancels the run of a commit when a newer one is pushed. After a series of pushes,
+  only the last run says anything: wait for it before calling a phase green.
 
 ## Code conventions
 

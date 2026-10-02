@@ -198,6 +198,8 @@ Entries link to the decision record that motivated them, where one exists.
 - The event dispatcher no longer holds a transaction while handlers run: delivery stays
   at least once, and a handler that writes to the database no longer waits on SQLite.
 - New base dependency: Jinja2, for the digest templates.
+- `.gitleaks.toml`: the secret scan allows the `message_key:` lines of rule packs, which
+  its generic rule read as credentials.
 - Version `0.1.0a1`; development status Alpha. `0.0.1` was never published and is
   skipped ([ADR-0032](docs/adr/0032-first-release-is-the-alpha.md)).
 - The em-dash character is no longer used anywhere in the repository; a check in

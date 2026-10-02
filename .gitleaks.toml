@@ -1,0 +1,13 @@
+# Secret scanning configuration (gitleaks), on top of its default rules.
+#
+# Rule packs name the message of each rule with `message_key: <catalogue key>`. The
+# generic API key rule reads the word "key" followed by a long identifier as a
+# credential. Those lines are allowed; nothing else is.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Message catalogue keys in rule packs are identifiers, not credentials"
+regexTarget = "line"
+regexes = ['''message_key: [a-z0-9_.]+\s*$''']

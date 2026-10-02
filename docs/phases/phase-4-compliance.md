@@ -77,7 +77,7 @@ All in the dev container in GitHub Codespaces, on 2026-10-02.
 | Tenant isolation | Inventory, findings and their HTTP endpoints, with two tenants |
 | Gateway link | Through the HTTP application: a key tied to a prohibited system is denied; a high-risk system is routed only to the allowed region, and the excluded deployment is in the audited decision |
 | The acceptance criterion of ADR-0009, by hand | The six steps with a real server process, from `arbiter init` to the digest in Italian: 16 seconds |
-| CI on GitHub | Checked after the last push of the phase; the outcome is reported to the owner with this summary |
+| CI on GitHub | Green on the last commit of the phase, on every job. The runs of the intermediate commits were cancelled by the pushes that followed them, as the workflow is configured to do |
 
 ### Not verified
 
@@ -124,6 +124,10 @@ The complete list is at the top of [interfaces](../architecture/interfaces.md) a
   classifier; the conditions now start from the Annex III point.
 - The event dispatcher deadlocked on SQLite (see above). Found by the worker test.
 - A test of mine set an enumeration field to a plain string; fixed in the test.
+- The secret scan in CI failed on sixteen lines of the rule pack: it read
+  `message_key: aia...` as a credential. They are identifiers. `.gitleaks.toml` now allows
+  exactly those lines; the scan was not run locally before those pushes, against the
+  project's own rule, and that is why it was found late.
 - The codespace stopped by itself in the middle of a test run, with uncommitted work on
   disk. Nothing was lost; the hand-over now records progress item by item and work is
   pushed at every step.
