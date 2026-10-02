@@ -146,6 +146,13 @@ Decided by the project owner on 2026-10-02 from the option tables of the
 [Phase 4 preparation](../phases/phase-4-preparation.md); in every case the recommended
 option was chosen: ADR-0034 to ADR-0039.
 
+## Phase 4: summary
+
+The core of the compliance toolkit is implemented; see the
+[Phase 4 summary](../phases/phase-4-compliance.md). No decision was taken during the
+implementation beyond ADR-0034 to ADR-0039. Routing constraints by risk class, the first
+deferrable item of ADR-0009, were implemented in this phase.
+
 ## Open questions
 
 | # | Question | Blocks |
@@ -155,6 +162,7 @@ option was chosen: ADR-0034 to ADR-0039.
 | Q3 | The owner's spot check on EUR-Lex of the articles the AI Act rule pack quotes (ADR-0034). Until then the pack carries `review: pending` | The `0.1.0` release |
 | Q7 | Closed on 2026-10-02 by ADR-0034 to ADR-0039 | - |
 | Q8 | The CodeQL alert list cannot be read with the Codespace token; Dependabot alerts are disabled for the repository. Both are for the owner to look at | - |
+| Q9 | Whether `0.1.0` waits for a review of the AI Act rule pack by a person with legal training, and what comes next: Phase 5 (A2A and MCP) or a v0.1.x phase for the deferrable items of ADR-0009 | Planning |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
 | Q5 | Closed on 2026-10-02 by ADR-0033 for the OpenAI-compatible adapter. The Azure OpenAI adapter is checked against a real endpoint in Phase 6 | Phase 6 |
 | Q6 | Closed on 2026-10-02 by ADR-0032 | - |

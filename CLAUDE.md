@@ -8,12 +8,13 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0 to 3 are done and approved; the version is `0.1.0a1`,
-not published (ADR-0032). **Phase 4 (compliance MVP) is in progress.** Its opening
-decisions are taken (ADR-0034 to ADR-0039). Stop at the end of the phase for approval.
+**State on 2026-10-02.** Phases 0 to 3 are done and approved. **The core of Phase 4
+(compliance MVP) is implemented and waits for the owner's approval.** The version is
+`0.1.0a1`, not published (ADR-0032). Do not start Phase 5, and do not start the
+deferrable items of v0.1, until the owner says so.
 
-Read first: `docs/phases/phase-4-preparation.md` (legal text verified, order of work),
-then `docs/phases/phase-3-gateway.md` (what exists).
+Read first: `docs/phases/phase-4-compliance.md` (what was built, verified and not
+verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
 
 ### Step 1: quick check in a new codespace, or after a restart
 
@@ -23,46 +24,40 @@ then `docs/phases/phase-3-gateway.md` (what exists).
 Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
 the test suite is running: the tests migrate and drop its tables.
 
-### Step 2: Phase 4, where it stands
+### Step 2: decisions waiting for the owner
 
-Update this list at every commit of the phase.
-
-| # | Item | State |
+| # | Decision | Needed by |
 |---|---|---|
-| 0 | Rule engine: three-valued evaluation, staged facts, legal sources; `SystemDirectory` port | Done, committed |
-| 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Done |
-| 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Done |
-| 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Done |
-| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Done |
-| 5 | `arbiter worker`: outbox dispatcher; systems classified when declared or changed | Done |
-| 6 | Retention: `arbiter retention purge` (ADR-0038) | Done |
-| 7 | CLI (`cli/systems.py`, `findings.py`, `operations.py`) and HTTP (`gateway/api/compliance.py`) | Done |
-| 8 | Routing constraints by risk class (`router.constraints`), policy facts `system.tier` and `system.reviewed`, policy pack 2026.10.1 | Done |
-| 9 | Guide `docs/compliance.md`, phase summary, README tracking, changelog; `scripts/check.sh --containers` | Not started |
+| 1 | Approval of Phase 4 | Next phase |
+| 2 | What comes next: Phase 5 (A2A and MCP, v0.2), or a v0.1.x phase for deferrable items (importers, discovery from traffic, reports, e-mail delivery, simulation scenarios, post-call policy, audit anchoring, further PII detectors) | Planning |
+| 3 | Q3: spot check on EUR-Lex of the articles the AI Act pack quotes (2, 3(1), 4, 5, 6, 26, 27(1), 49(2), 50, 111, 113, Annex III). When done: set `review: confirmed` and `review_date` in `rulepacks/ai-act/<version>/pack.yaml` | `0.1.0` |
+| 4 | Whether `0.1.0` waits for a review of the rule pack by a person with legal training (I-22) | `0.1.0` |
+| 5 | Publishing `0.1.0a1` (`docs/releasing.md`); the CodeQL alerts (the Codespace token gets a 403); whether to enable Dependabot alerts | When the owner decides |
+| 6 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
 
-The AI Act rule pack is written only from the three texts listed in the preparation
-document. It declares `verified_against: primary` and `review: pending` until the owner
-has done the spot check on EUR-Lex (ADR-0034); outputs must say that the review is
-pending.
+Decided so far in Phase 4: ADR-0034 to ADR-0039 (source of the legal text, staged facts,
+Article 6(3) derogation, review of classifications, retention, real provider for demos).
 
-### Step 3: for the owner, not blocking
+### Step 3: what is not done
 
-Spot check on EUR-Lex of the articles the pack quotes (Art. 2, 3, 4, 5, 6, 26, 27, 50,
-111, 113 and Annex III); the CodeQL alerts in the Security tab (the Codespace token gets
-a 403); whether to enable Dependabot alerts; publishing `0.1.0a1`
-(`docs/releasing.md`); Azure subscription and budget by Phase 6.
+Deferrable items of v0.1 (ADR-0009, ADR-0027), only when the owner asks: LiteLLM and
+JSONL importers, discovery of systems from traffic, remaining scanner rules, system and
+audit reports, digest by SMTP, local agent, simulation scenarios, post-call policy,
+external anchoring of the audit head, opt-in store of redacted content, further PII
+detectors with measured precision and recall.
 
-### Step 4: what is not done from Phase 3
+Not verified: the legal correctness of the rule pack (nobody with legal training read
+it); the quoted articles on EUR-Lex itself; the `azure_openai` adapter against a real
+endpoint; hosted OpenAI-compatible services; the release workflow. The README table
+"Release improvement tracking" lists every open improvement (I-01 to I-30).
 
-Deferrable, only when the owner asks (ADR-0009, ADR-0027): post-call policy evaluation,
-external anchoring of the audit head, opt-in store of redacted content, the remaining PII
-detectors and the measurement of their precision and recall.
+### Step 4: Phase 5 (A2A and MCP, v0.2), if the owner chooses it
 
-Not verified: the `azure_openai` adapter against a real endpoint (Phase 6), hosted
-OpenAI-compatible services, the release workflow. The README table "Release improvement
-tracking" lists every open improvement.
-
-Target release at the end of Phase 4: `0.1.0`.
+Open the phase by bringing the decisions first, as numbered option tables with a short
+description next to each number: the MCP revisions to support; A2A through the official
+SDK and what Arbiter adds (registry, authorisation, card signature checks, audit); where
+the MCP proxy sits relative to the gateway. Verify the current state of both protocols on
+their official sources first: the Phase 0 analysis is from secondary sources.
 
 ## Names (ADR-0005)
 
@@ -162,6 +157,11 @@ uv run arbiter serve              # HTTP application on 127.0.0.1:8080, docs at 
 uv run arbiter usage report       # usage and estimated cost; --locale it
 uv run arbiter audit verify       # recompute the audit chain
 uv run arbiter pii detectors      # what PII detection validates and misses
+uv run arbiter systems apply -f examples/systems.yaml   # declare and classify systems
+uv run arbiter systems show KEY   # indicative tier, obligations, provisions, dates
+uv run arbiter scan               # findings from inventory, classification and traffic
+uv run arbiter findings list      # then: findings review ID --to confirmed --reviewer NAME
+uv run arbiter digest run --locale it   # daily digest; --locale all --format both -o DIR
 uv run python scripts/measure_latency.py   # time the gateway adds to a request
 uv run alembic revision --autogenerate -m "..." --rev-id 000N   # new migration
 ```
@@ -263,6 +263,19 @@ migrations differ.
 - No database transaction is open while a model provider is being called.
 - Money is `Decimal` in code and the `DecimalAmount` column type in the schema; prices in
   configuration are strings, never YAML numbers (ADR-0030).
+- `gateway.api` and `cli` are the composition roots: the only places where the gateway
+  and the compliance toolkit meet. The gateway reaches the inventory only through the
+  `SystemDirectory` port.
+- A classification or a finding is a proposal until a person reviews it (ADR-0037). The
+  engine's result is never altered; a review is a separate record. Outputs say
+  "indicative" until then.
+- A missing answer is never read as "no": classification rules are evaluated with three
+  values (`evaluate_partial`), and the tier is `undetermined` while a more severe outcome
+  is still possible (ADR-0035). Scan rules use two values: a control that is not declared
+  counts as not attested.
+- A rule over details of an area starts from the area fact, so that the details are not
+  asked of systems outside the area.
+- Reviewers appear in reviews and audit entries by principal id, never by name.
 - Plugins are loaded by name through `PluginRegistry`, never imported by `core` or
   `gateway`; a provider or detector declares its own settings model (ADR-0011).
 - Test fixtures that look like secrets (keys, tokens, private key blocks) are assembled
