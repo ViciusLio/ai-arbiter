@@ -12,9 +12,12 @@ import yaml
 from ai_arbiter import __version__
 from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
 from ai_arbiter.cli import audit as audit_commands
+from ai_arbiter.cli import findings as findings_commands
 from ai_arbiter.cli import keys as keys_commands
+from ai_arbiter.cli import operations as operations_commands
 from ai_arbiter.cli import pii as pii_commands
 from ai_arbiter.cli import serve as serve_command
+from ai_arbiter.cli import systems as systems_commands
 from ai_arbiter.cli import usage as usage_commands
 from ai_arbiter.cli.common import DISCLAIMER, CliState, fail, settings_from
 from ai_arbiter.core.config.secrets import SecretRef
@@ -100,6 +103,13 @@ app.add_typer(audit_commands.app, name="audit")
 app.add_typer(pii_commands.app, name="pii")
 app.add_typer(keys_commands.app, name="keys")
 app.add_typer(usage_commands.app, name="usage")
+app.add_typer(systems_commands.app, name="systems")
+app.add_typer(findings_commands.app, name="findings")
+app.add_typer(operations_commands.digest_app, name="digest")
+app.add_typer(operations_commands.retention_app, name="retention")
+app.command(name="classify")(systems_commands.classify)
+app.command(name="scan")(findings_commands.scan)
+app.command(name="worker")(operations_commands.worker)
 app.command(name="serve")(serve_command.serve)
 
 

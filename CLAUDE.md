@@ -30,13 +30,13 @@ Update this list at every commit of the phase.
 | # | Item | State |
 |---|---|---|
 | 0 | Rule engine: three-valued evaluation, staged facts, legal sources; `SystemDirectory` port | Done, committed |
-| 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Service and tests done; CLI and API missing |
-| 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Service and tests done; CLI and API missing |
-| 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Service and tests done; CLI and API missing |
-| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Model, rendering and tests done; CLI and API missing |
-| 5 | `arbiter worker`: outbox dispatcher; systems classified when declared or changed | Handlers and tests done (`compliance/worker.py`); CLI command missing |
-| 6 | Retention: `arbiter retention purge` (ADR-0038) | Service and tests done (`compliance/retention.py`); CLI command missing |
-| 7 | CLI: `systems`, `classify`, `scan`, `findings`, `digest`; HTTP under `/api/v1`, wired in `gateway.api` (the import contract needs an exception for `gateway.api -> compliance`) | Not started |
+| 1 | Inventory: tables, declarations in YAML, service (`compliance/inventory`) | Done, with CLI; HTTP missing |
+| 2 | AI Act rule pack (`rulepacks/ai-act`) and classifier with review (`compliance/classifier`) | Done, with CLI; HTTP missing |
+| 3 | Scanner (`rulepacks/scan`, `compliance/scanner`) and findings with suppressions (`compliance/findings`) | Done, with CLI; HTTP missing |
+| 4 | Daily digest, Markdown and HTML, English and Italian (`compliance/digest`, Jinja2 templates) | Done, with CLI; HTTP missing |
+| 5 | `arbiter worker`: outbox dispatcher; systems classified when declared or changed | Done |
+| 6 | Retention: `arbiter retention purge` (ADR-0038) | Done |
+| 7 | CLI (`cli/systems.py`, `findings.py`, `operations.py`): done. HTTP under `/api/v1`, wired in `gateway.api` (the import contract needs an exception for `gateway.api -> compliance`) | HTTP not started |
 | 8 | Routing constraints by risk class, through `SystemDirectory`; policy facts `system.tier` | Not started |
 | 9 | Guide `docs/compliance.md`, phase summary, README tracking, changelog; `scripts/check.sh --containers` | Not started |
 
