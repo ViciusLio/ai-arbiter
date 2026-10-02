@@ -9,7 +9,13 @@ from typing import Annotated
 import typer
 from sqlalchemy import select
 
-from ai_arbiter.cli.common import open_database, run, settings_from, tenant_id_for
+from ai_arbiter.cli.common import (
+    compliance_for,
+    open_database,
+    run,
+    settings_from,
+    tenant_id_for,
+)
 from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.domain.tenancy import LOCAL_TENANT_SLUG, AccessRole
@@ -23,7 +29,13 @@ TenantSlug = Annotated[str, typer.Option("--tenant", help="Tenant slug.")]
 
 
 async def _create(
-    settings: Settings, tenant: str, name: str, roles: list[AccessRole], team: str, project: str
+    settings: Settings,
+    tenant: str,
+    name: str,
+    roles: list[AccessRole],
+    team: str,
+    project: str,
+    system: str | None = None,
 ) -> tuple[ApiKey, str]:
     async with open_database(settings) as database:
         tenant_id = await tenant_id_for(database, tenant)
@@ -51,8 +63,17 @@ async def _create(
             )
             for role in roles:
                 await identity.grant_role(session, tenant_id, principal_id=principal.id, role=role)
+            system_id = None
+            if system is not None:
+                inventory = compliance_for(settings).inventory
+                system_id = (await inventory.get(session, tenant_id, system)).id
             row, key = await identity.issue_api_key(
-                session, tenant_id, project_id=project_row.id, principal_id=principal.id, name=name
+                session,
+                tenant_id,
+                project_id=project_row.id,
+                principal_id=principal.id,
+                name=name,
+                ai_system_id=system_id,
             )
             await runtime.audit.append(
                 session,
@@ -78,14 +99,20 @@ def create(
     ] = None,
     team: Annotated[str, typer.Option(help="Team, created if missing.")] = "default",
     project: Annotated[str, typer.Option(help="Project, created if missing.")] = "default",
+    system: Annotated[
+        str | None,
+        typer.Option(help="Key of a declared AI system: its traffic is attributed to it."),
+    ] = None,
     tenant: TenantSlug = LOCAL_TENANT_SLUG,
 ) -> None:
     """Issue a key for a new service principal. The key is shown once."""
     roles = role or [AccessRole.DEVELOPER]
-    row, key = run(_create(settings_from(ctx), tenant, name, roles, team, project))
+    row, key = run(_create(settings_from(ctx), tenant, name, roles, team, project, system))
     typer.echo(f"Key id:  {row.key_id}")
     typer.echo(f"Roles:   {', '.join(sorted(item.value for item in roles))}")
     typer.echo(f"Project: {team}/{project}")
+    if system is not None:
+        typer.echo(f"System:  {system}")
     typer.echo("")
     typer.echo(key)
     typer.echo("")

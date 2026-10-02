@@ -306,3 +306,21 @@ def test_retention_purge_reports_what_it_does() -> None:
     assert "Deleted 0 interactions older than 13 months" in done
     assert "Deleted 0 dispatched events" in done
     assert "no broken link" in verified
+
+
+def test_a_key_can_be_tied_to_a_declared_system(tmp_path: Path) -> None:
+    workspace()
+
+    created = arbiter("keys", "create", "--name", "cv", "--system", "cv-screening")
+    unknown = arbiter("keys", "create", "--name", "x", "--system", "nope", ok=False)
+
+    assert "System:  cv-screening" in created
+    assert "Error: AI system 'nope' not found" in unknown
+    connection = sqlite3.connect(tmp_path / ".arbiter" / "arbiter.db")
+    try:
+        linked = connection.execute(
+            "SELECT s.key FROM api_key k JOIN ai_system s ON s.id = k.ai_system_id"
+        ).fetchall()
+    finally:
+        connection.close()
+    assert linked == [("cv-screening",)]
