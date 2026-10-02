@@ -46,9 +46,18 @@ services:
     environment:
       ARBITER_ENVIRONMENT: compose
       ARBITER_DATABASE__URL: postgresql+asyncpg://arbiter:${ARBITER_POSTGRES_PASSWORD:-arbiter-local-only}@postgres:5432/arbiter
-    # Migrate, then serve. In Azure the migration runs as a separate job (Phase 6).
+      # Local defaults for a throwaway stack, like the database password. API keys are
+      # hashed with the pepper: change it and every key issued before stops working.
+      ARBITER_SECRET_API_KEY_PEPPER: ${ARBITER_SECRET_API_KEY_PEPPER:-arbiter-local-only-pepper-change-me-please}
+      ARBITER_SECRET_REDACTION_KEY: ${ARBITER_SECRET_REDACTION_KEY:-arbiter-local-only-redaction-change-me-please}
+    # Initialise, then serve: `init` migrates the database, creates the local tenant and
+    # writes a starter configuration with the mock provider. It changes nothing that
+    # already exists. In Azure the migration runs as a separate job (Phase 6).
+    #
+    # Create a key and call the gateway:
+    #   docker compose -f deploy/compose/compose.yaml exec arbiter arbiter keys create --name demo
     entrypoint: ["/bin/sh", "-c"]
-    command: ["arbiter db upgrade && exec arbiter serve --host 0.0.0.0 --port 8080"]
+    command: ["arbiter init && exec arbiter serve --host 0.0.0.0 --port 8080"]
     ports:
       - "127.0.0.1:8080:8080"
 

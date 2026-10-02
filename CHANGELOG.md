@@ -11,6 +11,53 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Added
 
+- **Gateway** (Phase 3). An OpenAI-compatible endpoint, `POST /v1/chat/completions` with
+  streaming and `GET /v1/models`, that authenticates, applies policy, routes, meters and
+  audits every request. Prompt and completion text is not stored
+  ([ADR-0018](docs/adr/0018-metadata-only-by-default.md)). Guide: `docs/gateway.md`.
+- Identity: teams, projects, principals, three roles (admin, auditor, developer) scoped
+  to a tenant, a team or a project, and API keys with a recognisable format, stored as an
+  HMAC keyed with a pepper that can be rotated
+  ([ADR-0028](docs/adr/0028-api-keys-hmac-with-pepper.md)).
+- Rule engine: rule packs as validated YAML with a closed set of operators, evaluated
+  with a trace of the conditions behind each match; the decision envelope shared by every
+  automated outcome ([ADR-0012](docs/adr/0012-unified-declarative-rule-engine.md)).
+- Audit log: one hash chain per tenant over RFC 8785 canonical JSON, with verification
+  that reports the first broken link and a JSONL export that can be verified without the
+  database; `audit.fail_mode`, per tenant
+  ([ADR-0017](docs/adr/0017-audit-hash-chain-per-tenant.md),
+  [ADR-0029](docs/adr/0029-canonical-json-in-house.md)). Guide: `docs/audit.md`.
+- Model providers as plugins: a scriptable mock, OpenAI-compatible endpoints and Azure
+  OpenAI, each validating the settings of its deployments at startup
+  ([ADR-0013](docs/adr/0013-own-llm-provider-adapters.md)). The two HTTP adapters are
+  tested against a simulated transport, not against a real provider.
+- Routing by priority or by cost, with retry and fallback; the plan and every attempt
+  are an audited decision.
+- FinOps: a versioned price catalogue with overrides, costs as exact decimals, usage
+  roll-ups per tenant, team, project, principal and AI system, soft and hard budgets, a
+  usage API and a Markdown usage report in English and Italian
+  ([ADR-0030](docs/adr/0030-price-catalogue-as-versioned-file.md)). Interactions without
+  token counts are reported as unpriced; a deployment can opt in to flagged estimates
+  ([ADR-0031](docs/adr/0031-token-counts-unknown-by-default.md)).
+- Detection and redaction of personal data in prompts: e-mail, phone, IBAN, payment
+  card, Italian fiscal code and VAT number, IP address and common credential formats,
+  replaced by masking, keyed hashing or removal
+  ([ADR-0014](docs/adr/0014-pii-detection-built-in-and-pluggable.md),
+  [ADR-0027](docs/adr/0027-pii-detectors-core-and-deferrable.md)).
+- Pre-call policy with a default rule pack: model allowlist, hard budgets, redaction. A
+  denied request returns the decision and the rules that matched, in English or Italian.
+- Control plane under `/api/v1`: teams, projects, principals, roles, API keys, budgets,
+  usage, audit entries, verification and export. Errors are RFC 9457 problem details.
+- CLI: `arbiter keys create|list|revoke`, `arbiter usage report`,
+  `arbiter audit verify|export`, `arbiter pii detectors|redact`. `arbiter init` generates
+  the secrets of a local workspace in `.env` and a starter configuration with the mock
+  provider; `arbiter serve` checks the configuration before starting.
+- Message catalogues in English and Italian, with Babel for numbers and dates
+  ([ADR-0021](docs/adr/0021-i18n-message-catalogs.md)).
+- `scripts/measure_latency.py`: the time the gateway adds to a request, against the mock
+  provider; run by `scripts/check.sh` and in CI.
+- "Release improvement tracking" in the README: strengths, weaknesses and improvements
+  recorded at the end of each phase.
 - Package `ai-arbiter` with the import package `ai_arbiter` and the `arbiter` command,
   alias `ai-arbiter` ([ADR-0005](docs/adr/0005-naming-and-distribution.md)). One
   distribution with the optional extras `gateway`, `otel` and `all`; the base install has
@@ -101,6 +148,17 @@ Entries link to the decision record that motivated them, where one exists.
 
 - The em-dash character is no longer used anywhere in the repository; a check in
   `scripts/check.sh` and in CI fails when a tracked file contains one.
+- SQLite transactions now start as write transactions, so that concurrent writers queue
+  instead of failing with "database is locked".
+- The environment secret store also reads `.env` in the working directory; the
+  environment wins.
+- The Compose stack initialises a local workspace with the mock provider, and its smoke
+  test sends a request through the gateway and verifies the audit chain.
+- CI: the Linux runner image is pinned, each job has its own dependency cache, the job
+  that tests the base install is offered a PostgreSQL database it must not use, and the
+  built wheel is checked for its data files.
+- New base dependency: Babel. New development dependency: `rfc8785`, used only by the
+  tests to check the canonical JSON against an independent implementation.
 
 ### Fixed
 

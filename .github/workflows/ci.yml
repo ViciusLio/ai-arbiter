@@ -13,17 +13,19 @@ concurrency:
   cancel-in-progress: true
 
 # Third-party actions are pinned to commit SHAs and updated by Dependabot (ADR-0024).
+# The Linux runner image is pinned too, so that a new image is adopted on purpose.
 
 jobs:
   lint:
     name: Lint, types, import rules
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           python-version: "3.12"
           enable-cache: true
+          cache-suffix: lint
       - run: uv sync --locked --all-extras
       - run: uv run ruff check .
       - run: uv run ruff format --check .
@@ -38,9 +40,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, python: "3.12" }
-          - { os: ubuntu-latest, python: "3.13" }
-          - { os: ubuntu-latest, python: "3.14" }
+          - { os: ubuntu-24.04, python: "3.12" }
+          - { os: ubuntu-24.04, python: "3.13" }
+          - { os: ubuntu-24.04, python: "3.14" }
           - { os: windows-latest, python: "3.12" }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,18 +50,19 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           enable-cache: true
+          cache-suffix: test-${{ matrix.os }}-${{ matrix.python }}
       - run: uv sync --locked --all-extras
       # The coverage threshold is set in pyproject.toml.
       - run: uv run pytest --cov --cov-report=term --cov-report=xml
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.12'
+        if: matrix.os == 'ubuntu-24.04' && matrix.python == '3.12'
         with:
           name: coverage
           path: coverage.xml
 
   test-postgres:
     name: Tests on PostgreSQL
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:17-alpine
@@ -82,6 +85,7 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
+          cache-suffix: postgres
       - run: uv sync --locked --all-extras
       - name: Run the database tests on PostgreSQL
         run: |
@@ -91,16 +95,45 @@ jobs:
             echo "::error::PostgreSQL tests were skipped; the database URL was not picked up"
             exit 1
           fi
+      # Time added by the gateway, measured against the mock provider. The limit is
+      # generous: it catches a regression of an order of magnitude, not runner noise.
+      - name: Measure request-path latency
+        run: |
+          set -o pipefail
+          {
+            echo "### Request-path latency against the mock provider"
+            echo
+            uv run python scripts/measure_latency.py --max-p95-ms 1000
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
   test-base-install:
     name: Tests without extras
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    # A PostgreSQL database is offered on purpose: without the driver, which is part of
+    # the gateway extra, the PostgreSQL tests must be skipped, not fail.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: arbiter
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: arbiter_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U arbiter -d arbiter_test"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      ARBITER_TEST_DATABASE_URL: postgresql+asyncpg://arbiter:ci-only@localhost:5432/arbiter_test
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           python-version: "3.12"
           enable-cache: true
+          cache-suffix: base
       # No extras: the offline toolkit must work without the web stack (ADR-0010).
       - run: uv sync --locked
       - run: uv run pytest
@@ -114,6 +147,11 @@ jobs:
           /tmp/base/bin/ai-arbiter --version
           /tmp/base/bin/arbiter init
           /tmp/base/bin/arbiter db current
+          # Rule packs, prices and message catalogues are data files inside the wheel.
+          /tmp/base/bin/arbiter keys create --name wheel-check
+          /tmp/base/bin/arbiter pii detectors
+          /tmp/base/bin/arbiter usage report --locale it
+          /tmp/base/bin/arbiter audit verify
           if /tmp/base/bin/arbiter serve; then
             echo "::error::serve should refuse to start without the gateway extra"
             exit 1
@@ -121,7 +159,7 @@ jobs:
 
   security:
     name: Dependency audit and secret scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -130,6 +168,7 @@ jobs:
         with:
           python-version: "3.12"
           enable-cache: true
+          cache-suffix: security
       - name: Audit locked dependencies
         run: |
           uv export --locked --all-extras --no-emit-project --format requirements-txt > requirements.txt
@@ -144,14 +183,14 @@ jobs:
   dependency-review:
     name: Dependency review
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
 
   container:
     name: Container image and Compose stack
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
@@ -174,6 +213,14 @@ jobs:
         run: |
           curl --fail --silent --show-error http://127.0.0.1:8080/healthz
           curl --fail --silent --show-error http://127.0.0.1:8080/readyz
+      - name: Send a request through the gateway and verify the audit chain
+        run: |
+          compose="docker compose -f deploy/compose/compose.yaml"
+          key="$($compose exec -T arbiter arbiter keys create --name smoke | grep '^arb_')"
+          curl --fail --silent --show-error http://127.0.0.1:8080/v1/chat/completions \
+            -H "Authorization: Bearer ${key}" -H "Content-Type: application/json" \
+            -d '{"model":"mock-small","messages":[{"role":"user","content":"ping"}]}'
+          $compose exec -T arbiter arbiter audit verify
       - name: Show logs on failure
         if: failure()
         run: docker compose -f deploy/compose/compose.yaml logs

@@ -222,6 +222,30 @@ async def test_a_stream_includes_usage_when_the_client_asks_for_it(
     assert last["usage"]["prompt_tokens"] > 0
 
 
+async def test_a_stream_that_breaks_halfway_ends_with_an_error_event(
+    database: Database, tenant_id: UUID
+) -> None:
+    app = app_for(
+        database.engine.url.render_as_string(False),
+        {**MOCK, "settings": {"reply": "one two three", "break_stream_after": 2}},
+    )
+    async with running(app) as client:
+        key = await issue_key(app, tenant_id, AccessRole.DEVELOPER)
+        response = await client.post(
+            "/v1/chat/completions", json={**BODY, "stream": True}, headers=key.auth
+        )
+
+    received = events(response.text)
+    assert response.status_code == 200
+    assert received[-1] == "[DONE]"
+    assert json.loads(received[-2]) == {
+        "error": {"message": "the model provider ended the stream", "type": "upstream_error"}
+    }
+    async with database.session() as session:
+        interaction = (await session.scalars(select(Interaction))).one()
+    assert interaction.status == "error"
+
+
 async def test_a_stream_denied_by_policy_is_a_plain_error_response(
     database: Database, tenant_id: UUID
 ) -> None:

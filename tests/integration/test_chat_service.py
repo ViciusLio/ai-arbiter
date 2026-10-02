@@ -15,7 +15,7 @@ from ai_arbiter.core.events.model import OutboxEvent
 from ai_arbiter.core.interaction import Interaction
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.persistence.tenant import Tenant
-from ai_arbiter.core.ports.llm import ChatRequest
+from ai_arbiter.core.ports.llm import ChatChunk, ChatRequest, ProviderError
 from ai_arbiter.gateway.chat import AuditUnavailableError, PolicyDeniedError
 from ai_arbiter.gateway.finops.budgets import BudgetPeriod
 from ai_arbiter.gateway.finops.model import UsageRollup
@@ -438,6 +438,35 @@ async def test_a_stream_the_client_abandons_is_recorded_as_aborted(
     interaction = (await rows(database, Interaction))[0]
     assert interaction.status == "aborted"
     assert interaction.input_tokens is None
+
+
+async def test_a_stream_the_provider_breaks_halfway_is_recorded_as_an_error(
+    make_runtime: RuntimeFactory, database: Database, context: TenantContext
+) -> None:
+    runtime = await make_runtime(
+        {**MOCK, "settings": {"reply": "one two three four", "break_stream_after": 3}}
+    )
+
+    result = await runtime.chat.stream(context, chat_request(stream=True))
+    assert result.chunks is not None
+    received: list[ChatChunk] = []
+
+    async def read() -> None:
+        assert result.chunks is not None
+        async for chunk in result.chunks:
+            received.append(chunk)
+
+    with pytest.raises(ProviderError):
+        await read()
+
+    assert stream_text(received) == "one two "
+    interaction = (await rows(database, Interaction))[0]
+    assert (interaction.status, interaction.deployment) == ("error", "mock")
+    assert interaction.cost_estimate is None
+    assert [(e.action, e.outcome) for e in await audit_entries(database)] == [
+        ("chat.policy", "allow"),
+        ("chat.routing", "route:mock"),
+    ]
 
 
 async def test_a_stream_is_denied_before_the_first_chunk(

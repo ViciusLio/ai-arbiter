@@ -128,7 +128,7 @@ def test_the_usage_report_shows_traffic_in_both_languages(tmp_path: Path) -> Non
 
     assert english.exit_code == 0, english.output
     assert "# Usage report" in english.output
-    assert "| default | 3 | 0 | 0 | 300 | 27 | 0.0001 | 0 | 0 |" in english.output
+    assert "| default | 3 | 0 | 0 | 300 | 27 | 0.000061 | 0 | 0 |" in english.output
     assert "does not provide legal advice" in english.output
     assert "# Report dei consumi" in italian.output
     assert "| Local workspace | 3 |" in italian.output

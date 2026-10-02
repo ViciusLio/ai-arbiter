@@ -7,7 +7,31 @@ implemented, and the code is the reference once it exists.
 All ports are `typing.Protocol` classes in `ai_arbiter.core.ports`. Implementations live
 in `adapters` or in the module that owns the capability, and are selected by
 configuration (ADR-0011). A port is added to the code together with its first
-implementation: so far `Clock`, `SecretStore` and `EventBus`.
+implementation: so far `Clock`, `SecretStore`, `EventBus`, `AuditLog`, `LLMProvider`,
+`PIIDetector` and `PolicyEngine`.
+
+## 0. Where the code differs from these sketches
+
+Reviewed at the end of Phase 3 against what was built. The sketches below are kept as
+written in Phase 1; this table is what changed.
+
+| Sketch | In the code | Why |
+|---|---|---|
+| `TenantContext.roles: frozenset[Role]` | `frozenset[AccessRole]` (`admin`, `auditor`, `developer`) | `Role` already names what a server process does (ADR-0020) |
+| `RuleMatch` without an outcome | `RuleMatch.outcome` added; `ConditionTrace` holds fact name, operator, the value written in the rule and `negated` | A decision is derived from the outcomes of its matches; the value a fact had is never recorded |
+| `Decision` | `details` added: structured explanation that is not a rule match, such as a route plan | Routing has candidates and attempts, not rules |
+| `RuleEngine` protocol with `load` and `evaluate` | Functions in `core.rules`: `load_rule_pack`, `load_packaged_pack`, `evaluate` | One implementation, no state: a protocol would have no second user |
+| `AuditLog.append(ctx, record, session=...)`, `verify(tenant_id, from_seq)` | `append(session, tenant_id, record)`, `verify(session, tenant_id)` | The session comes first everywhere; partial verification waits for anchors (v0.1.x) |
+| `PIIDetector.detect` | Also `describe()`: what each category validates and misses | ADR-0014 requires the limits to be shown to users |
+| `LLMProvider.name`, `capabilities()` | `settings_model` and `aclose()`; no `capabilities()` | Settings validation is what ADR-0011 asks for; nothing reads capabilities yet |
+| `Router.plan(request, profile, constraints)` | `Router.plan(model, allowed=...)`, then `complete` or `open_stream` | Constraints by risk class are deferrable (ADR-0009); `allowed` is where they will arrive |
+| `RoutingStrategy` protocol | Two strategies inside `Router` | Same reason as `RuleEngine` |
+| `UsageMeter.record(interaction, session=...)`, `BudgetGuard.status(ctx)` | `UsageMeter.record(session, interaction)`, `BudgetService.status(session, ctx)` | Naming and argument order |
+| `PriceCatalogue.price(provider, model, region)` | As sketched, on a class, not a protocol | One implementation |
+| `SystemDirectory`, `Notifier` | Not in the code yet | Their first implementations are in Phase 4 |
+| Events: `PolicyDenied`, `BudgetThresholdReached` | Only `InteractionRecorded` is published | The others have no consumer before Phase 4 |
+| HTTP: `/api/v1/tenants` | Not implemented; `/api/v1/me`, `/principals`, `/audit/fail-mode` added | A key acts inside one tenant; tenants are created from the CLI |
+| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit` added; `arbiter worker` not yet | The outbox has no consumer before Phase 4 |
 
 ## 1. Shared types
 

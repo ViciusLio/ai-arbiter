@@ -52,9 +52,9 @@ def test_the_report_lists_scopes_by_name_and_totals_them() -> None:
     assert "- **Tenant**: Acme" in text
     assert "- **Period**: October 1, 2026 to October 31, 2026" in text
     assert "- **Grouped by**: project" in text
-    assert "| assistant | 1,234 | 3 | 1 | 1,000,000 | 250,000 | 1,234.5000 | 7 | 2 |" in text
-    assert f"| {BETA} | 10 | 0 | 0 | 5,000 | 900 | 1.2500 | 0 | 0 |" in text
-    assert "| **Total** | 1,244 | 3 | 1 | 1,005,000 | 250,900 | 1,235.7500 | 7 | 2 |" in text
+    assert "| assistant | 1,234 | 3 | 1 | 1,000,000 | 250,000 | 1,234.500000 | 7 | 2 |" in text
+    assert f"| {BETA} | 10 | 0 | 0 | 5,000 | 900 | 1.250000 | 0 | 0 |" in text
+    assert "| **Total** | 1,244 | 3 | 1 | 1,005,000 | 250,900 | 1,235.750000 | 7 | 2 |" in text
     assert text.index("| assistant |") > text.index(f"| {BETA} |")
 
 
@@ -64,7 +64,7 @@ def test_the_report_says_what_the_totals_leave_out() -> None:
     assert "Every cost is an estimate computed from the price catalogue." in text
     assert "7 completed requests have no cost" in text
     assert "2 completed requests have token counts that were estimated" in text
-    assert "They account for 0.7500 USD of the total." in text
+    assert "They account for 0.750000 USD of the total." in text
     assert "Arbiter is a support tool. It does not provide legal advice." in text
 
 
@@ -79,7 +79,7 @@ def test_the_report_adds_the_reporting_currency_and_states_the_rate() -> None:
     text = render_usage_report(report(LINES[0]), load_catalogue(), reporting=REPORTING)
 
     assert "| Estimated cost (USD) | Estimated cost (EUR) |" in text
-    assert "| 1.2500 | 1.1500 |" in text
+    assert "| 1.250000 | 1.150000 |" in text
     assert "Amounts in EUR are converted at 0.92 EUR per USD, the rate of October 1, 2026" in text
 
 
@@ -90,7 +90,7 @@ def test_the_report_in_italian() -> None:
     assert "- **Periodo**: dal 1 ottobre 2026 al 31 ottobre 2026" in text
     assert "- **Raggruppato per**: progetto" in text
     assert (
-        "| assistant | 1.234 | 3 | 1 | 1.000.000 | 250.000 | 1.234,5000 | 1.135,7400 | 7 | 2 |"
+        "| assistant | 1.234 | 3 | 1 | 1.000.000 | 250.000 | 1.234,500000 | 1.135,740000 | 7 | 2 |"
         in text
     )
     assert "| **Totale** |" in text

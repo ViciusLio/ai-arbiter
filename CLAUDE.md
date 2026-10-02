@@ -8,95 +8,59 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0, 1 and 2 are done and verified. Phase 3 is open: the
-owner gave the go-ahead, and **no Phase 3 code is written until the owner answers the
-questions in Step 2**. They were presented on 2026-10-02; if the answers are not in this
-file, present them again.
+**State on 2026-10-02.** Phases 0, 1 and 2 are done. **The core of Phase 3 (gateway MVP)
+is implemented and waits for the owner's approval.** Do not start Phase 4, and do not
+start the deferrable items of Phase 3, until the owner says so.
 
-### Step 1: environment verified
+Read first: `docs/phases/phase-3-gateway.md` (what was built, verified and not verified),
+then `docs/gateway.md` and `docs/audit.md` (how it works).
 
-Verified in Codespaces on 2026-10-02, at commit `c8ccce3`:
+### Step 1: quick check in a new codespace
 
-- The dev container has uv, Python 3.12, 3.13 and 3.14, Docker and the PostgreSQL sidecar.
-- `scripts/check.sh --containers` passes to the end with no change needed: lint, types,
-  import rules; 121 tests on each of Python 3.12, 3.13 and 3.14, the database tests on
-  SQLite and PostgreSQL; 98% coverage; 90 tests without extras; image build, non-root
-  user, Compose stack healthy, `/healthz` and `/readyz`.
-- CI on GitHub is green at the same commit, CodeQL included.
+`git config user.email` (must be `viciuslios@gmail.com`, local config),
+`pg_isready -h postgres -U arbiter -d arbiter_test`, then `scripts/check.sh`.
 
-Not verified: the release workflow (it runs on the `0.0.1` tag, which the owner pushes),
-and the CodeQL alert list (not readable with the Codespaces token; the owner checks the
-Security tab). Details in `docs/phases/phase-2-scaffolding.md`.
+Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
+the test suite is running: the tests migrate and drop its tables.
 
-In a new codespace, repeat the quick check before working: `git config user.email`,
-`pg_isready -h postgres -U arbiter -d arbiter_test`, `scripts/check.sh`.
-
-### Step 2: Decisions waiting for the owner
+### Step 2: decisions waiting for the owner
 
 | # | Decision | Needed by |
 |---|---|---|
-| 1 | Q1: confirm the split of v0.1 between core and deferrable components (ADR-0009). PII detection is the heaviest core item | Phase 3 code |
-| 2 | The four opening decisions of Phase 3 (Step 3), each presented with numbered options | Phase 3 code |
-| 3 | Publish `0.0.1` to reserve the name on PyPI (`docs/releasing.md`) | Before `0.1.0-alpha` |
-| 4 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
+| 1 | Approval of Phase 3 and the go-ahead for Phase 4 | Phase 4 |
+| 2 | Q6: version number for this state of the code (`0.1.0a1` now, or after `0.0.1` reserved the name on PyPI) | The alpha release |
+| 3 | Q5: credentials for one OpenAI-compatible endpoint, to run the provider adapters against a real provider | `0.1.0` |
+| 4 | Publish `0.0.1` to reserve the name on PyPI (`docs/releasing.md`) | Before the alpha |
+| 5 | Whether to do deferrable items of Phase 3 before Phase 4, and which | Planning |
+| 6 | Azure subscription and monthly budget (ADR-0008) | Phase 6 |
 
-After the answers: record one ADR per decision, update the ADR index and `CHANGELOG.md`,
-then implement the core of Phase 3 in the order of Step 4. Stop at the end of the phase.
+Decided at the start of Phase 3 (ADR-0027 to ADR-0031): the v0.1 split with the PII
+detectors divided between core and v0.1.x; API keys as HMAC with a pepper; in-house
+canonical JSON; prices in a YAML catalogue; token counts unknown by default.
 
-The v0.1 scope is accepted (ADR-0009). It has a **core** that `0.1.0` cannot ship without
-and **deferrable** components that may follow in v0.1.x. Plan Phases 3 and 4 core first;
-start a deferrable item only when the core of that phase is done.
+### Step 3: what is not done
 
-### Step 3: Phase 3: four decisions to bring first
+Deferrable, only when the owner asks (ADR-0009, ADR-0027): routing constraints by risk
+class (needs Phase 4), post-call policy evaluation, external anchoring of the audit head,
+opt-in store of redacted content, the remaining PII detectors and the measurement of
+their precision and recall.
 
-Presented to the owner on 2026-10-02, each as an option table with the seven criteria and
-a recommendation; answers pending. The options below are a summary, not decisions.
-Recommended: 1: HMAC-SHA-256 with a pepper; 2: in-house canonicaliser without floats;
-3: versioned YAML file; 4: unknown and unpriced, with an opt-in flagged estimate.
+Not verified: the `openai_compat` and `azure_openai` adapters against a real provider,
+the release workflow, the CodeQL alert list. The README table "Release improvement
+tracking" lists every open improvement (I-01 to I-21).
 
-1. **API key format and hashing.** Options: random high-entropy token with a recognisable
-   prefix and a key id, stored as a plain SHA-256 digest; the same with HMAC-SHA-256 and
-   a server-side pepper from the secret store; a slow password hash (argon2); signed
-   stateless tokens. Points to weigh: per-request latency, what a database leak exposes,
-   revocation, secret-scanner friendliness of the prefix.
-2. **Canonical JSON for the audit hash (ADR-0017).** Options: a dependency implementing
-   RFC 8785; an in-house canonicaliser limited to the types audit entries use (no
-   floats), tested against the RFC vectors; `json.dumps(sort_keys=True)`, which is not
-   RFC-conformant. Points to weigh: third parties must be able to re-verify an export
-   with other tools.
-3. **Price catalogue format and currency.** Options: a versioned YAML data file shipped
-   like a rule pack, with overrides in configuration; a database table managed through
-   the API; importing a third-party price list. Points to weigh: `Decimal` arithmetic,
-   price per million tokens, cached-token and regional prices, one reporting currency
-   per tenant with an explicit conversion rate, the catalogue version stored on every
-   interaction.
-4. **Token counts when a provider returns no usage.** Options: leave them unknown and
-   report the interaction as unpriced; a character-based estimate flagged as estimated; a
-   tokenizer dependency per model family. Points to weigh: budgets enforced on estimates,
-   honesty of FinOps reports, dependency weight in the request path.
+### Step 4: Phase 4 (compliance MVP), when the owner gives the go-ahead
 
-Also deferred to Phase 3: anchoring sink details for the audit chain (ADR-0017).
+Open the phase by bringing the decisions first, as numbered option tables: the fact
+schema of the AI Act rule pack; how a person reviews and overrides a classification; the
+retention defaults. Before writing any rule, verify the AI Act text and calendar on
+EUR-Lex (Q3).
 
-### Step 4: Phase 3 task list (gateway MVP)
+Then, core first: inventory and the `SystemDirectory` port; classifier with the AI Act
+rule pack; scanner; findings with review; daily digest in English and Italian; the outbox
+dispatcher (`arbiter worker`). Then routing constraints by risk class.
 
-Core (ADR-0009), in this order:
-
-1. Identity: teams, projects, principals, API keys, three roles.
-2. Rule engine (`core.rules`): rule pack schema, condition evaluator, match trace.
-3. Audit: hash chain, verification, export (ADR-0017, ADR-0023).
-4. Providers: mock, OpenAI-compatible, Azure OpenAI; plugin settings models (ADR-0013).
-5. Router: candidates, priority and cost strategies, fallback and retry.
-6. FinOps: versioned price catalogue, metering, roll-ups, budgets.
-7. Redaction: built-in detectors with EU and Italian formats (ADR-0014).
-8. Policy: fact collection, pre-call evaluation, default policy pack.
-9. HTTP: `/v1/chat/completions` with streaming, `/v1/models`, admin endpoints.
-10. Request-path latency measured against the mock provider.
-
-Deferrable to v0.1.x, only after the core above: routing constraints by risk class,
-post-call policy evaluation, external anchoring of the audit head, opt-in store of
-redacted content.
-
-Target release at the end of Phase 3: `0.1.0-alpha`.
+Target release at the end of Phase 4: `0.1.0`.
 
 ## Names (ADR-0005)
 
@@ -126,7 +90,10 @@ published yet; the owner publishes it (`docs/releasing.md`).
 - `docs/PROJECT_BRIEF.md`: initial requirements, in Italian. Never edited; changes go
   through ADRs.
 - `docs/phases/phase-N-*.md`: analysis and summary of each phase
-- `docs/architecture/`: overview, flows, data model, interfaces
+- `docs/gateway.md`, `docs/audit.md`: how the gateway and the audit log work and are
+  configured; keep them in step with the code
+- `docs/architecture/`: overview, flows, data model, interfaces. The Phase 1 sketches are
+  kept as written; each document starts with where the code differs
 - `docs/adr/`: decisions (MADR); index and open questions in `docs/adr/README.md`
 - `docs/releasing.md`: how a release is published
 - `CHANGELOG.md`: Keep a Changelog + SemVer, entries linked to ADRs
@@ -156,10 +123,20 @@ uv run ruff check .               # lint
 uv run ruff format .              # format (also formats Python blocks in Markdown)
 uv run mypy                       # strict type-check of src and tests
 uv run lint-imports               # module boundary rules (ADR-0010)
-uv run arbiter init               # local workspace: arbiter.yaml + SQLite database
-uv run arbiter serve              # HTTP application on 127.0.0.1:8080
-uv run alembic revision --autogenerate -m "..."   # new migration
+uv run arbiter init               # local workspace: arbiter.yaml, SQLite database, .env
+uv run arbiter keys create --name demo --role admin   # prints an API key once
+uv run arbiter serve              # HTTP application on 127.0.0.1:8080, docs at /docs
+uv run arbiter usage report       # usage and estimated cost; --locale it
+uv run arbiter audit verify       # recompute the audit chain
+uv run arbiter pii detectors      # what PII detection validates and misses
+uv run python scripts/measure_latency.py   # time the gateway adds to a request
+uv run alembic revision --autogenerate -m "..." --rev-id 000N   # new migration
 ```
+
+An autogenerated migration must be tidied by hand before it is committed: portable types
+(`sa.DateTime(timezone=True)`, `sa.BigInteger()` for amounts), plain `op.create_index`
+instead of batch blocks, no marker comments. The schema test fails if models and
+migrations differ.
 
 `scripts/check.sh` must pass before a phase is closed.
 
@@ -241,6 +218,18 @@ uv run alembic revision --autogenerate -m "..."   # new migration
 - Rules are YAML data with a closed operator set; no code in rule packs.
 - No prompt or completion text is persisted unless a system opted in. Error messages
   from handlers and providers are not stored; only the exception class name is.
+- The same holds for logs and error responses: a validation error names the field and
+  never echoes the input, and a provider's own error message is dropped.
+- Audit entries name things by identifier, never by name, and contain no floats: amounts
+  are decimal strings (ADR-0029).
+- No database transaction is open while a model provider is being called.
+- Money is `Decimal` in code and the `DecimalAmount` column type in the schema; prices in
+  configuration are strings, never YAML numbers (ADR-0030).
+- Plugins are loaded by name through `PluginRegistry`, never imported by `core` or
+  `gateway`; a provider or detector declares its own settings model (ADR-0011).
+- Test fixtures that look like secrets (keys, tokens, private key blocks) are assembled
+  from parts, or the secret scan in CI flags them. Run the gitleaks command of
+  `ci.yml` locally before pushing such a change.
 
 ## Code conventions
 
@@ -250,4 +239,7 @@ uv run alembic revision --autogenerate -m "..."   # new migration
 - Errors raised by Arbiter derive from `ArbiterError`; the CLI prints them as
   `Error: ...` and exits 1, without a traceback.
 - Tests: one behaviour per test, named as a sentence. Database tests take the `database`
-  fixture and run on both engines. CLI tests are synchronous.
+  fixture and run on both engines. CLI tests are synchronous. HTTP tests use
+  `tests/api_support.py` and start with `pytest.importorskip("fastapi")`.
+- User-facing text goes through `core.i18n` with a key in `locales/en.yaml` and
+  `locales/it.yaml`; a test checks that both have the same keys and placeholders.

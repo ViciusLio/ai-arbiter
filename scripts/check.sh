@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Runs every check that CI runs, in the same order. Usage:
 #
-#   scripts/check.sh              # lint, types, import rules, tests on 3.12, 3.13, 3.14
+#   scripts/check.sh              # lint, types, import rules, tests on 3.12, 3.13, 3.14,
+#                                 # tests without extras, request-path latency
 #   scripts/check.sh --containers # also build the image and start the Compose stack
 #
 # Database tests run on PostgreSQL too when ARBITER_TEST_DATABASE_URL is set (it is, in
@@ -39,6 +40,9 @@ done
 step "Tests without extras"
 UV_PROJECT_ENVIRONMENT=".venv-base" uv run pytest -q
 
+step "Request-path latency against the mock provider"
+uv run python scripts/measure_latency.py --max-p95-ms 1000
+
 if [[ "${1:-}" == "--containers" ]]; then
     compose="deploy/compose/compose.yaml"
 
@@ -55,6 +59,14 @@ if [[ "${1:-}" == "--containers" ]]; then
     step "Call the health endpoints"
     curl --fail --silent --show-error http://127.0.0.1:8080/healthz && echo
     curl --fail --silent --show-error http://127.0.0.1:8080/readyz && echo
+
+    step "Send a request through the gateway and verify the audit chain"
+    key="$(docker compose -f "${compose}" exec -T arbiter arbiter keys create --name smoke \
+        | grep '^arb_')"
+    curl --fail --silent --show-error http://127.0.0.1:8080/v1/chat/completions \
+        -H "Authorization: Bearer ${key}" -H "Content-Type: application/json" \
+        -d '{"model":"mock-small","messages":[{"role":"user","content":"ping"}]}' && echo
+    docker compose -f "${compose}" exec -T arbiter arbiter audit verify
 fi
 
 step "All checks passed"

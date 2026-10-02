@@ -57,7 +57,7 @@ class Translator:
     def integer(self, value: int) -> str:
         return numbers.format_decimal(value, format="#,##0", locale=self.locale)
 
-    def amount(self, value: Decimal, *, places: int = 4) -> str:
+    def amount(self, value: Decimal, *, places: int = 6) -> str:
         pattern = "#,##0." + "0" * places
         return numbers.format_decimal(value, format=pattern, locale=self.locale)
 

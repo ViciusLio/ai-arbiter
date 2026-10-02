@@ -2,7 +2,23 @@
 
 Status: **accepted** on 2026-10-02 (Phase 1). Column lists show the fields that matter
 for the design; the complete schema is produced with the migrations in Phases 2–4.
-Implemented so far: `tenant`, `outbox_event`.
+Implemented so far: `tenant`, `outbox_event` (Phase 2); `team`, `project`, `principal`,
+`role_binding`, `api_key`, `audit_chain_head`, `audit_entry`, `interaction`,
+`usage_rollup`, `budget` (Phase 3).
+
+Where the schema built in Phase 3 differs from the diagrams below:
+
+| Diagram | In the schema | Why |
+|---|---|---|
+| `API_KEY.key_prefix` | `key_id` (public, unique, what the lookup uses), `key_hash`, `pepper_id`, `name` | ADR-0028 |
+| `API_KEY.ai_system_id` as a foreign key | A plain column for now | The inventory table arrives in Phase 4, and the foreign key with it |
+| `ROLE_BINDING` without a tenant | `tenant_id` added | Every tenant-owned table has one (ADR-0015) |
+| `INTERACTION` | `team_id`, `deployment` and `cached_input_tokens` added; unique on `(tenant_id, source, source_record_id)` | Roll-ups per team; the deployment that answered; cached tokens are priced apart (ADR-0030) |
+| `INTERACTION.cost_estimate`, `BUDGET.limit_amount` as decimals | Integers scaled by 10^9, `Decimal` in code | Exact sums on SQLite and PostgreSQL (ADR-0030) |
+| `USAGE_ROLLUP` keyed by granularity and period start | Keyed by `(tenant_id, scope_type, scope_id, day, currency)`; one row per day | A month is the sum of its days; counters for denied, failed, unpriced and estimated requests added (ADR-0031) |
+| `BUDGET.soft_threshold` as a decimal | `soft_threshold_percent`, an integer | No fractional amounts outside money |
+| `AUDIT_ENTRY.resource_id` as a UUID | A string | API keys are named by their public key id |
+| `PAYLOAD_BLOB` | Not created | The opt-in store of redacted content is deferrable (ADR-0009) |
 
 Conventions (ADR-0015):
 

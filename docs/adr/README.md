@@ -114,6 +114,15 @@ recommendation; in every case the recommended option was chosen.
 - ADR-0028 to ADR-0031: API keys, canonical JSON, price catalogue, token counts.
 - The owner approved Phase 2 by giving the go-ahead for Phase 3.
 
+## Phase 3: summary
+
+The core of the gateway is implemented; see the
+[Phase 3 summary](../phases/phase-3-gateway.md). No decision was taken during the
+implementation beyond the five above. Where the code differs from the Phase 1 sketches is
+listed at the top of [interfaces](../architecture/interfaces.md) and of the
+[data model](../architecture/data-model.md); none of those differences changes an
+accepted decision.
+
 ## Open questions
 
 | # | Question | Blocks |
@@ -122,6 +131,8 @@ recommendation; in every case the recommended option was chosen.
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
 | Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
+| Q5 | Credentials for one OpenAI-compatible endpoint, to run the provider adapters against a real provider. Azure OpenAI can wait for Phase 6 (ADR-0008) | The `0.1.0` release |
+| Q6 | Version number for the end of Phase 3: stay on `0.0.1` until the name is reserved on PyPI, then `0.1.0a1`, or go straight to `0.1.0a1` | The alpha release |
 
 ## Deferred decisions
 

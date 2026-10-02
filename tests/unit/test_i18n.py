@@ -62,8 +62,8 @@ def test_numbers_and_dates_follow_the_locale() -> None:
 
     assert english.integer(1234567) == "1,234,567"
     assert italian.integer(1234567) == "1.234.567"
-    assert english.amount(Decimal("1234.5")) == "1,234.5000"
-    assert italian.amount(Decimal("1234.5")) == "1.234,5000"
+    assert english.amount(Decimal("1234.5")) == "1,234.500000"
+    assert italian.amount(Decimal("1234.5")) == "1.234,500000"
     assert italian.decimal(Decimal("0.92")) == "0,92"
     assert english.date(date(2026, 10, 2)) == "October 2, 2026"
     assert italian.date(date(2026, 10, 2)) == "2 ottobre 2026"

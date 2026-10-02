@@ -29,6 +29,9 @@ class MockSettings(BaseModel):
     # With ``fail`` set: fail this many calls, then succeed. 0 means fail every call.
     fail_first: int = Field(default=0, ge=0)
     report_usage: bool = True
+    # Streams only: break the stream after this many chunks, as a provider that fails
+    # halfway does.
+    break_stream_after: int | None = Field(default=None, ge=1)
 
 
 def count_tokens(text: str) -> int:
@@ -124,6 +127,11 @@ class MockProvider:
         yield chunk({"role": "assistant", "content": ""})
         words = reply.split(" ")
         for position, word in enumerate(words):
+            if (
+                settings.break_stream_after is not None
+                and position + 1 >= settings.break_stream_after
+            ):
+                raise ProviderError("mock provider broke the stream", retryable=False)
             yield chunk({"content": word if position == len(words) - 1 else word + " "})
         yield chunk({}, "stop")
         if settings.report_usage:
