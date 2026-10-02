@@ -142,6 +142,11 @@ Set by the owner on 2026-10-02. These hold in every session.
   owner to look at <https://github.com/settings/billing>.
 - For one-off scripts use `uv run python`, never `python3` or `python3.12`: after a
   restart those may resolve to a system interpreter that lacks the standard library.
+- Never run `rm` with a glob or a variable inside `/workspaces/ai-arbiter`. A manual
+  check works in a temporary directory created with `mktemp -d`, and only that directory
+  is deleted afterwards, by its literal path (set by the owner on 2026-10-02).
+- Manual checks are run as short, separate commands, one thing each, never as one long
+  chained line: the owner reads each command before approving it.
 - Never create another codespace or change the machine type without asking.
 - A local model server, when one is needed for a manual check, runs as a container and
   is removed afterwards with its image and its model; report the space freed (ADR-0033).
