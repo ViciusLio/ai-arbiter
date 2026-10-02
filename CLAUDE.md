@@ -32,8 +32,8 @@ Update this list at every commit.
 |---|---|---|
 | 1 | Record the approval of Phase 4b; bring the whole README up to date | Done |
 | 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | Done: I-02, I-30, I-34, I-37, I-38; in part I-20 (budgets CLI; the key cache needs a decision) and I-29 (checksum script; corrigenda still by hand). Left open: I-15, I-31, I-32, I-33, I-35 and everything that needs the owner, Azure or a decision |
-| 3 | Phase 5: check the current state of A2A and MCP on their official sources | Not started |
-| 4 | Phase 5: decisions for the owner as numbered option tables, then wait | Not started |
+| 3 | Phase 5: check the current state of A2A and MCP on their official sources | Done: `docs/phases/phase-5-preparation.md`. MCP current revision `2026-07-28` (stateless), A2A `1.0.0`; SDKs `mcp` 2.2.0 and `a2a-sdk` 1.2.1. Not verified: which revisions `mcp` 2.2.0 implements, what `mcp-types` and `a2a-sdk[signing]` contain |
+| 4 | Phase 5: decisions for the owner as numbered option tables, then wait | Waiting for the owner's answers to P5-1 to P5-8. When they arrive: one ADR each (0046 onwards), then implement in this order: MCP catalogue, MCP proxy, A2A registry with card verification, A2A proxy, findings, demo |
 
 Phase 4b delivered: importers (`compliance/ingest`, `arbiter ingest`), reports
 (`compliance/reports`, `arbiter report`), digest by e-mail (`core/notification.py`,
@@ -66,11 +66,10 @@ every open improvement.
 
 ### Step 5: Phase 5 (A2A and MCP, v0.2)
 
-Open the phase by bringing the decisions first, as numbered option tables with a short
-description next to each number: the MCP revisions to support; A2A through the official
-SDK and what Arbiter adds (registry, authorisation, card signature checks, audit); where
-the MCP proxy sits relative to the gateway. Verify the current state of both protocols on
-their official sources first: the Phase 0 analysis is from secondary sources.
+The protocols were checked on their official sources and the decisions P5-1 to P5-8
+were brought to the owner on 2026-10-02: `docs/phases/phase-5-preparation.md`. Write no
+code for the phase before the answers. Before building on `mcp`, `mcp-types` or
+`a2a-sdk`, check on the installed package what the preparation lists as not verified.
 
 ## Names (ADR-0005)
 

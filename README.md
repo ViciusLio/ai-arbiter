@@ -27,8 +27,8 @@ Updated at every commit. Last update: 2026-10-02.
 | 3 Gateway MVP | Done |
 | 4 Compliance MVP | Done |
 | 4b Deferrable items of v0.1 | Done, approved on 2026-10-02: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
-| Improvements after Phase 4b | **In progress**: see the steps below |
-| 5 A2A and MCP (v0.2) | **Opening**: the decisions are brought to the owner before any code |
+| Improvements after Phase 4b | Done for what needed no decision: seven rows of the tracking table closed, in whole or in part |
+| 5 A2A and MCP (v0.2) | **Opening**: protocols checked on their sources; eight decisions wait for the owner |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
 
@@ -38,8 +38,8 @@ What is being done now, step by step:
 |---|---|
 | Record the approval of Phase 4b; bring this whole README up to date | Done |
 | Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | Done: I-02, I-30, I-34, I-37, I-38 closed; I-20 and I-29 closed in part. Left open because they need a decision, a real endpoint or real effort: see the table |
-| Phase 5: check the current state of A2A and MCP on their official sources | Not started |
-| Phase 5: decisions for the owner, as numbered option tables | Not started |
+| Phase 5: check the current state of A2A and MCP on their official sources | Done: [preparation](docs/phases/phase-5-preparation.md), with what was read and where |
+| Phase 5: decisions for the owner, as numbered option tables | Done: eight decisions, P5-1 to P5-8, wait for the owner's answer. No code yet |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
