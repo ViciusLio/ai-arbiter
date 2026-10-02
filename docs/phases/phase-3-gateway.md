@@ -140,7 +140,8 @@ a container in the Codespace with the model `smollm2:135m` (270 MB), reachable o
 | `arbiter serve` as a real process, with `curl` | Same, plus: fallback from a deployment with an unreachable endpoint to the working one, recorded attempt by attempt in the routing decision; cost computed from a configured price; 502 with the decision id when the only deployment fails; audit chain verified afterwards |
 
 The same checks are kept as opt-in tests in `tests/live/`, skipped unless
-`ARBITER_LIVE_OPENAI_BASE_URL` is set. No CI job sets it.
+`ARBITER_LIVE_OPENAI_BASE_URL` is set. No CI job sets it. The kept gateway test runs on
+SQLite only; the run on PostgreSQL was part of the manual check.
 
 Not covered by this check: authentication with an API key (the local server needs none;
 the header is tested against the simulated transport), rate limiting (429), timeouts,

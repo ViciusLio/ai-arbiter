@@ -14,6 +14,7 @@ synthetic. What the model answers is not asserted, only the shape of the exchang
 """
 
 import os
+from pathlib import Path
 from uuid import UUID
 
 import pytest
@@ -38,9 +39,12 @@ from ai_arbiter.adapters.openai_compat.provider import (  # noqa: E402
 )
 from ai_arbiter.core.domain.tenancy import AccessRole  # noqa: E402
 from ai_arbiter.core.interaction import Interaction  # noqa: E402
+from ai_arbiter.core.persistence import migrate  # noqa: E402
 from ai_arbiter.core.persistence.database import Database  # noqa: E402
+from ai_arbiter.core.persistence.tenant import ensure_tenant  # noqa: E402
 from ai_arbiter.core.ports.llm import ChatRequest, Deployment, ProviderError  # noqa: E402
 from tests.api_support import app_for, issue_key, running  # noqa: E402
+from tests.conftest import sqlite_url  # noqa: E402
 from tests.support import collect, stream_text  # noqa: E402
 
 PROMPT = "Reply with one short sentence about the colour of the sky."
@@ -108,9 +112,21 @@ async def test_a_real_server_refuses_an_unknown_model_with_a_status() -> None:
     assert raised.value.status in (400, 404)
 
 
-async def test_a_request_goes_through_the_whole_gateway_to_a_real_server(
-    database: Database, tenant_id: UUID
-) -> None:
+async def test_a_request_goes_through_the_whole_gateway_to_a_real_server(tmp_path: Path) -> None:
+    # On SQLite only, whatever databases the suite runs on: what is checked here is the
+    # provider, and CI treats a skipped PostgreSQL test as a failure.
+    url = sqlite_url(tmp_path, "live.db")
+    await migrate.upgrade_async(url)
+    database = Database(url)
+    try:
+        async with database.transaction() as session:
+            tenant_id = (await ensure_tenant(session, slug="live", name="Live")).id
+        await _through_the_gateway(database, tenant_id)
+    finally:
+        await database.dispose()
+
+
+async def _through_the_gateway(database: Database, tenant_id: UUID) -> None:
     deployment = {
         "name": "live",
         "provider": "openai_compat",
