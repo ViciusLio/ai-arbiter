@@ -15,7 +15,7 @@ simulated HTTP transport and **have not been run against a real provider**.
 No container, no cloud account. Needs the `gateway` extra.
 
 ```bash
-pip install "ai-arbiter[gateway]"
+pip install --pre "ai-arbiter[gateway]"   # once published; from a clone: uv sync --all-extras
 
 arbiter init                                   # arbiter.yaml, a SQLite database, secrets in .env
 arbiter keys create --name demo --role admin   # prints the API key once

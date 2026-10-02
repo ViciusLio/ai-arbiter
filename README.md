@@ -20,20 +20,24 @@ or `arbiter`, which are different projects by other authors.
 
 ## Install
 
+Not on PyPI yet. Once the first release, `0.1.0a1`, is published:
+
 ```bash
-pip install ai-arbiter
+pip install --pre ai-arbiter      # --pre until 0.1.0: the current release is an alpha
 ```
 
 Or run it without installing:
 
 ```bash
-uvx ai-arbiter --version
+uvx ai-arbiter@0.1.0a1 --version
 ```
+
+Until then, install from a clone: `uv sync --all-extras`, then `uv run arbiter`.
 
 The base install is the offline toolkit and CLI, on SQLite. The HTTP gateway is an extra:
 
 ```bash
-pip install "ai-arbiter[gateway]"
+pip install --pre "ai-arbiter[gateway]"
 ```
 
 ## Try it
@@ -170,7 +174,7 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Done: both documents list where the code differs |
 | I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Open |
 | I-05 | 1 | Anchor the audit chain head outside the database, then sign checkpoints | A full rewrite of the chain is otherwise undetectable | 0.1.x, then 0.3 | Open |
-| I-06 | 2 | Publish `0.0.1` and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | Before 0.1.0-alpha | Open |
+| I-06 | 2 | Publish the first release, `0.1.0a1`, and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | When the owner decides | Open: `0.0.1` is skipped (ADR-0032) |
 | I-07 | 2 | Set the PostgreSQL test URL in the CI job that tests the base install | That job missed a defect the dev container found | Phase 3 | Done |
 | I-08 | 2 | Review the CodeQL alert list | The workflow passes, the alerts were never read | Phase 3 | Open |
 | I-09 | 2 | Give each CI job its own uv cache key; pin the runner image | Jobs race to save one cache; `ubuntu-latest` changes on 19 October 2026 | Phase 3 | Done: `ubuntu-24.04`, one cache per job |

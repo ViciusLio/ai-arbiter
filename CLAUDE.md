@@ -73,8 +73,8 @@ Target release at the end of Phase 4: `0.1.0`.
 | Author | ViciusLio |
 
 Unrelated to `arbiter-ai` on PyPI. Always write the full distribution name in install
-instructions. Version in `pyproject.toml`: `0.0.1`, the name-reserving release, not
-published yet; the owner publishes it (`docs/releasing.md`).
+instructions. Version in `pyproject.toml`: `0.1.0a1`, the first release (ADR-0032);
+nothing is published yet and the owner publishes (`docs/releasing.md`).
 
 ## Git
 
@@ -109,6 +109,30 @@ Development happens in the dev container (`.devcontainer/`), in GitHub Codespace
 - The project Compose stack publishes its own PostgreSQL on `127.0.0.1:5432` of the dev
   container; the test database is on host `postgres`. They do not collide.
 - Stop the codespace when idle; it is billed beyond the free allowance.
+
+### Codespaces hygiene
+
+Set by the owner on 2026-10-02. These hold in every session.
+
+- The codespace runs on the free quota (120 core-hours and 15 GB a month). Treat compute
+  time and disk space as limited resources.
+- Leave nothing running that is not needed: stop `arbiter serve`, development servers and
+  the Compose stack (`docker compose ... down --volumes`) as soon as you are done.
+- Checks: while working, use `uv run pytest` and targeted checks. Run the full
+  `scripts/check.sh` before closing a phase, and `--containers` only at the end of a
+  phase or when the Dockerfile, the Compose file or the dependencies change.
+- Disk: at the end of a session report `df -h /workspaces` and `docker system df`. If
+  unused Docker images exceed 2 GB, propose `docker system prune` to the owner before
+  running it.
+- At the end of a session, or when the owner writes "chiudiamo": update "Resume here",
+  commit, push, and check that `git status` is clean. Then try to stop the codespace
+  with `gh codespace stop -c "$CODESPACE_NAME"`. If that fails for lack of permission,
+  say so and remind the owner to stop it from <https://github.com/codespaces>.
+- Billing and account settings are out of reach. When usage needs checking, ask the
+  owner to look at <https://github.com/settings/billing>.
+- Never create another codespace or change the machine type without asking.
+- A local model server, when one is needed for a manual check, runs as a container and
+  is removed afterwards with its image and its model; report the space freed (ADR-0033).
 
 ## Commands
 
@@ -184,9 +208,11 @@ migrations differ.
 - Never use the em-dash character (U+2014), anywhere: code, comments, documentation,
   commit messages, generated outputs and conversation. Use a colon, a comma, brackets or
   two sentences. `scripts/check.sh` and CI fail when a tracked file contains one.
-- Before closing a working session, or when the owner writes "chiudiamo": update the
-  "Resume here" section with state, open decisions and next steps, commit, push, and
-  remind the owner to stop the codespace.
+- Before closing a working session, or when the owner writes "chiudiamo": follow the
+  closing steps under "Codespaces hygiene".
+- No automated test and no CI job may depend on a real model. A test that calls a real
+  endpoint is opt-in and skipped by default; prompts sent to real models are synthetic
+  (ADR-0033).
 - When the owner writes "riprendi" in a new session, resume from this file without
   asking for context.
 

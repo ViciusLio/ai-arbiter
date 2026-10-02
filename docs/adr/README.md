@@ -14,7 +14,7 @@ supersedes the old one.
 | [0002](0002-compliance-first-positioning.md) | Position Arbiter as compliance-first, with its own lean gateway | Accepted | 0 |
 | [0003](0003-deterministic-classifier-rules-as-data.md) | Classify deterministically, with rules as versioned data | Accepted | 0 |
 | [0004](0004-english-artifacts-localised-outputs.md) | Write artifacts in English; localise user-facing outputs in EN and IT | Accepted | 0 |
-| [0005](0005-naming-and-distribution.md) | Name the distribution `ai-arbiter`, keep the brand "Arbiter" | Accepted | 0 |
+| [0005](0005-naming-and-distribution.md) | Name the distribution `ai-arbiter`, keep the brand "Arbiter" | Accepted; the `0.0.1` release replaced by 0032 | 0 |
 | [0006](0006-no-web-ui-in-v0-1.md) | Ship no web UI in v0.1; HTML outputs and OpenAPI docs are the visible surface | Accepted | 0 |
 | [0007](0007-ai-act-role-explicit-deployer-first.md) | Model the AI Act role explicitly; cover the deployer first | Accepted | 0 |
 | [0008](0008-local-only-until-phase-6.md) | Develop locally only until Phase 6; estimate costs and set budget alerts then | Accepted | 0 |
@@ -41,6 +41,8 @@ supersedes the old one.
 | [0029](0029-canonical-json-in-house.md) | In-house RFC 8785 canonicaliser without floats for the audit hash | Accepted | 3 |
 | [0030](0030-price-catalogue-as-versioned-file.md) | Prices in a versioned YAML catalogue; currency converted only when reporting | Accepted | 3 |
 | [0031](0031-token-counts-unknown-by-default.md) | Token counts unknown when a provider returns no usage, with an opt-in estimate | Accepted | 3 |
+| [0032](0032-first-release-is-the-alpha.md) | `0.1.0a1` is the first release; `0.0.1` is skipped | Accepted | 3 |
+| [0033](0033-real-models-only-in-manual-checks.md) | Provider adapters are checked against real models by hand; no automated test depends on one | Accepted | 3 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -123,6 +125,15 @@ listed at the top of [interfaces](../architecture/interfaces.md) and of the
 [data model](../architecture/data-model.md); none of those differences changes an
 accepted decision.
 
+Decided by the project owner on 2026-10-02, at the end of the phase:
+
+- Phase 3 is approved. Phase 4 starts, with its opening decisions brought first.
+- ADR-0032: the version becomes `0.1.0a1` and `0.0.1` is skipped (closes Q6).
+- ADR-0033: the OpenAI-compatible adapter is checked by hand against a local model
+  server; no automated test or CI job may depend on a real model (closes Q5 for that
+  adapter; Azure OpenAI waits for Phase 6).
+- Working rules for the Codespace, recorded in `CLAUDE.md` under "Codespaces hygiene".
+
 ## Open questions
 
 | # | Question | Blocks |
@@ -131,8 +142,8 @@ accepted decision.
 | Q2 | Azure subscription available, and indicative monthly budget (ADR-0008). The owner will decide by Phase 6 | Phase 6 |
 | Q3 | AI Act dates and the amending regulation's number come from secondary sources; verify on EUR-Lex, including pending changes to the application calendar | Phase 4 |
 | Q4 | Closed on 2026-10-02: the dev container, Dockerfile, Compose stack, PostgreSQL tests, Python 3.12 and the CI workflows all ran and passed ([Phase 2 summary](../phases/phase-2-scaffolding.md)). Left: the release workflow has never run, and the CodeQL alert list has not been read | The `0.0.1` release |
-| Q5 | Credentials for one OpenAI-compatible endpoint, to run the provider adapters against a real provider. Azure OpenAI can wait for Phase 6 (ADR-0008) | The `0.1.0` release |
-| Q6 | Version number for the end of Phase 3: stay on `0.0.1` until the name is reserved on PyPI, then `0.1.0a1`, or go straight to `0.1.0a1` | The alpha release |
+| Q5 | Closed on 2026-10-02 by ADR-0033 for the OpenAI-compatible adapter. The Azure OpenAI adapter is checked against a real endpoint in Phase 6 | Phase 6 |
+| Q6 | Closed on 2026-10-02 by ADR-0032 | - |
 
 ## Deferred decisions
 

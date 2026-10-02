@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ai-arbiter"
-version = "0.0.1"
+version = "0.1.0a1"
 description = "Arbiter: an AI governance gateway and EU AI Act compliance toolkit"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -13,7 +13,7 @@ license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "ViciusLio" }]
 keywords = ["ai-governance", "ai-act", "compliance", "llm-gateway", "finops", "audit"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Operating System :: OS Independent",

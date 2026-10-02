@@ -142,10 +142,17 @@ Entries link to the decision record that motivated them, where one exists.
   - prices in a versioned YAML catalogue, currency converted only when reporting
     ([ADR-0030](docs/adr/0030-price-catalogue-as-versioned-file.md));
   - token counts left unknown when a provider returns no usage, with an opt-in estimate
-    ([ADR-0031](docs/adr/0031-token-counts-unknown-by-default.md)).
+    ([ADR-0031](docs/adr/0031-token-counts-unknown-by-default.md));
+  - `0.1.0a1` as the first release, without a `0.0.1`
+    ([ADR-0032](docs/adr/0032-first-release-is-the-alpha.md));
+  - provider adapters checked against real models by hand only; no automated test
+    depends on a real model
+    ([ADR-0033](docs/adr/0033-real-models-only-in-manual-checks.md)).
 
 ### Changed
 
+- Version `0.1.0a1`; development status Alpha. `0.0.1` was never published and is
+  skipped ([ADR-0032](docs/adr/0032-first-release-is-the-alpha.md)).
 - The em-dash character is no longer used anywhere in the repository; a check in
   `scripts/check.sh` and in CI fails when a tracked file contains one.
 - SQLite transactions now start as write transactions, so that concurrent writers queue

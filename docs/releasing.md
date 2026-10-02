@@ -4,7 +4,8 @@ Releases are published to PyPI by `.github/workflows/release.yml` using
 [Trusted Publishing](https://docs.pypi.org/trusted-publishers/): GitHub proves its
 identity to PyPI with a short-lived token, so no API token is stored in the repository.
 
-Publishing is always triggered by the project owner (ADR-0005). Nothing in CI publishes
+Publishing is always triggered by the project owner (ADR-0005). The first release is
+`0.1.0a1` (ADR-0032); nothing has been published yet. Nothing in CI publishes
 on its own.
 
 ## One-time setup
@@ -13,7 +14,7 @@ Done by the project owner, before the first release.
 
 1. **Push the repository to GitHub**: <https://github.com/ViciusLio/ai-arbiter>. The
    project links in `pyproject.toml` already point there.
-2. **Get CI green on `main`.** The workflows have not run before the first push.
+2. **Get CI green on `main`.**
 3. **Create the `pypi` environment** in the repository settings (Settings → Environments).
    Adding yourself as a required reviewer makes every publication wait for your approval.
 4. **Register a pending trusted publisher on PyPI**
@@ -35,24 +36,26 @@ Done by the project owner, before the first release.
 1. Make sure `main` is green in CI.
 2. Set the version in `pyproject.toml` and move the `[Unreleased]` entries of
    `CHANGELOG.md` under a heading for that version, with the date.
-3. Commit: `chore(release): 0.0.1`.
+3. Commit: `chore(release): 0.1.0a1`.
 4. Tag and push:
 
    ```bash
-   git tag v0.0.1
-   git push origin main v0.0.1
+   git tag v0.1.0a1
+   git push origin main v0.1.0a1
    ```
 
 5. The workflow checks that the tag matches the version, builds the distributions,
    installs the wheel in a clean environment and runs it, then waits for approval of the
    `pypi` environment and publishes.
 
-## About the 0.0.1 release
+## About the first release
 
-`0.0.1` exists to take the name `ai-arbiter` on PyPI (ADR-0005). PyPI may remove packages
-that are empty or have no functionality (PEP 541), so `0.0.1` is a real, if small,
-release: it installs a working `arbiter` command (`init`, `config show`, `plugins list`,
-`db`, `serve`), ships the README and the licence, and links to the repository.
+The first release takes the name `ai-arbiter` on PyPI. There is no separate
+name-reserving release: ADR-0032 replaced the `0.0.1` planned by ADR-0005 with
+`0.1.0a1`.
 
-Before publishing `0.0.1`, check that the name is still free:
-<https://pypi.org/project/ai-arbiter/> must return "not found".
+- Before publishing, check that the name is still free:
+  <https://pypi.org/project/ai-arbiter/> must return "not found".
+- `0.1.0a1` is a pre-release. `pip install ai-arbiter` does not pick it: users install it
+  with `pip install --pre ai-arbiter` or `pip install ai-arbiter==0.1.0a1`.
+- The release workflow has never run. Expect to fix something the first time.
