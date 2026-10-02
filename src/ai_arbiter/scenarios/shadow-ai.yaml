@@ -1,0 +1,120 @@
+# Scenario: what the traffic shows and nobody declared. Every system here is invented.
+#
+#   arbiter demo run shadow-ai
+#
+# The declarations are tidy; the traffic contradicts them. A declared assistant uses a
+# model it does not list and receives personal data it was declared not to process, a
+# retired system still answers, and two teams make requests for which no system was
+# ever declared.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+scenario: shadow-ai
+title:
+  en: What the traffic shows and nobody declared
+  it: Che cosa mostra il traffico e nessuno ha dichiarato
+description:
+  en: >-
+    Two declared systems whose traffic contradicts the declaration, and two teams that
+    use models with no declared system behind them. The scan is expected to report each
+    contradiction and to name each team as a candidate system.
+  it: >-
+    Due sistemi dichiarati il cui traffico contraddice la dichiarazione, e due team che
+    usano modelli senza alcun sistema dichiarato. Dalla scansione ci si aspetta che
+    segnali ogni contraddizione e indichi ogni team come sistema candidato.
+
+inventory:
+  fact_sets:
+    in_scope:
+      scope.is_ai_system: true
+      scope.union_nexus: true
+      scope.military_defence_national_security: false
+      scope.scientific_research_only: false
+      scope.pre_market_development: false
+      scope.personal_non_professional: false
+    no_prohibited_practice:
+      prohibited.manipulative_techniques: false
+      prohibited.exploits_vulnerabilities: false
+      prohibited.intimate_content_without_consent: false
+      prohibited.child_sexual_abuse_material: false
+      prohibited.social_scoring: false
+      prohibited.crime_prediction_by_profiling: false
+      prohibited.facial_image_scraping: false
+      prohibited.emotion_inference_work_education: false
+      prohibited.biometric_categorisation_sensitive: false
+      prohibited.realtime_remote_biometric_identification: false
+    no_high_risk_area:
+      high_risk.annex1_safety_component: false
+      annex3.biometrics: false
+      annex3.critical_infrastructure: false
+      annex3.education: false
+      annex3.employment: false
+      annex3.essential_services: false
+      annex3.law_enforcement: false
+      annex3.migration: false
+      annex3.justice: false
+    chatbot_with_notice:
+      transparency.interacts_with_persons: true
+      transparency.generates_synthetic_content: true
+      transparency.emotion_or_biometric_categorisation: false
+      transparency.deep_fake: false
+      transparency.public_interest_text: false
+      controls.transparency_notice: true
+
+  systems:
+    - key: web-shop-assistant
+      name: Web shop assistant
+      purpose: Recommends products and answers questions in the chat of the web shop.
+      roles:
+        - { role: deployer, basis: "Configured on a vendor platform" }
+      models:
+        - { provider: azure_openai, model: gpt-4o, general_purpose: true }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, chatbot_with_notice]
+      facts:
+        # Declared as processing no personal data: the traffic says otherwise.
+        data.personal_data_processed: false
+
+    - key: legacy-faq-bot
+      name: Legacy FAQ bot
+      purpose: Answered frequent questions on the old intranet. Replaced last year.
+      lifecycle: retired
+      roles:
+        - { role: deployer, basis: "Built on a vendor platform" }
+      models:
+        - { provider: azure_openai, model: gpt-35-turbo, general_purpose: true }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, chatbot_with_notice]
+
+owned: [web-shop-assistant, legacy-faq-bot]
+
+reviews:
+  - { system: web-shop-assistant, decision: confirmed }
+  - { system: legacy-faq-bot, decision: confirmed }
+
+traffic:
+  - system: web-shop-assistant
+    requests: 80
+    model: gpt-4o
+    provider: azure_openai
+    pii_categories: [email]
+  # A model the declaration does not list.
+  - system: web-shop-assistant
+    requests: 30
+    model: gpt-4o-mini
+    provider: azure_openai
+    pii_categories: [email]
+    days_ago: 2
+  # A retired system that still answers.
+  - { system: legacy-faq-bot, requests: 15, model: gpt-35-turbo, provider: azure_openai, days_ago: 4 }
+  # Two teams with no declared system.
+  - { group: marketing-team, requests: 60, model: gpt-4o, provider: azure_openai }
+  - { group: data-science, requests: 20, model: mistral-large, provider: openai_compat, days_ago: 6 }
+
+expected:
+  systems:
+    web-shop-assistant:
+      tier: transparency
+      findings: [SCAN-UNDECLARED-MODEL-IN-TRAFFIC, SCAN-PERSONAL-DATA-NOT-DECLARED]
+    legacy-faq-bot:
+      tier: transparency
+      findings: [SCAN-RETIRED-SYSTEM-IN-USE]
+  candidates: [marketing-team, data-science]

@@ -25,7 +25,7 @@ Updated at every commit. Last update: 2026-10-02.
 | 0 Analysis, 1 Architecture, 2 Scaffolding | Done |
 | 3 Gateway MVP | Done |
 | 4 Compliance MVP | Done |
-| 4b Deferrable items of v0.1 | **In progress**: 4 of 8 steps |
+| 4b Deferrable items of v0.1 | **In progress**: every step is written; the full check of the phase has not run yet |
 | 5 A2A and MCP (v0.2) | Not started |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
@@ -36,12 +36,12 @@ Phase 4b, step by step:
 |---|---|
 | Importers for the records of another gateway (`arbiter ingest`) | Done. The LiteLLM importer was not run against a live LiteLLM |
 | System report and audit report (`arbiter report`) | Done |
-| Digest by e-mail (`arbiter digest run --send`) | Done. The SMTP notifier was not run against a real mail server yet |
+| Digest by e-mail (`arbiter digest run --send`) | Done |
 | Discovery of undeclared systems from traffic (`arbiter systems discover`) | Done |
-| Simulation scenarios (`arbiter demo`) | Not started |
-| Print style sheet for the HTML reports (no PDF, ADR-0044) | Not started |
-| SMTP checked against the mail catcher of the Compose stack (ADR-0045) | Not started |
-| Phase summary and the full check, containers included | Not started |
+| Simulation scenarios (`arbiter demo`) | Done: three scenarios, run by the test suite |
+| Print style sheet for the HTML reports (no PDF, ADR-0044) | Done |
+| SMTP checked against the mail catcher of the Compose stack (ADR-0045) | Written as a step of the container check; not run yet |
+| Phase summary and the full check, containers included | In progress |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
@@ -113,6 +113,8 @@ arbiter digest run --locale it                   # the daily digest, here in Ita
 arbiter report system cv-screening               # everything recorded about one system
 arbiter report audit --format html -o out/       # the audit log of the last 30 days
 arbiter ingest examples/litellm-logs.jsonl --source litellm   # records of another gateway
+arbiter systems discover                         # what in the traffic nobody declared
+arbiter demo run --all                           # three invented scenarios, in the tenant "demo"
 ```
 
 Any client that speaks the OpenAI API works: point its base URL at
@@ -234,6 +236,7 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | 2: Scaffolding | Every check passes on Python 3.12, 3.13 and 3.14, on SQLite and PostgreSQL, with 98% coverage. The image and the Compose stack run. CI is green on Linux and Windows | The release workflow has never run and `0.0.1` is not published. No product feature exists yet. Telemetry is limited to a tracer bootstrap |
 | 3: Gateway | A request goes end to end: key, policy, redaction, routing, metering, audit. Every outcome is an explained decision in a verifiable chain. No prompt text is stored, and a test searches the whole database to prove it. The same tests run on SQLite and PostgreSQL. Decisions were taken before the code and recorded (ADR-0027 to ADR-0031) | The adapters for real providers were never run against one. PII detection misses names and free text, and its precision and recall are not measured. About 20 ms and 17 database statements are added to each request, and the requests of one tenant queue on its audit chain. Nothing is instrumented yet. Deferrable items of ADR-0009 are not started |
 | 4: Compliance | The product's idea is now real: a declared system gets an indicative tier with the provision and the date behind every outcome, traffic that contradicts the declaration becomes a finding, and the classification steers the gateway. An unanswered question is never read as "no". Nothing is presented as settled until a person reviewed it. The rule pack was written from the Official Journal text, pinned by checksum. The six acceptance steps of v0.1 run in under a minute | The rule pack has not been read by a lawyer, and its comparison with EUR-Lex is pending. Only deployer obligations are covered. A classification is as good as the declared facts. The questions are summaries written by hand in two languages. Thirteen scan rules. No discovery from traffic, no importers, no reports, no e-mail delivery: the deferrable items of ADR-0009 |
+| 4b: Deferrable items | The comparison of declared with observed now reaches traffic that did not go through Arbiter: records of another gateway are imported without their content, and what belongs to no declared system is named as a candidate, per project. Two reports and the digest by e-mail give something to hand to people outside the tool. Three scenarios show the toolkit on invented data and fail a test when a rule changes an outcome. Nothing is declared, sent or classified without a person: a candidate is a draft, the default notifier writes files | The LiteLLM importer was never run against a live LiteLLM. A candidate is as coarse as a project, and one from imported records stays for 30 days after its system is declared. The SMTP notifier met a server only without encryption and without authentication. The scenarios are few and were written by the author of the rules. No PDF. Discovery and sending exist on the command line only |
 
 ### Improvements
 
@@ -264,11 +267,17 @@ alike, and what would improve it. Rows stay in the table after they are closed.
 | I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |
 | I-24 | 4 | Cover provider obligations (Chapter III, Sections 2 and 3) and general-purpose models | Only deployer obligations are evaluated | After 0.1 | Open |
 | I-25 | 4 | Discovery of systems from traffic; importers for LiteLLM and JSONL | Deferrable items of ADR-0009; undeclared use is the compensating signal of the threat model | 0.1.x | Done in Phase 4b: the importers (`arbiter ingest`) and discovery by project (`arbiter systems discover`, ADR-0042). Still to verify: the LiteLLM importer against a live LiteLLM |
-| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Done in Phase 4b: both reports (`arbiter report`) and `arbiter digest run --send` with a file and an SMTP notifier. Still to verify: the SMTP notifier against a real mail server (tests replace the client) |
-| I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Open |
+| I-26 | 4 | System and audit reports; digest delivery by e-mail | Deferrable items of ADR-0009 | 0.1.x | Done in Phase 4b: both reports (`arbiter report`) and `arbiter digest run --send` with a file and an SMTP notifier. The check against the mail catcher of the Compose stack (ADR-0045) is written and has not run yet. STARTTLS, TLS and authentication are covered only by tests that replace the client |
+| I-27 | 4 | Simulation scenarios with labelled outcomes, to measure the scan rules and the PII detectors | Rule precision is unmeasured; the examples are seven hand-written systems | 0.1.x | Partly done in Phase 4b: three scenarios state the tier and the findings expected of eight systems, and the test suite runs them (`arbiter demo`, ADR-0043). They are regression checks on a few cases, not a measurement of precision, and they hold no text, so they say nothing about the PII detectors (I-13 stays open) |
 | I-28 | 4 | A guided questionnaire (interactive CLI or a form) instead of editing YAML | Answering sixty questions in a file is the main friction | After 0.1 | Open |
 | I-29 | 4 | Repeat the legal text check at every rule pack release, by script, with a search for corrigenda | The check of 2026-10-02 was done by hand | Every pack release | Open |
 | I-30 | 4 | Read `pii_categories` for the scanner without sampling 5,000 rows per system | A portable query on a JSON column was not found | 0.1.x | Open |
+| I-31 | 4b | Run the LiteLLM importer against the output of a live LiteLLM proxy, as a container, and pin the version it was checked with | The mapping was written from the documented specification, which states no version | 0.1.x | Open |
+| I-32 | 4b | Attribute imported records to a system after the import, so that a candidate from an external source closes when its system is declared | Imported records are attributed at import only; the candidate stays until the records leave the 30-day window | 0.1.x | Open |
+| I-33 | 4b | Let a declaration name several projects, and let the gateway resolve the system of a key from its project | A project that runs several systems shows as one candidate; the gateway applies a tier only to keys tied to the system | 0.1.x | Open |
+| I-34 | 4b | Reports, discovery and digest delivery over HTTP where they are missing (`systems discover`, `digest --send`) | They exist on the command line only | 0.2 | Open |
+| I-35 | 4b | More scenarios, with expected outcomes written by someone other than the author of the rules | Three scenarios, written together with the rules they check | 0.1.x | Open |
+| I-36 | 4b | PDF output of the reports as an optional extra | ADR-0044 chose printing the HTML; a scheduled job cannot print | When asked for | Open |
 
 ## Licence
 

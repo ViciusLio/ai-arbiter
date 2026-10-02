@@ -305,6 +305,8 @@ arbiter report audit --since 2026-09-01 --until 2026-09-30 --format html -o out/
   `--since` and `--until` are UTC days, both included.
 - A chain that verifies is internally consistent, not proven untouched: see
   [the audit log](audit.md).
+- There is no PDF output (ADR-0044). The HTML reports and the HTML digest carry a print
+  style sheet: open the file in a browser and print it to PDF.
 
 Over HTTP: `GET /api/v1/systems/{key}/report` and `GET /api/v1/audit/report`, with
 `format`, `locale` and, for the audit report, `days`. Both need the auditor or the admin
@@ -348,6 +350,40 @@ the alias of the key). That is what lets the scan name a candidate system for it
 
 The LiteLLM mapping was written from the specification LiteLLM documents for its
 standard logging payload. It has not been run against the output of a live LiteLLM.
+
+## Simulation scenarios
+
+To see the toolkit at work without declaring anything of your own, load a scenario
+(ADR-0043). Every system and every request of a scenario is invented.
+
+```bash
+arbiter demo list
+arbiter demo run shadow-ai            # or: arbiter demo run --all
+arbiter findings list --tenant demo
+arbiter systems discover --tenant demo
+arbiter digest run --tenant demo --locale it
+```
+
+| Scenario | Shows |
+|---|---|
+| `inventory-in-order` | Three systems of three tiers, each owned and reviewed, with traffic that matches the declarations. Expected: no findings |
+| `first-inventory` | A proposal that would be a prohibited practice, a derogation claimed without its assessment, a system with questions open; no owner, no review. Expected: what each is missing |
+| `shadow-ai` | A model in traffic that the declaration does not list, personal data where none was declared, a retired system still in use, and two teams with no declared system. Expected: each contradiction, and both teams named as candidates |
+
+- A scenario is one YAML file shipped with the package
+  (`src/ai_arbiter/scenarios/`): the declarations, the reviews to record, traffic as
+  counts per system (never text), and the tier and the findings expected of each
+  system. It holds no code.
+- `arbiter demo run` loads it into the tenant `demo` and no other, classifies, scans,
+  and prints what was found next to what the scenario expects. It exits with an error
+  when they differ: then a rule or the scenario needs fixing. Running it again adds
+  nothing.
+- Simulated requests are stored with the source `simulation`. They are not in the
+  usage totals.
+- The test suite runs every scenario: a change to a rule that alters an outcome fails
+  a test.
+- "No findings" means these rules found nothing. It does not mean that the systems of
+  a scenario satisfy the Regulation.
 
 ## The gateway and the inventory
 

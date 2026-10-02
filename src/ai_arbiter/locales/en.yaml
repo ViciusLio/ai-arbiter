@@ -191,6 +191,13 @@ discover.column.last_seen: "Last seen"
 discover.draft_header: "Drafts from the traffic of the last {days} days. Complete name, purpose, roles and facts, then: arbiter systems apply -f FILE"
 discover.draft_keys: "A draft names its project, so its traffic counts for the system once declared. For the gateway to apply the system's tier, issue its keys with: arbiter keys create --system KEY"
 discover.draft_mapping: "Imported records are attributed at import: add a mapping under ingest.mappings for this group."
+demo.as_expected: "as the scenario expects"
+demo.differs: "DIFFERS from what the scenario expects"
+demo.expected: "expected: {tier}; findings: {findings}"
+demo.candidates: "Candidate systems named from the traffic: {names}"
+demo.next: "Loaded into the tenant '{tenant}'. Look at it with --tenant {tenant}: arbiter systems list, arbiter findings list, arbiter systems discover, arbiter digest run."
+demo.invented: "Every system and every request of a scenario is invented."
+demo.mismatch: "a scenario did not produce what it expects: a rule or a scenario needs fixing"
 
 # Digest, and the names of tiers, review states and severities used in every output.
 tier.prohibited: "Prohibited practice"

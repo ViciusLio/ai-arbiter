@@ -34,9 +34,9 @@ Update this list at every commit of the phase.
 | 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Done: `arbiter report system KEY`, `arbiter report audit`, the two HTTP endpoints, `compliance/reports`. Verified by the automated tests only: the commands were not run by hand |
 | 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Done: `core/notification.py`, `adapters/local/notifiers.py`, `compliance/digest/delivery.py`, settings `plugins.notifier` and `notifications`. Not verified: the `smtp` notifier against a real server (Mailpit of the Compose stack); the tests replace the SMTP client |
 | 4 | Discovery of systems from traffic | Done (ADR-0042): `compliance/inventory/discovery.py`, scan pack `2026.10.1`, `arbiter systems discover [--draft]`, column `interaction.source_group` (migration 0007). No HTTP endpoint for it. Verified by the automated tests only |
-| 5 | Simulation scenarios and `arbiter demo` | Decided (ADR-0043): YAML scenarios loaded into the tenant `demo`, checked by tests. Not started |
-| 5a | Print style sheet of the HTML reports and a note in the guide (ADR-0044: no PDF) | Not started |
-| 5b | Mailpit step in `scripts/check.sh --containers` and in the container job of CI (ADR-0045) | Not started |
+| 5 | Simulation scenarios and `arbiter demo` | Done (ADR-0043): `src/ai_arbiter/scenarios/*.yaml`, `compliance/simulation`, `arbiter demo list` and `demo run NAME` or `--all`. Scenario keys and groups must be unique across scenarios: a test checks it |
+| 5a | Print style sheet of the HTML reports and a note in the guide (ADR-0044: no PDF) | Done |
+| 5b | Mailpit step in `scripts/check.sh --containers` and in the container job of CI (ADR-0045) | Done: `scripts/smoke-mail.sh` |
 | 6 | Phase summary `docs/phases/phase-4b-*.md`, README tracking, changelog, full check | Not started |
 
 ### Step 3: for the owner, not blocking
@@ -176,6 +176,7 @@ uv run arbiter systems apply -f examples/systems.yaml   # declare and classify s
 uv run arbiter systems show KEY   # indicative tier, obligations, provisions, dates
 uv run arbiter scan               # findings from inventory, classification and traffic
 uv run arbiter systems discover   # candidate systems in the traffic; --draft for YAML
+uv run arbiter demo run --all     # invented scenarios in the tenant "demo"; demo list
 uv run arbiter findings list      # then: findings review ID --to confirmed --reviewer NAME
 uv run arbiter digest run --locale it   # daily digest; --locale all --format both -o DIR
 uv run arbiter report system KEY  # one system in full; report audit: the audit log

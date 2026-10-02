@@ -1,0 +1,130 @@
+# Scenario: an inventory that is kept in order. Every system here is invented.
+#
+#   arbiter demo run inventory-in-order
+#
+# Three systems, each with an owner, each classification confirmed by a person, the
+# controls the scan looks for attested, and traffic that matches the declarations.
+# The scan is expected to report no findings. "No findings" means that these rules
+# found nothing: it does not mean that the systems satisfy the Regulation.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+scenario: inventory-in-order
+title:
+  en: An inventory kept in order
+  it: Un inventario tenuto in ordine
+description:
+  en: >-
+    Three declared systems of three different tiers, each owned and reviewed, with
+    traffic that matches what was declared. The scan is expected to find nothing.
+  it: >-
+    Tre sistemi dichiarati di tre classi diverse, ognuno con un responsabile e una
+    revisione, con traffico coerente con quanto dichiarato. Dalla scansione non ci si
+    aspetta alcun rilievo.
+
+inventory:
+  fact_sets:
+    in_scope:
+      scope.is_ai_system: true
+      scope.union_nexus: true
+      scope.military_defence_national_security: false
+      scope.scientific_research_only: false
+      scope.pre_market_development: false
+      scope.personal_non_professional: false
+    no_prohibited_practice:
+      prohibited.manipulative_techniques: false
+      prohibited.exploits_vulnerabilities: false
+      prohibited.intimate_content_without_consent: false
+      prohibited.child_sexual_abuse_material: false
+      prohibited.social_scoring: false
+      prohibited.crime_prediction_by_profiling: false
+      prohibited.facial_image_scraping: false
+      prohibited.emotion_inference_work_education: false
+      prohibited.biometric_categorisation_sensitive: false
+      prohibited.realtime_remote_biometric_identification: false
+    no_high_risk_area:
+      high_risk.annex1_safety_component: false
+      annex3.biometrics: false
+      annex3.critical_infrastructure: false
+      annex3.education: false
+      annex3.employment: false
+      annex3.essential_services: false
+      annex3.law_enforcement: false
+      annex3.migration: false
+      annex3.justice: false
+    no_transparency_case:
+      transparency.interacts_with_persons: false
+      transparency.generates_synthetic_content: false
+      transparency.emotion_or_biometric_categorisation: false
+      transparency.deep_fake: false
+      transparency.public_interest_text: false
+
+  systems:
+    - key: invoice-data-extraction
+      name: Invoice data extraction
+      purpose: Reads supplier invoices and fills in the accounting records for review by a clerk.
+      roles:
+        - { role: deployer, basis: "Licensed from a software vendor" }
+      models:
+        - { provider: azure_openai, model: gpt-4o, general_purpose: true }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+
+    - key: customer-support-assistant
+      name: Customer support assistant
+      purpose: Answers customers' questions about orders on the public website.
+      roles:
+        - { role: deployer, basis: "Configured on a vendor platform" }
+      models:
+        - { provider: azure_openai, model: gpt-4o, general_purpose: true }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+      facts:
+        transparency.interacts_with_persons: true
+        transparency.generates_synthetic_content: true
+        controls.transparency_notice: true
+        data.personal_data_processed: true
+
+    - key: cv-screening
+      name: CV screening
+      purpose: Ranks job applications for the recruiters of the HR department.
+      roles:
+        - { role: deployer, basis: "Module of the HR suite bought from a vendor" }
+      models:
+        - { provider: openai_compat, model: vendor-ranker-2 }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+      facts:
+        annex3.employment: true
+        annex3.employment_recruitment: true
+        annex3.employment_work_decisions: false
+        high_risk.derogation_claimed: false
+        deployer.public_authority: false
+        deployer.public_law_body_or_public_service: false
+        deployer.employer_uses_at_workplace: true
+        data.personal_data_processed: true
+        controls.human_oversight_assigned: true
+
+owned: [invoice-data-extraction, customer-support-assistant, cv-screening]
+
+reviews:
+  - { system: invoice-data-extraction, decision: confirmed }
+  - { system: customer-support-assistant, decision: confirmed }
+  - { system: cv-screening, decision: confirmed }
+
+traffic:
+  - { system: invoice-data-extraction, requests: 40, model: gpt-4o, provider: azure_openai }
+  - system: customer-support-assistant
+    requests: 120
+    model: gpt-4o
+    provider: azure_openai
+    pii_categories: [email]
+  - system: cv-screening
+    requests: 25
+    model: vendor-ranker-2
+    provider: openai_compat
+    pii_categories: [email]
+    days_ago: 3
+
+expected:
+  systems:
+    invoice-data-extraction: { tier: minimal }
+    customer-support-assistant: { tier: transparency }
+    cv-screening: { tier: high_risk }

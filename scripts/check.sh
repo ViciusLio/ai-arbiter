@@ -67,6 +67,12 @@ if [[ "${1:-}" == "--containers" ]]; then
         -H "Authorization: Bearer ${key}" -H "Content-Type: application/json" \
         -d '{"model":"mock-small","messages":[{"role":"user","content":"ping"}]}' && echo
     docker compose -f "${compose}" exec -T arbiter arbiter audit verify
+
+    step "Send the digest to the mail catcher of the stack (ADR-0045)"
+    scripts/smoke-mail.sh
+
+    step "Run every simulation scenario in the container"
+    docker compose -f "${compose}" exec -T arbiter arbiter demo run --all
 fi
 
 step "All checks passed"

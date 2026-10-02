@@ -221,6 +221,11 @@ jobs:
             -H "Authorization: Bearer ${key}" -H "Content-Type: application/json" \
             -d '{"model":"mock-small","messages":[{"role":"user","content":"ping"}]}'
           $compose exec -T arbiter arbiter audit verify
+      # The only place where the SMTP notifier talks to a server (ADR-0045).
+      - name: Send the digest to the mail catcher of the stack
+        run: scripts/smoke-mail.sh
+      - name: Run every simulation scenario in the container
+        run: docker compose -f deploy/compose/compose.yaml exec -T arbiter arbiter demo run --all
       - name: Show logs on failure
         if: failure()
         run: docker compose -f deploy/compose/compose.yaml logs

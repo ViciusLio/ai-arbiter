@@ -27,6 +27,8 @@ def test_a_system_report_is_printed_or_written_in_each_language_and_format(
     assert [name.split(".", 1)[1] for name in files] == ["en.html", "en.md", "it.html", "it.md"]
     html = next((tmp_path / "out").glob("*.en.html")).read_text(encoding="utf-8")
     assert "<h1>System report: CV screening</h1>" in html
+    # No PDF is produced (ADR-0044): the HTML is written to print well.
+    assert "@media print" in html
 
 
 def test_a_system_report_refuses_what_it_cannot_do() -> None:

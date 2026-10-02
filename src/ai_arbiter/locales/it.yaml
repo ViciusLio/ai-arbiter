@@ -191,6 +191,13 @@ discover.column.last_seen: "Ultimo rilevamento"
 discover.draft_header: "Bozze dal traffico degli ultimi {days} giorni. Completare nome, finalità, ruoli e fatti, poi: arbiter systems apply -f FILE"
 discover.draft_keys: "Una bozza indica il proprio progetto, così il suo traffico conta per il sistema una volta dichiarato. Perché il gateway applichi la classe del sistema, emettere le sue chiavi con: arbiter keys create --system KEY"
 discover.draft_mapping: "I record importati sono attribuiti all'importazione: aggiungere una mappatura in ingest.mappings per questo gruppo."
+demo.as_expected: "come previsto dallo scenario"
+demo.differs: "DIVERSO da quanto previsto dallo scenario"
+demo.expected: "previsto: {tier}; rilievi: {findings}"
+demo.candidates: "Sistemi candidati indicati dal traffico: {names}"
+demo.next: "Caricato nel tenant '{tenant}'. Per guardarlo, con --tenant {tenant}: arbiter systems list, arbiter findings list, arbiter systems discover, arbiter digest run."
+demo.invented: "Ogni sistema e ogni richiesta di uno scenario sono inventati."
+demo.mismatch: "uno scenario non ha prodotto quanto previsto: va corretta una regola o lo scenario"
 
 # Digest, e nomi di classi, stati di revisione e gravità usati in ogni output.
 tier.prohibited: "Pratica vietata"

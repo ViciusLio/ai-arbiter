@@ -29,6 +29,15 @@ Entries link to the decision record that motivated them, where one exists.
     `SCAN-UNDECLARED-SYSTEM-CANDIDATE`). `arbiter systems discover` lists them and
     `--draft` prints declarations for a person to complete. A declared system that names
     its project counts that project's unattributed requests as its own.
+  - Simulation scenarios
+    ([ADR-0043](docs/adr/0043-simulation-scenarios-as-data.md)): three YAML scenarios of
+    invented systems and traffic, each with the tier and the findings it expects.
+    `arbiter demo list` and `arbiter demo run NAME` load them into the tenant `demo` and
+    compare the outcome; the test suite runs them all.
+  - The HTML reports and the HTML digest carry a print style sheet; there is no PDF
+    output ([ADR-0044](docs/adr/0044-reports-without-pdf.md)).
+  - The container check sends the digest to the mail catcher of the Compose stack
+    ([ADR-0045](docs/adr/0045-smtp-checked-against-the-compose-mail-catcher.md)).
   - Digest delivery: `arbiter digest run --send` sends the digest to the configured
     recipients, each in their language, through the `Notifier` port. Two notifiers:
     `file`, the default, which writes `.eml` files and sends nothing, and `smtp`, which

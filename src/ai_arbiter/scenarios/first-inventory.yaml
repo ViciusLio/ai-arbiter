@@ -1,0 +1,119 @@
+# Scenario: a first inventory, before anyone reviewed it. Every system here is invented.
+#
+#   arbiter demo run first-inventory
+#
+# Three systems written down for the first time: a proposal that would be a prohibited
+# practice, a system whose provider claims the derogation of Article 6(3) without a
+# reference to its assessment, and a system for which only the scope was answered.
+# Nobody owns them and nobody reviewed the classifications.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+scenario: first-inventory
+title:
+  en: A first inventory, before any review
+  it: Un primo inventario, prima di ogni revisione
+description:
+  en: >-
+    Three systems declared for the first time, with no owner and no review: one that
+    would be a prohibited practice, one that claims a derogation without evidence, one
+    with questions still open. The scan is expected to say what each is missing.
+  it: >-
+    Tre sistemi dichiarati per la prima volta, senza responsabile e senza revisione: uno
+    che sarebbe una pratica vietata, uno che invoca una deroga senza evidenza, uno con
+    domande ancora aperte. Dalla scansione ci si aspetta che dica che cosa manca a
+    ognuno.
+
+inventory:
+  fact_sets:
+    in_scope:
+      scope.is_ai_system: true
+      scope.union_nexus: true
+      scope.military_defence_national_security: false
+      scope.scientific_research_only: false
+      scope.pre_market_development: false
+      scope.personal_non_professional: false
+    no_prohibited_practice:
+      prohibited.manipulative_techniques: false
+      prohibited.exploits_vulnerabilities: false
+      prohibited.intimate_content_without_consent: false
+      prohibited.child_sexual_abuse_material: false
+      prohibited.social_scoring: false
+      prohibited.crime_prediction_by_profiling: false
+      prohibited.facial_image_scraping: false
+      prohibited.emotion_inference_work_education: false
+      prohibited.biometric_categorisation_sensitive: false
+      prohibited.realtime_remote_biometric_identification: false
+    no_high_risk_area:
+      high_risk.annex1_safety_component: false
+      annex3.biometrics: false
+      annex3.critical_infrastructure: false
+      annex3.education: false
+      annex3.employment: false
+      annex3.essential_services: false
+      annex3.law_enforcement: false
+      annex3.migration: false
+      annex3.justice: false
+    no_transparency_case:
+      transparency.interacts_with_persons: false
+      transparency.generates_synthetic_content: false
+      transparency.emotion_or_biometric_categorisation: false
+      transparency.deep_fake: false
+      transparency.public_interest_text: false
+
+  systems:
+    - key: call-centre-mood-monitor
+      name: Call centre mood monitor
+      purpose: Infers the mood of call centre agents from their voice during calls.
+      lifecycle: planned
+      roles:
+        - { role: deployer, basis: "Proposal from a vendor, not purchased" }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+      facts:
+        prohibited.emotion_inference_work_education: true
+        prohibited.emotion_inference_medical_or_safety: false
+
+    - key: loan-pre-screening
+      name: Loan pre-screening
+      purpose: Prepares a summary of a loan application for the credit officer who decides.
+      roles:
+        - { role: deployer, basis: "Used by the retail credit unit" }
+      use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+      facts:
+        annex3.essential_services: true
+        annex3.essential_public_benefits: false
+        annex3.essential_creditworthiness: true
+        annex3.essential_insurance_pricing: false
+        annex3.essential_emergency_dispatch: false
+        # The provider claims the derogation; the reference to its assessment is missing.
+        high_risk.derogation_claimed: true
+        high_risk.profiling_natural_persons: false
+        data.personal_data_processed: true
+
+    - key: marketing-copy-generator
+      name: Marketing copy generator
+      purpose: Drafts product descriptions for the web shop.
+      roles:
+        - { role: deployer, basis: "Subscription to an online service" }
+      # Only the scope was answered: the classification stays undetermined.
+      use: [in_scope]
+
+expected:
+  systems:
+    call-centre-mood-monitor:
+      tier: prohibited
+      findings:
+        - SCAN-PROHIBITED-PRACTICE
+        - SCAN-CLASSIFICATION-NOT-REVIEWED
+        - SCAN-SYSTEM-WITHOUT-OWNER
+    loan-pre-screening:
+      tier: minimal
+      findings:
+        - SCAN-DEROGATION-WITHOUT-ASSESSMENT
+        - SCAN-CLASSIFICATION-NOT-REVIEWED
+        - SCAN-SYSTEM-WITHOUT-OWNER
+    marketing-copy-generator:
+      tier: undetermined
+      findings:
+        - SCAN-CLASSIFICATION-UNDETERMINED
+        - SCAN-SYSTEM-WITHOUT-OWNER

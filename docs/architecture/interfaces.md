@@ -36,7 +36,7 @@ written in Phase 1; this table is what changed.
 | `TelemetrySource` | `parse(payload) -> InteractionRecord` in `core.interaction`; `jsonl` and `litellm` in `compliance.ingest` | Phase 4b |
 | Events | Published: `InteractionRecorded`, `SystemDeclared`, `SystemChanged`, `SystemClassified`. Consumed: the two system events, by the classifier | The others have no consumer yet |
 | HTTP: `/api/v1/tenants` | Not implemented; `/api/v1/me`, `/principals`, `/audit/fail-mode` added | A key acts inside one tenant; tenants are created from the CLI |
-| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit`, `arbiter retention` added; `arbiter ingest` and `arbiter report` added in Phase 4b; `arbiter demo` not yet | Scenarios are deferrable (ADR-0009) |
+| CLI | `arbiter keys`, `arbiter usage report`, `arbiter pii`, `arbiter audit`, `arbiter retention` added; `arbiter ingest`, `arbiter report`, `arbiter systems discover` and `arbiter demo` added in Phase 4b | The deferrable items the owner chose (ADR-0040) |
 
 ## 1. Shared types
 
