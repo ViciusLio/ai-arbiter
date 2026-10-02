@@ -12,8 +12,10 @@ import yaml
 from ai_arbiter import __version__
 from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
 from ai_arbiter.cli import audit as audit_commands
+from ai_arbiter.cli import keys as keys_commands
 from ai_arbiter.cli import pii as pii_commands
 from ai_arbiter.cli import serve as serve_command
+from ai_arbiter.cli import usage as usage_commands
 from ai_arbiter.cli.common import DISCLAIMER, CliState, fail, settings_from
 from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.config.settings import (
@@ -96,6 +98,8 @@ app.add_typer(config_app, name="config")
 app.add_typer(plugins_app, name="plugins")
 app.add_typer(audit_commands.app, name="audit")
 app.add_typer(pii_commands.app, name="pii")
+app.add_typer(keys_commands.app, name="keys")
+app.add_typer(usage_commands.app, name="usage")
 app.command(name="serve")(serve_command.serve)
 
 

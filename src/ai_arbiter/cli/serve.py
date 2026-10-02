@@ -4,6 +4,7 @@ The web stack is an optional dependency (ADR-0010), so it is imported inside the
 and a missing extra produces an instruction instead of a traceback.
 """
 
+import asyncio
 from typing import Annotated, Any
 
 import typer
@@ -48,6 +49,11 @@ def serve(
             from ai_arbiter.gateway.api.app import create_app
         except ImportError as exc:
             raise MissingExtraError("gateway", "arbiter serve") from exc
+        # Unknown plugins, invalid deployments and missing secrets are reported here, as
+        # one line, instead of as a traceback while the server starts.
+        from ai_arbiter.gateway.runtime import preflight
+
+        asyncio.run(preflight(settings))
     except ArbiterError as error:
         typer.echo(f"Error: {error}", err=True)
         raise typer.Exit(code=1) from error

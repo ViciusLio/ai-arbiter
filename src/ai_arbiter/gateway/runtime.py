@@ -11,7 +11,7 @@ from typing import Any
 from ai_arbiter.core.audit import DatabaseAuditLog
 from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.config.settings import Settings
-from ai_arbiter.core.domain.time import Clock
+from ai_arbiter.core.domain.time import Clock, SystemClock
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.plugins.registry import (
     EVENT_BUSES,
@@ -34,6 +34,7 @@ from ai_arbiter.gateway.policy.engine import RulePolicyEngine, load_policy_pack
 class GatewayRuntime:
     settings: Settings
     database: Database
+    clock: Clock
     secrets: SecretStore
     identity: IdentityService
     audit: DatabaseAuditLog
@@ -69,6 +70,7 @@ async def build_runtime(
     request.
     """
     registry = registry if registry is not None else PluginRegistry()
+    clock = clock if clock is not None else SystemClock()
     secrets: SecretStore = registry.load(SECRET_STORES, settings.plugins.secret_store)()
     bus: EventBus = registry.load(EVENT_BUSES, settings.plugins.event_bus)()
     detector: PIIDetector = registry.load(PII_DETECTORS, settings.plugins.pii_detector)()
@@ -105,6 +107,7 @@ async def build_runtime(
     return GatewayRuntime(
         settings=settings,
         database=database,
+        clock=clock,
         secrets=secrets,
         identity=IdentityService(PepperRing(settings.identity.api_key_pepper, secrets), clock),
         audit=audit,
@@ -118,3 +121,13 @@ async def build_runtime(
         chat=chat,
         providers=providers,
     )
+
+
+async def preflight(settings: Settings) -> None:
+    """Build the runtime and discard it, to report configuration errors before serving."""
+    database = Database(settings.database.url)
+    try:
+        runtime = await build_runtime(settings, database)
+        await runtime.aclose()
+    finally:
+        await database.dispose()

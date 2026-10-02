@@ -1,27 +1,11 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-
 import pytest
 
 pytest.importorskip("fastapi", reason="needs the gateway extra")
 
-import httpx
-from fastapi import FastAPI
-
 from ai_arbiter import __version__
 from ai_arbiter.core.config import Settings, load_settings
 from ai_arbiter.gateway.api.app import create_app
-
-
-@asynccontextmanager
-async def running(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
-    """Run the application lifespan and yield a client bound to it."""
-    transport = httpx.ASGITransport(app=app)
-    async with (
-        app.router.lifespan_context(app),
-        httpx.AsyncClient(transport=transport, base_url="http://arbiter.test") as client,
-    ):
-        yield client
+from tests.api_support import running
 
 
 def settings_for(url: str) -> Settings:

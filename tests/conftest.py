@@ -34,6 +34,13 @@ def isolated_environment(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
     monkeypatch.chdir(tmp_path)
 
 
+@pytest.fixture
+def gateway_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The secrets a gateway process reads from its environment."""
+    monkeypatch.setenv("ARBITER_SECRET_API_KEY_PEPPER", TEST_PEPPER)
+    monkeypatch.setenv("ARBITER_SECRET_REDACTION_KEY", "redaction-root-key-for-tests-only")
+
+
 def sqlite_url(directory: Path, name: str = "test.db") -> str:
     return f"sqlite+aiosqlite:///{(directory / name).as_posix()}"
 
