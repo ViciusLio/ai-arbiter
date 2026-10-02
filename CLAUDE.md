@@ -8,11 +8,10 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02.** Phases 0 to 4 are done and approved. **Phase 4b is implemented
-and waits for the owner's approval**: the deferrable items of v0.1 that the owner chose
-to do before `0.1.0` (ADR-0040). The version is `0.1.0a1`, not published (ADR-0032).
-`0.1.0` waits for a legal review of the AI Act rule pack (ADR-0041). Do not start Phase 5
-(A2A and MCP) until the owner approves Phase 4b.
+**State on 2026-10-02.** Phases 0 to 4b are done and approved. **In progress**:
+improvements that need no decision, and the opening of Phase 5 (A2A and MCP), which
+starts with decisions brought to the owner. The version is `0.1.0a1`, not published
+(ADR-0032). `0.1.0` waits for a legal review of the AI Act rule pack (ADR-0041).
 
 Read first: `docs/phases/phase-4b-deferrable-items.md` (what was built, verified and not
 verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
@@ -25,21 +24,25 @@ verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
 Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
 the test suite is running: the tests migrate and drop its tables.
 
-### Step 2: Phase 4b, where it stands
+### Step 2: what is in progress
 
-Update this list at every commit of the phase.
+Update this list at every commit.
 
 | # | Item | State |
 |---|---|---|
-| 1 | Importers: canonical JSONL and LiteLLM standard logging payload (ADR-0019), `arbiter ingest` (`compliance/ingest`) | Done. The LiteLLM mapping was written from its documented specification, not checked against output of a running LiteLLM |
-| 2 | Reports: system report and audit report, Markdown and HTML, English and Italian | Done: `arbiter report system KEY`, `arbiter report audit`, the two HTTP endpoints, `compliance/reports`. Verified by the automated tests only: the commands were not run by hand |
-| 3 | Digest by e-mail: `Notifier` port, SMTP and file notifiers, `arbiter digest run --send` | Done: `core/notification.py`, `adapters/local/notifiers.py`, `compliance/digest/delivery.py`, settings `plugins.notifier` and `notifications`. The `smtp` notifier delivers to Mailpit in the container check; STARTTLS, TLS and authentication are covered only by tests that replace the client |
-| 4 | Discovery of systems from traffic | Done (ADR-0042): `compliance/inventory/discovery.py`, scan pack `2026.10.1`, `arbiter systems discover [--draft]`, column `interaction.source_group` (migration 0007). No HTTP endpoint for it. Verified by the automated tests only |
-| 5 | Simulation scenarios and `arbiter demo` | Done (ADR-0043): `src/ai_arbiter/scenarios/*.yaml`, `compliance/simulation`, `arbiter demo list` and `demo run NAME` or `--all`. Scenario keys and groups must be unique across scenarios: a test checks it |
-| 5a | Print style sheet of the HTML reports and a note in the guide (ADR-0044: no PDF) | Done |
-| 5b | Mailpit step in `scripts/check.sh --containers` and in the container job of CI (ADR-0045) | Done: `scripts/smoke-mail.sh` |
-| 6 | Phase summary `docs/phases/phase-4b-*.md`, README tracking, changelog, full check | Done: `scripts/check.sh --containers` passed on 2026-10-02 at `cdf71ff` (930 tests on each Python, 98% coverage). Logs of long local runs go to `.check-logs/`, ignored by git |
-| 7 | Approval of the phase by the owner | Waiting |
+| 1 | Record the approval of Phase 4b; bring the whole README up to date | Done |
+| 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | Not started |
+| 3 | Phase 5: check the current state of A2A and MCP on their official sources | Not started |
+| 4 | Phase 5: decisions for the owner as numbered option tables, then wait | Not started |
+
+Phase 4b delivered: importers (`compliance/ingest`, `arbiter ingest`), reports
+(`compliance/reports`, `arbiter report`), digest by e-mail (`core/notification.py`,
+`adapters/local/notifiers.py`, `compliance/digest/delivery.py`, `digest run --send`),
+discovery (`compliance/inventory/discovery.py`, scan pack `2026.10.1`,
+`systems discover`, migration 0007), scenarios (`src/ai_arbiter/scenarios/*.yaml`,
+`compliance/simulation`, `arbiter demo`; keys and groups unique across scenarios),
+`scripts/smoke-mail.sh` in the container check. Logs of long local runs go to
+`.check-logs/`, ignored by git.
 
 ### Step 3: for the owner, not blocking
 
@@ -61,7 +64,7 @@ itself; the `azure_openai` adapter against a real endpoint; hosted OpenAI-compat
 services; the release workflow. The README table "Release improvement tracking" lists
 every open improvement.
 
-### Step 5: Phase 5 (A2A and MCP, v0.2), after Phase 4b
+### Step 5: Phase 5 (A2A and MCP, v0.2)
 
 Open the phase by bringing the decisions first, as numbered option tables with a short
 description next to each number: the MCP revisions to support; A2A through the official
@@ -244,9 +247,14 @@ migrations differ.
 - Never use the em-dash character (U+2014), anywhere: code, comments, documentation,
   commit messages, generated outputs and conversation. Use a colon, a comma, brackets or
   two sentences. `scripts/check.sh` and CI fail when a tracked file contains one.
-- Every commit that changes what the project can do also updates the section "Where the
-  project is" of `README.md` (phases, the steps of the phase in progress, the date), so
-  that the README always says where the work has arrived. Commit and push them together.
+- Every commit and push brings the whole `README.md` up to date, not only one section:
+  the status at the top, "Where the project is" (phases, the steps in progress, the
+  date), the capability tables, the commands, the limits, the roadmap and the tracking
+  tables. Read it through before each commit and fix what the change made stale. Commit
+  and push them together (asked again by the owner on 2026-10-02).
+- When the owner asks for improvements and optimisations, make the ones that need no
+  decision and declare each in the README table "Release improvement tracking", with
+  what was measured or verified. Bring the ones that need a decision as option tables.
   When a weakness recorded for an earlier phase stops being true, say so in the column
   "What changed since" of the table "Where each phase stands"; the first two columns of
   a closed phase are kept as written.

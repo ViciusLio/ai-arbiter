@@ -173,6 +173,9 @@ ADR-0011, ADR-0019, ADR-0025). Four were brought to the project owner and decide
 identified by its project), ADR-0043 (scenarios as data files), ADR-0044 (no PDF),
 ADR-0045 (the SMTP notifier checked against Mailpit in the Compose check).
 
+The owner approved Phase 4b on 2026-10-02 and asked for Phase 5 to open with its
+decisions, and for improvements and optimisations to be made and declared along the way.
+
 ## Open questions
 
 | # | Question | Blocks |

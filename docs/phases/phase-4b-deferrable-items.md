@@ -1,6 +1,8 @@
 # Phase 4b: Deferrable items of v0.1
 
-- **Status**: implemented on 2026-10-02; waits for the project owner's approval
+- **Status**: implemented on 2026-10-02 and approved by the project owner the same day.
+  Phase 5 (A2A and MCP) opens with its decisions; improvements that need no decision are
+  made alongside and recorded in the README
 - **Date**: 2026-10-02
 - **Inputs**: ADR-0040 (this phase before Phase 5), ADR-0009 (the deferrable items),
   the compliance toolkit of [Phase 4](phase-4-compliance.md)

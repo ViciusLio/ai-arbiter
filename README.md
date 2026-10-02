@@ -11,8 +11,9 @@ without the other.
 > **Status: alpha, not released yet.** Both halves work end to end. The gateway: an
 > OpenAI-compatible endpoint with policy, redaction of personal data, routing, metering,
 > budgets and a hash-chained audit log. The compliance toolkit: an inventory of AI
-> systems, an indicative AI Act classification that a person reviews, findings and a daily
-> digest. See the [roadmap](#roadmap).
+> systems, an indicative AI Act classification that a person reviews, findings, discovery
+> of systems nobody declared, reports and a daily digest that can be sent by e-mail. See
+> the [roadmap](#roadmap).
 
 > Arbiter is a support tool. It does not provide legal advice.
 
@@ -25,23 +26,20 @@ Updated at every commit. Last update: 2026-10-02.
 | 0 Analysis, 1 Architecture, 2 Scaffolding | Done |
 | 3 Gateway MVP | Done |
 | 4 Compliance MVP | Done |
-| 4b Deferrable items of v0.1 | **Built and checked; waits for the owner's approval** |
-| 5 A2A and MCP (v0.2) | Not started |
+| 4b Deferrable items of v0.1 | Done, approved on 2026-10-02: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
+| Improvements after Phase 4b | **In progress**: see the steps below |
+| 5 A2A and MCP (v0.2) | **Opening**: the decisions are brought to the owner before any code |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
 
-Phase 4b, step by step:
+What is being done now, step by step:
 
 | Step | State |
 |---|---|
-| Importers for the records of another gateway (`arbiter ingest`) | Done. The LiteLLM importer was not run against a live LiteLLM |
-| System report and audit report (`arbiter report`) | Done |
-| Digest by e-mail (`arbiter digest run --send`) | Done |
-| Discovery of undeclared systems from traffic (`arbiter systems discover`) | Done |
-| Simulation scenarios (`arbiter demo`) | Done: three scenarios, run by the test suite |
-| Print style sheet for the HTML reports (no PDF, ADR-0044) | Done |
-| SMTP checked against the mail catcher of the Compose stack (ADR-0045) | Done: a step of the container check, passed locally |
-| Phase summary and the full check, containers included | Done: [summary](docs/phases/phase-4b-deferrable-items.md), with what was verified and what was not |
+| Record the approval of Phase 4b; bring this whole README up to date | Done |
+| Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | Not started |
+| Phase 5: check the current state of A2A and MCP on their official sources | Not started |
+| Phase 5: decisions for the owner, as numbered option tables | Not started |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
@@ -146,7 +144,11 @@ How to configure and use each of them: [the gateway](docs/gateway.md) and
 | Review | A classification is indicative until a named person confirms or overrides it |
 | Scanner | Fourteen rules compare what was declared with the classification and with the traffic, and name the projects whose requests no declared system accounts for |
 | Findings | Deduplicated, reviewed, accepted with an expiry or suppressed with a reason; all audited |
-| Digest | Inventory, findings, traffic and the audit head, in Markdown and HTML, in English and Italian |
+| Discovery | Requests that belong to no declared system are grouped by project and proposed as candidate systems, with a draft declaration for a person to complete |
+| Importers | Records of another gateway (LiteLLM, or Arbiter's own JSON lines) are imported without their content and scanned like the gateway's own |
+| Digest | Inventory, findings, traffic and the audit head, in Markdown and HTML, in English and Italian; sent by e-mail to each recipient in their language |
+| Reports | Everything recorded about one system, and the audit log over a period; Markdown and HTML that prints well |
+| Scenarios | Three sets of invented systems and traffic, each with the outcome it expects, to see the toolkit at work |
 | Link to the gateway | A system classified as a prohibited practice gets no model; routing can be limited by risk tier |
 
 How it works and what it does not cover: [the compliance toolkit](docs/compliance.md).
@@ -170,6 +172,14 @@ How it works and what it does not cover: [the compliance toolkit](docs/complianc
 - **Provider adapters.** The OpenAI-compatible adapter was checked by hand against one
   local server (Ollama); the Azure OpenAI adapter only against a simulated transport.
   Neither has been run against a hosted service.
+- **Importers.** The LiteLLM importer follows the format LiteLLM documents. It has not
+  read the output of a live LiteLLM.
+- **Discovery is as fine as a project.** A project that runs several systems shows as
+  one candidate, and nothing is declared for you.
+- **E-mail.** The SMTP notifier was checked against a mail catcher over plain SMTP.
+  STARTTLS, TLS and authentication are covered by tests that replace the client, not by
+  a server. The default notifier writes files and sends nothing.
+- **No PDF.** Reports are Markdown and HTML; print the HTML from a browser.
 
 ## Configuration
 
@@ -203,7 +213,8 @@ uv run lint-imports
 
 `scripts/check.sh` runs all of the above on every supported Python version and measures
 the latency the gateway adds; `scripts/check.sh --containers` also builds the image,
-starts the Compose stack and sends a request through it.
+starts the Compose stack, sends a request through it, sends the digest to the mail
+catcher of the stack and runs the scenarios in the container.
 
 Tests run on SQLite by default. To run them on PostgreSQL as well, set
 `ARBITER_TEST_DATABASE_URL` to an empty database; the dev container does this for you.
@@ -214,8 +225,8 @@ A container image and a Compose file are in `deploy/`.
 
 | Version | Content |
 |---|---|
-| 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI): **built, not released** |
-| 0.2 | A2A and MCP: agent registry, governed MCP catalogue and proxy, multi-agent demo |
+| 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI), with importers, discovery, reports, e-mail delivery and scenarios: **built, not released**. `0.1.0` waits for a legal review of the rule pack |
+| 0.2 | A2A and MCP: agent registry, governed MCP catalogue and proxy, multi-agent demo: **opening**, decisions first |
 | 0.3 | Azure: Bicep, Container Apps, Entra ID, observability, hardening |
 | 1.0 | Documentation, quickstart, demo scenarios |
 
@@ -239,7 +250,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | 2: Scaffolding | Every check passes on Python 3.12, 3.13 and 3.14, on SQLite and PostgreSQL, with 98% coverage. The image and the Compose stack run. CI is green on Linux and Windows | The release workflow has never run and `0.0.1` is not published. No product feature exists yet. Telemetry is limited to a tracer bootstrap | Product features exist since Phases 3 and 4. `0.0.1` was replaced by `0.1.0a1` (ADR-0032). Still true: the release workflow has never run, nothing is published, and nothing is instrumented beyond the tracer bootstrap |
 | 3: Gateway | A request goes end to end: key, policy, redaction, routing, metering, audit. Every outcome is an explained decision in a verifiable chain. No prompt text is stored, and a test searches the whole database to prove it. The same tests run on SQLite and PostgreSQL. Decisions were taken before the code and recorded (ADR-0027 to ADR-0031) | The adapters for real providers were never run against one. PII detection misses names and free text, and its precision and recall are not measured. About 20 ms and 17 database statements are added to each request, and the requests of one tenant queue on its audit chain. Nothing is instrumented yet. Deferrable items of ADR-0009 are not started | The OpenAI-compatible adapter was checked against a local model server (ADR-0033). Routing by risk tier came in Phase 4; importers, reports, e-mail, discovery and scenarios in Phase 4b. Still true: the Azure OpenAI adapter never met a real endpoint, PII precision and recall are not measured, the latency and the queue on the audit chain are as measured then. Still deferrable: post-call policy, external anchoring, the opt-in content store, further PII detectors |
 | 4: Compliance | The product's idea is now real: a declared system gets an indicative tier with the provision and the date behind every outcome, traffic that contradicts the declaration becomes a finding, and the classification steers the gateway. An unanswered question is never read as "no". Nothing is presented as settled until a person reviewed it. The rule pack was written from the Official Journal text, pinned by checksum. The six acceptance steps of v0.1 run in under a minute | The rule pack has not been read by a lawyer, and its comparison with EUR-Lex is pending. Only deployer obligations are covered. A classification is as good as the declared facts. The questions are summaries written by hand in two languages. Thirteen scan rules. No discovery from traffic, no importers, no reports, no e-mail delivery: the deferrable items of ADR-0009 | Importers, reports, e-mail delivery and discovery were built in Phase 4b; the scan rules are fourteen. Still true: no lawyer has read the rule pack, and `0.1.0` waits for that (ADR-0041); the comparison with EUR-Lex is pending; only deployer obligations are covered; a classification is as good as the declared facts |
-| 4b: Deferrable items | The comparison of declared with observed now reaches traffic that did not go through Arbiter: records of another gateway are imported without their content, and what belongs to no declared system is named as a candidate, per project. Two reports and the digest by e-mail give something to hand to people outside the tool. Three scenarios show the toolkit on invented data and fail a test when a rule changes an outcome. Nothing is declared, sent or classified without a person: a candidate is a draft, the default notifier writes files | The LiteLLM importer was never run against a live LiteLLM. A candidate is as coarse as a project, and one from imported records stays for 30 days after its system is declared. The SMTP notifier met a server only without encryption and without authentication. The scenarios are few and were written by the author of the rules. No PDF. Discovery and sending exist on the command line only | Closing now: this is the state at the end of the phase |
+| 4b: Deferrable items | The comparison of declared with observed now reaches traffic that did not go through Arbiter: records of another gateway are imported without their content, and what belongs to no declared system is named as a candidate, per project. Two reports and the digest by e-mail give something to hand to people outside the tool. Three scenarios show the toolkit on invented data and fail a test when a rule changes an outcome. Nothing is declared, sent or classified without a person: a candidate is a draft, the default notifier writes files | The LiteLLM importer was never run against a live LiteLLM. A candidate is as coarse as a project, and one from imported records stays for 30 days after its system is declared. The SMTP notifier met a server only without encryption and without authentication. The scenarios are few and were written by the author of the rules. No PDF. Discovery and sending exist on the command line only | Approved by the owner on 2026-10-02. The improvements made afterwards are in the table below |
 
 ### Improvements
 
