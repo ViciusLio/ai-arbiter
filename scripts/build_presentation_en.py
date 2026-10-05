@@ -176,8 +176,10 @@ TEXTS: list[tuple[str, str]] = [
     ),
     ("Un riepilogo quotidiano", "A daily digest"),
     (
-        "In italiano e in inglese, anche via email. Più i report da consegnare a chi non usa lo strumento.",
-        "In English and in Italian, by e-mail too. Plus reports to hand to people who do not use the tool.",
+        "In italiano e in inglese, anche via email. Più i report da consegnare a chi non usa "
+        "lo strumento, anche in PDF.",
+        "In English and in Italian, by e-mail too. Plus reports to hand to people who do not "
+        "use the tool, as PDF too.",
     ),
     ("Anche da altri gateway", "From other gateways too"),
     (
@@ -233,8 +235,9 @@ TEXTS: list[tuple[str, str]] = [
     ),
     ("Funziona anche offline", "It works offline too"),
     (
-        "Si prova su un portatile, senza cloud e senza un modello vero.",
-        "You can try it on a laptop, with no cloud and no real model.",
+        "Si prova su un portatile, senza cloud e senza un modello vero. Una dimostrazione guidata segue una società di consulenza inventata, con il suo regolamento interno.",
+        "You can try it on a laptop, with no cloud and no real model. A guided "
+        "demonstration follows an invented consulting firm, with its internal regulation.",
     ),
     ('data-prefix="oltre ">oltre 1.100</div>', 'data-prefix="over ">over 1,100</div>'),
     ("test automatici", "automated tests"),
@@ -292,8 +295,10 @@ TEXTS: list[tuple[str, str]] = [
     ),
     ("<h3>Dopo</h3>", "<h3>After that</h3>"),
     (
-        "Una dimostrazione guidata, l'installazione su cloud (Azure) e la documentazione per chi lo adotta.",
-        "A guided demonstration, the installation on a cloud (Azure) and the documentation for those who adopt it.",
+        "L'installazione su cloud (Azure) e la documentazione per chi lo adotta. Tra i desiderata: leggere anche i log della rete aziendale, per vedere l'IA usata fuori da Arbiter.",
+        "The installation on a cloud (Azure) and the documentation for those who adopt "
+        "it. On the wish list: reading the logs of the company network too, to see the AI "
+        "used outside Arbiter.",
     ),
     ("In sintesi</div>", "In short</div>"),
     ("Cosa ottieni", "What you get"),
@@ -441,7 +446,7 @@ TEXTS: list[tuple[str, str]] = [
     ('["Fondamenta del progetto", 100]', '["Foundations of the project", 100]'),
     ('["Toolkit di conformità", 100]', '["Compliance toolkit", 100]'),
     ('["Importazione, report, scoperta", 100]', '["Import, reports, discovery", 100]'),
-    ('["Strumenti e agenti (MCP, A2A)", 80]', '["Tools and agents (MCP, A2A)", 80]'),
+    ('["Strumenti e agenti (MCP, A2A)", 100]', '["Tools and agents (MCP, A2A)", 100]'),
     ('["Installazione su cloud", 0]', '["Installation on a cloud", 0]'),
     ('["Documentazione e rilascio", 0]', '["Documentation and release", 0]'),
     ('toLocaleString("it-IT")', 'toLocaleString("en-GB")'),

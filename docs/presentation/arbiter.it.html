@@ -297,7 +297,7 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
     </table></div>
     <div class="grid g3" style="margin-top:1rem">
       <div class="card"><h3>Rilievi, non sentenze</h3><p class="muted">Ogni rilievo si conferma, si respinge o si accetta come rischio con una scadenza. Sempre con una persona.</p></div>
-      <div class="card"><h3>Un riepilogo quotidiano</h3><p class="muted">In italiano e in inglese, anche via email. Più i report da consegnare a chi non usa lo strumento.</p></div>
+      <div class="card"><h3>Un riepilogo quotidiano</h3><p class="muted">In italiano e in inglese, anche via email. Più i report da consegnare a chi non usa lo strumento, anche in PDF.</p></div>
       <div class="card"><h3>Anche da altri gateway</h3><p class="muted">I registri di un altro sistema si importano senza il loro contenuto.</p></div>
     </div>
   </div>
@@ -332,12 +332,12 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
       <div class="card"><div class="mark"></div><h3>Regole come dati</h3><p class="muted">Le regole sono file leggibili, con versione. Si possono leggere, confrontare e sostituire senza toccare il programma.</p></div>
       <div class="card"><div class="mark"></div><h3>Decide una persona</h3><p class="muted">Classificazioni e rilievi sono proposte. La macchina non chiude mai una questione da sola.</p></div>
       <div class="card"><div class="mark"></div><h3>Decisioni scritte</h3><p class="muted">Ogni scelta di progetto è registrata con le alternative scartate e il perché.</p></div>
-      <div class="card"><div class="mark"></div><h3>Funziona anche offline</h3><p class="muted">Si prova su un portatile, senza cloud e senza un modello vero.</p></div>
+      <div class="card"><div class="mark"></div><h3>Funziona anche offline</h3><p class="muted">Si prova su un portatile, senza cloud e senza un modello vero. Una dimostrazione guidata segue una società di consulenza inventata, con il suo regolamento interno.</p></div>
     </div>
     <div class="grid g4" style="margin-top:1.2rem">
       <div class="card stat"><div class="big" data-count="1100" data-prefix="oltre ">oltre 1.100</div><div class="lab">test automatici</div></div>
       <div class="card stat"><div class="big" data-count="97" data-suffix="%">97%</div><div class="lab">del codice coperto dai test</div></div>
-      <div class="card stat"><div class="big" data-count="55">55</div><div class="lab">decisioni di progetto registrate</div></div>
+      <div class="card stat"><div class="big" data-count="57">57</div><div class="lab">decisioni di progetto registrate</div></div>
       <div class="card stat"><div class="big" data-count="21">21</div><div class="lab">controlli sul traffico</div></div>
     </div>
   </div>
@@ -365,9 +365,9 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
     <p class="lead">Stima al 5 ottobre 2026. Le percentuali misurano il lavoro di costruzione, non il valore legale delle regole.</p>
     <div id="phases" style="margin-top:1.2rem"></div>
     <div class="grid g3" style="margin-top:1.3rem">
-      <div class="card stat"><div class="big" data-count="77" data-suffix="%">77%</div><div class="lab">del percorso complessivo</div></div>
+      <div class="card stat"><div class="big" data-count="80" data-suffix="%">80%</div><div class="lab">del percorso complessivo</div></div>
       <div class="card"><h3>Prima della versione 0.1.0</h3><p class="muted">Una revisione delle regole da parte di una persona con formazione giuridica, e un confronto degli articoli citati con la fonte ufficiale.</p></div>
-      <div class="card"><h3>Dopo</h3><p class="muted">Una dimostrazione guidata, l'installazione su cloud (Azure) e la documentazione per chi lo adotta.</p></div>
+      <div class="card"><h3>Dopo</h3><p class="muted">L'installazione su cloud (Azure) e la documentazione per chi lo adotta. Tra i desiderata: leggere anche i log della rete aziendale, per vedere l'IA usata fuori da Arbiter.</p></div>
     </div>
   </div>
 </section>
@@ -483,7 +483,7 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
   var PHASES = [
     ["Analisi e architettura", 100], ["Fondamenta del progetto", 100], ["Gateway", 100],
     ["Toolkit di conformità", 100], ["Importazione, report, scoperta", 100],
-    ["Strumenti e agenti (MCP, A2A)", 80], ["Installazione su cloud", 0], ["Documentazione e rilascio", 0]
+    ["Strumenti e agenti (MCP, A2A)", 100], ["Installazione su cloud", 0], ["Documentazione e rilascio", 0]
   ];
   var phasesEl = document.getElementById("phases");
   PHASES.forEach(function (ph) {

@@ -297,7 +297,7 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
     </table></div>
     <div class="grid g3" style="margin-top:1rem">
       <div class="card"><h3>Findings, not verdicts</h3><p class="muted">Every finding is confirmed, rejected, or accepted as a risk with an expiry date. Always by a person.</p></div>
-      <div class="card"><h3>A daily digest</h3><p class="muted">In English and in Italian, by e-mail too. Plus reports to hand to people who do not use the tool.</p></div>
+      <div class="card"><h3>A daily digest</h3><p class="muted">In English and in Italian, by e-mail too. Plus reports to hand to people who do not use the tool, as PDF too.</p></div>
       <div class="card"><h3>From other gateways too</h3><p class="muted">The records of another system are imported without their content.</p></div>
     </div>
   </div>
@@ -332,12 +332,12 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
       <div class="card"><div class="mark"></div><h3>Rules as data</h3><p class="muted">The rules are readable files, with a version. They can be read, compared and replaced without touching the program.</p></div>
       <div class="card"><div class="mark"></div><h3>A person decides</h3><p class="muted">Classifications and findings are proposals. The machine never settles a matter on its own.</p></div>
       <div class="card"><div class="mark"></div><h3>Decisions on record</h3><p class="muted">Every design choice is recorded with the alternatives set aside and the reason.</p></div>
-      <div class="card"><div class="mark"></div><h3>It works offline too</h3><p class="muted">You can try it on a laptop, with no cloud and no real model.</p></div>
+      <div class="card"><div class="mark"></div><h3>It works offline too</h3><p class="muted">You can try it on a laptop, with no cloud and no real model. A guided demonstration follows an invented consulting firm, with its internal regulation.</p></div>
     </div>
     <div class="grid g4" style="margin-top:1.2rem">
       <div class="card stat"><div class="big" data-count="1100" data-prefix="over ">over 1,100</div><div class="lab">automated tests</div></div>
       <div class="card stat"><div class="big" data-count="97" data-suffix="%">97%</div><div class="lab">of the code covered by tests</div></div>
-      <div class="card stat"><div class="big" data-count="55">55</div><div class="lab">design decisions on record</div></div>
+      <div class="card stat"><div class="big" data-count="57">57</div><div class="lab">design decisions on record</div></div>
       <div class="card stat"><div class="big" data-count="21">21</div><div class="lab">checks on the traffic</div></div>
     </div>
   </div>
@@ -365,9 +365,9 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
     <p class="lead">An estimate on 5 October 2026. The percentages measure the work of building, not the legal value of the rules.</p>
     <div id="phases" style="margin-top:1.2rem"></div>
     <div class="grid g3" style="margin-top:1.3rem">
-      <div class="card stat"><div class="big" data-count="77" data-suffix="%">77%</div><div class="lab">of the whole road</div></div>
+      <div class="card stat"><div class="big" data-count="80" data-suffix="%">80%</div><div class="lab">of the whole road</div></div>
       <div class="card"><h3>Before version 0.1.0</h3><p class="muted">A review of the rules by a person with legal training, and a comparison of the quoted articles with the official source.</p></div>
-      <div class="card"><h3>After that</h3><p class="muted">A guided demonstration, the installation on a cloud (Azure) and the documentation for those who adopt it.</p></div>
+      <div class="card"><h3>After that</h3><p class="muted">The installation on a cloud (Azure) and the documentation for those who adopt it. On the wish list: reading the logs of the company network too, to see the AI used outside Arbiter.</p></div>
     </div>
   </div>
 </section>
@@ -483,7 +483,7 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
   var PHASES = [
     ["Analysis and architecture", 100], ["Foundations of the project", 100], ["Gateway", 100],
     ["Compliance toolkit", 100], ["Import, reports, discovery", 100],
-    ["Tools and agents (MCP, A2A)", 80], ["Installation on a cloud", 0], ["Documentation and release", 0]
+    ["Tools and agents (MCP, A2A)", 100], ["Installation on a cloud", 0], ["Documentation and release", 0]
   ];
   var phasesEl = document.getElementById("phases");
   PHASES.forEach(function (ph) {
