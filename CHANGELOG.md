@@ -58,6 +58,8 @@ Entries link to the decision record that motivated them, where one exists.
     stored. A new server role, `mcp`, and a new optional extra, `mcp`.
   - `arbiter mcp servers refresh` and `POST /api/v1/mcp/servers/{key}/discovery` ask a
     server which revisions it speaks and which tools it lists.
+  - The test suite joins the client and a server of the official MCP SDK through the
+    proxy, in process. The SDK is a development dependency only.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

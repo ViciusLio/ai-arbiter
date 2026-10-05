@@ -386,8 +386,10 @@ Limits of the proxy in this release:
   in arguments and results (a deferrable item of ADR-0049). `tools/list` shows every
   tool of the server, also the ones the caller may not call.
 - The allowlist is about tools. Resources and prompts are all or nothing.
-- The proxy was tested against a stand-in server written from the specification, not
-  against a real MCP server or a real MCP client.
+- The proxy was tested against a stand-in server written from the specification, and
+  with the client and a server of the official Python SDK (`mcp` 2.3.0) joined through
+  it in process. It has not met a server or a client of another vendor, nor a real
+  network.
 
 ## Roles
 

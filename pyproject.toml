@@ -93,6 +93,7 @@ smtp = "ai_arbiter.adapters.local.notifiers:SmtpNotifier"
 [dependency-groups]
 dev = [
     "import-linter>=2.1",
+    "mcp>=2.2,<3",
     "mypy>=1.13",
     "pytest>=8.3",
     "pytest-asyncio>=0.25",

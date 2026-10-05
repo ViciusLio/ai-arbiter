@@ -39,7 +39,7 @@ Phase 5, step by step:
 | Check A2A and MCP on their official sources ([preparation](docs/phases/phase-5-preparation.md)) | Done |
 | Decisions P5-1 to P5-8, and the one on key lookups | Done: ADR-0046 to ADR-0054 |
 | MCP catalogue: servers and their tools, tied to declared AI systems | Done: `arbiter mcp servers` and `mcp grants`, `/api/v1/mcp`, an allowlist that allows nothing by default. Nothing forwards a call yet |
-| MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Done: `POST /mcp/{server}`; decide, record, then forward. Tested against a stand-in server, not against a real MCP server or client |
+| MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Done: `POST /mcp/{server}`; decide, record, then forward. Tested with the client and a server of the official SDK, in process |
 | A2A registry: agent cards fetched, stored and verified against configured keys | Not started |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Not started |
 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
@@ -189,9 +189,10 @@ How it works and what it does not cover: [the compliance toolkit](docs/complianc
   STARTTLS, TLS and authentication are covered by tests that replace the client, not by
   a server. The default notifier writes files and sends nothing.
 - **No PDF.** Reports are Markdown and HTML; print the HTML from a browser.
-- **MCP proxy.** It speaks revision `2026-07-28` over Streamable HTTP only, does not
-  inspect the content of a call, and was tested against a stand-in server written from
-  the specification: no real MCP server or client has gone through it yet.
+- **MCP proxy.** It speaks revision `2026-07-28` over Streamable HTTP only and does not
+  inspect the content of a call. It was tested with the client and a server of the
+  official Python SDK, joined in process; no server or client of another vendor, and
+  nothing over a real network, has gone through it yet.
 
 ## Configuration
 
@@ -307,7 +308,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-37 | 4b | Escape text typed by people in the cells of Markdown tables | A system name with a `|` or a line break broke the inventory table of the digest | 0.1.x | Done after Phase 4b: a `cell` filter in the templates, with a test |
 | I-38 | 2 | Make the message of a missing extra true before publication | It told users to `pip install "ai-arbiter[...]"`, which does not exist yet | 0.1.x | Done after Phase 4b: the message gives the way from a clone first, then the `pip` command "once published" |
 | I-39 | 4b | Show and match short ids by their last characters everywhere | Budgets showed the first eight characters of an id, which are a timestamp: two budgets created together looked the same and could not be deleted by short id | 0.1.x | Done in Phase 5: found by a test of the MCP grants; one helper for findings, budgets and grants, with a test that creates two budgets together |
-| I-40 | 5 | Run the MCP proxy between a real MCP client and a real MCP server | It was tested against a stand-in server written from the specification | Before 0.2.0 | Open |
+| I-40 | 5 | Run the MCP proxy between a real MCP client and a real MCP server | It was tested against a stand-in server written from the specification | Before 0.2.0 | Done in Phase 5 for the official SDK: the client and a server of `mcp` 2.3.0 are joined through the proxy in process, in the test suite (discovery, a call that is allowed, a call that is refused). Not done: a server or a client of another vendor, and anything over a real network |
 | I-41 | 5 | Detect and redact personal data in the arguments and results of MCP calls; filter `tools/list` to what the caller may call | ADR-0049 left content inspection as a deferrable item | 0.2.x | Open |
 | I-42 | 5 | Grants for resources and prompts, not only for tools | Anything other than listing and calling a tool needs a grant for the whole server | 0.2.x | Open |
 
