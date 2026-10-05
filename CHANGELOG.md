@@ -44,7 +44,7 @@ Entries link to the decision record that motivated them, where one exists.
     uses the standard library and takes its password from a secret reference. Each
     delivery is an audit entry without addresses. The `smtp` notifier was not run
     against a real mail server.
-- **A2A and MCP** (Phase 5, in progress;
+- **A2A and MCP** (Phase 5, waiting for approval;
   [ADR-0046](docs/adr/0046-mcp-proxy-speaks-the-modern-revision.md) to
   [ADR-0054](docs/adr/0054-no-cache-of-key-lookups.md)).
   - MCP catalogue: servers, the names of the tools they list, and grants to the

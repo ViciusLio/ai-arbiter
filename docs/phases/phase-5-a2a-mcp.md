@@ -77,6 +77,37 @@ revisit:
 - A language model reading a text in another language marked ordinary words as names.
   A text now goes to the model of its language only.
 
+## What was verified
+
+The full check, `scripts/check.sh --containers`, was run on 2026-10-05 in the dev
+container, on the code of commit `1d653b9`; the commits after it changed documentation
+and the Pages workflow only.
+
+| Check | Result |
+|---|---|
+| Lint, format, types (strict), import rules | Pass; 4 contracts kept |
+| Tests with coverage, Python 3.12, SQLite and PostgreSQL | 1132 passed, 4 skipped; 97% coverage |
+| Tests, Python 3.13 and 3.14 | 1128 passed, 8 skipped, on each |
+| Tests without extras | 683 passed, 208 skipped |
+| Latency added to a request, mock provider, one request at a time | About 20 ms on SQLite and 19 ms on PostgreSQL (mean), as in Phase 3 |
+| Image build; the image runs as a non-root user; Compose stack; health; a request and the audit chain | Pass |
+| Digest sent to the mail catcher of the stack | Pass |
+| The three scenarios, in the container | Pass |
+| The guided demonstration, in the container | Seven steps, each as expected; audit chain of 68 entries without a broken link |
+| MCP proxy between the client and a server of the official SDK, in process | Pass, in the test suite |
+| GitHub Pages | The three addresses answer 200 and the rest of the repository 404, after the first run of the workflow |
+
+Not verified:
+
+- the A2A proxy with the client and a server of the official SDK (I-45), and a card
+  read from a real agent over the network (I-43);
+- an MCP server or client of another vendor, and either proxy over a real network;
+- the semantic detector on real prompts: the figures come from invented sentences;
+- the presentations in a browser: only the build script and the answers of the site;
+- CI on the last commit of the phase, at the time this summary was written;
+- what was already not verified before the phase: the legal correctness of the rule
+  pack, the Azure OpenAI adapter, the release workflow.
+
 ## Limits
 
 - The MCP proxy speaks one revision and one transport, does not inspect the content of a

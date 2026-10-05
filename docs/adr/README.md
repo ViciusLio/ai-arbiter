@@ -220,6 +220,6 @@ in Italian and in English.
 | Topic | When |
 |---|---|
 | Anchoring sink details for the audit chain | v0.1.x, with external anchoring (ADR-0009) |
-| A2A and MCP module design, MCP revision support matrix | Phase 5 |
+| A2A and MCP module design, MCP revision support matrix | Decided in Phase 5: ADR-0046 to ADR-0053 |
 | IaC tool (Bicep preferred by the brief), networking, identity, signed audit checkpoints, row-level security, container image scanning | Phase 6 |
 | Web dashboard | After v0.1 |

@@ -36,7 +36,7 @@ Updated at every commit. Last update: 2026-10-05.
 | 4 Compliance MVP | Done |
 | 4b Deferrable items of v0.1 | Done: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
 | Improvements after Phase 4b | Done for what needed no decision: see the [tracking table](#release-improvement-tracking) |
-| 5 A2A and MCP (v0.2) | **Built, being closed**: every step below is done except the full check of the phase; then it waits for the owner's approval |
+| 5 A2A and MCP (v0.2) | **Built, waits for the owner's approval**: every step below is done and the full check passed ([summary](docs/phases/phase-5-a2a-mcp.md)) |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
 
@@ -54,7 +54,7 @@ Phase 5, step by step:
 | A presentation for people who are not developers, in Italian and in English | Done: `docs/presentation/`, a deck read from left to right, one screen per section. The English page is built from the Italian one by `scripts/build_presentation_en.py`. Not viewed in a browser by its author |
 | Semantic detection of personal data: an optional plugin on Presidio, with measured precision and recall (ADR-0055) | Done: plugin `presidio`, extra `pii`, figures in `docs/pii-evaluation.md` |
 | A guided demonstration: gateway, toolkit, a mock MCP server and a mock agent | Done: `arbiter demo tour`, seven steps in one process, about a minute, repeatable; covered by a test |
-| Phase summary and the full check, containers included | Not started |
+| Phase summary and the full check, containers included | Done on 2026-10-05: 1132 tests on Python 3.12 with 97% coverage, the suite on 3.13 and 3.14 and without extras, the image, the Compose stack, the scenarios and the guided demonstration in the container. What was not verified is listed in the summary |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
@@ -246,7 +246,8 @@ uv run lint-imports
 `scripts/check.sh` runs all of the above on every supported Python version and measures
 the latency the gateway adds; `scripts/check.sh --containers` also builds the image,
 starts the Compose stack, sends a request through it, sends the digest to the mail
-catcher of the stack and runs the scenarios in the container.
+catcher of the stack and runs the scenarios and the guided demonstration in the
+container.
 
 Tests run on SQLite by default. To run them on PostgreSQL as well, set
 `ARBITER_TEST_DATABASE_URL` to an empty database; the dev container does this for you.
@@ -258,7 +259,7 @@ A container image and a Compose file are in `deploy/`.
 | Version | Content |
 |---|---|
 | 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI), with importers, discovery, reports, e-mail delivery and scenarios: **built, not released**. `0.1.0` waits for a legal review of the rule pack |
-| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo: **built, not released**; the phase waits for its full check and for approval. The proxies were tested against stand-ins and, for MCP, the official SDK; not against real servers or agents on a network |
+| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo: **built, not released**; the phase waits for the owner's approval. The proxies were tested against stand-ins and, for MCP, the official SDK; not against real servers or agents on a network |
 | 0.3 | Azure: Bicep, Container Apps, Entra ID, observability, hardening |
 | 1.0 | Documentation, quickstart, demo scenarios |
 
