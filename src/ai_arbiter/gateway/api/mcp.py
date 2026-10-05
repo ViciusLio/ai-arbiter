@@ -25,6 +25,7 @@ from ai_arbiter.gateway.mcp.protocol import (
     UPSTREAM_FAILED,
     ProtocolError,
     error_body,
+    keep_tools,
     parse_request,
 )
 from ai_arbiter.gateway.mcp.proxy import UpstreamUnavailableError
@@ -307,10 +308,12 @@ async def call_mcp_server(
             status.HTTP_502_BAD_GATEWAY, UPSTREAM_FAILED, str(error), request_id=parsed.request_id
         )
 
+    visible = prepared.visible_tools
     return await relay(
         upstream,
         max_bytes=settings.max_response_bytes,
         complete=partial(proxy.complete, prepared),
+        rewrite=partial(keep_tools, allowed=visible) if visible is not None else None,
         failure=lambda: _rpc_error(
             status.HTTP_502_BAD_GATEWAY,
             UPSTREAM_FAILED,

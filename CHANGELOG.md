@@ -44,7 +44,7 @@ Entries link to the decision record that motivated them, where one exists.
     uses the standard library and takes its password from a secret reference. Each
     delivery is an audit entry without addresses. The `smtp` notifier was not run
     against a real mail server.
-- **A2A and MCP** (Phase 5, waiting for approval;
+- **A2A and MCP** (Phase 5;
   [ADR-0046](docs/adr/0046-mcp-proxy-speaks-the-modern-revision.md) to
   [ADR-0054](docs/adr/0054-no-cache-of-key-lookups.md)).
   - MCP catalogue: servers, the names of the tools they list, and grants to the
@@ -96,6 +96,10 @@ Entries link to the decision record that motivated them, where one exists.
     loads the scenarios, sends requests through the gateway with the mock provider,
     calls a stand-in MCP server and a stand-in agent through the proxies, scans and
     verifies the audit chain. No network and no real model.
+  - The answer to `tools/list` shows a caller only the tools its grants let it call
+    (`mcp.filter_tool_list`, on by default).
+  - The test suite joins the client and a server of the official A2A SDK through the
+    proxy, on both bindings.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

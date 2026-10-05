@@ -332,6 +332,9 @@ class McpSettings(_Section):
     # Browser origins allowed to call the proxy. A request with any other Origin header
     # is refused; a request without one, as programs send, is not affected.
     allowed_origins: tuple[str, ...] = ()
+    # Show a caller, in the answer to tools/list, only the tools its grants let it
+    # call. The answer is then read whole and only the names of the tools are looked at.
+    filter_tool_list: bool = True
     # A rule pack file to use instead of the one shipped with the package.
     pack: Path | None = None
 

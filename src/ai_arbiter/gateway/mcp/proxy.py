@@ -6,7 +6,9 @@ decision to the audit log together with a row for the call: if that cannot be wr
 nothing is forwarded. Then, with no transaction open, the request is sent on. Last, the
 row is completed with how the call ended.
 
-The proxy never reads the arguments of a call or its result, and stores neither.
+The proxy never reads the arguments of a call or its result, and stores neither. The one
+answer it reads is the list of tools, and of that only the names: a caller is shown the
+tools its grants let it call.
 """
 
 import logging
@@ -40,6 +42,7 @@ from ai_arbiter.gateway.mcp.protocol import (
     METHOD_HEADER,
     PROTOCOL_HEADER,
     TOOL_CALL,
+    TOOL_LIST,
     McpRequest,
     forwarded_headers,
     read_response,
@@ -82,6 +85,8 @@ class Prepared:
     url: str | None
     credential: str | None
     started: float
+    # For an answer to tools/list: the tools to keep in it. None keeps them all.
+    visible_tools: frozenset[str] | None = None
 
     @property
     def allowed(self) -> bool:
@@ -144,6 +149,7 @@ class McpProxy:
         async with self._database.transaction() as session:
             server = await self._catalogue.find(session, context.tenant_id, server_key)
             granted = False
+            visible: frozenset[str] | None = None
             if server is not None:
                 granted = await self._catalogue.allows(
                     session,
@@ -153,6 +159,8 @@ class McpProxy:
                     whole_server=request.method != TOOL_CALL
                     and request.method not in LISTING_METHODS,
                 )
+                if granted and request.method == TOOL_LIST and self._settings.filter_tool_list:
+                    visible = await self._catalogue.callable_tools(session, server, caller)
             system = await self._systems.resolve(session, context.tenant_id, context.ai_system_id)
             declared = system.ai_system_id is not None
             facts: Facts = {
@@ -221,6 +229,7 @@ class McpProxy:
                 url=server.url if server is not None else None,
                 credential=server.credential if server is not None else None,
                 started=time.monotonic(),
+                visible_tools=visible,
             )
 
     # Forward

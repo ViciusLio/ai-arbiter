@@ -427,3 +427,91 @@ async def test_the_proxy_is_served_only_by_a_process_with_its_role(
 
     assert response.status_code == 404
     assert await invocations(database) == []
+
+
+async def test_a_tool_list_shows_a_caller_only_the_tools_it_may_call(
+    database: Database, tenant_id: UUID
+) -> None:
+    server = FakeMcpServer(tools=("read", "write", "delete"))
+    app = app_with(server, database)
+    async with running(app) as client:
+        admin = await issue_key(app, tenant_id, AccessRole.ADMIN)
+        developer = await issue_key(app, tenant_id, AccessRole.DEVELOPER)
+        project = {"scope_type": "project", "scope_id": str(developer.project_id)}
+        await register(client, admin, grant={**project, "tool": "read"})
+        one = await call(client, developer, "tools/list")
+        given = await client.post(
+            "/api/v1/mcp/servers/files/grants",
+            json={**project, "tool": "delete"},
+            headers=admin.auth,
+        )
+        two = await call(client, developer, "tools/list")
+        await client.post(
+            "/api/v1/mcp/servers/files/grants", json={"scope_type": "tenant"}, headers=admin.auth
+        )
+        every = await call(client, developer, "tools/list")
+
+    assert given.status_code == 201, given.text
+    names = [
+        [tool["name"] for tool in response.json()["result"]["tools"]]
+        for response in (one, two, every)
+    ]
+    assert names == [["read"], ["read", "delete"], ["read", "write", "delete"]]
+    assert one.json()["result"]["resultType"] == "complete"
+    assert {row.outcome for row in await invocations(database)} == {"ok"}
+
+
+async def test_the_tool_list_is_relayed_whole_when_the_filter_is_switched_off(
+    database: Database, tenant_id: UUID
+) -> None:
+    server = FakeMcpServer(tools=("read", "write"))
+    app = app_with(server, database, mcp={"filter_tool_list": False})
+    async with running(app) as client:
+        admin = await issue_key(app, tenant_id, AccessRole.ADMIN)
+        developer = await issue_key(app, tenant_id, AccessRole.DEVELOPER)
+        await register(
+            client,
+            admin,
+            grant={
+                "scope_type": "project",
+                "scope_id": str(developer.project_id),
+                "tool": "read",
+            },
+        )
+        listed = await call(client, developer, "tools/list")
+
+    assert [tool["name"] for tool in listed.json()["result"]["tools"]] == ["read", "write"]
+
+
+class UnreadableLists(FakeMcpServer):
+    """Answers ``tools/list`` with something that is not a JSON-RPC response."""
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        if json.loads(request.content)["method"] == "tools/list" and len(self.requests) > 1:
+            self.requests.append(request)
+            return httpx.Response(200, text="<html>every tool there is</html>")
+        return super().__call__(request)
+
+
+async def test_a_tool_list_that_cannot_be_filtered_is_not_relayed(
+    database: Database, tenant_id: UUID
+) -> None:
+    app = app_with(UnreadableLists(), database)
+    async with running(app) as client:
+        admin = await issue_key(app, tenant_id, AccessRole.ADMIN)
+        developer = await issue_key(app, tenant_id, AccessRole.DEVELOPER)
+        await register(
+            client,
+            admin,
+            grant={
+                "scope_type": "project",
+                "scope_id": str(developer.project_id),
+                "tool": "read",
+            },
+        )
+        listed = await call(client, developer, "tools/list")
+
+    assert listed.status_code == 502
+    assert "every tool" not in listed.text
+    (row,) = await invocations(database)
+    assert (row.outcome, row.reason) == ("error", "UnreadableResponse")

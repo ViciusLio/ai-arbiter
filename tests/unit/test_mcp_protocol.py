@@ -13,6 +13,7 @@ from ai_arbiter.gateway.mcp.protocol import (
     decode_header_value,
     error_body,
     forwarded_headers,
+    keep_tools,
     parse_request,
     read_response,
 )
@@ -169,3 +170,53 @@ def test_a_response_is_read_from_json_or_from_an_event_stream() -> None:
     assert read_response("text/event-stream; charset=utf-8", stream.encode()) == answer
     assert read_response("application/json", b"Bad Request") is None
     assert read_response("text/event-stream", b"data: nonsense\n\n") is None
+
+
+def _tool_list(*names: str, **extra: Any) -> dict[str, Any]:
+    tools = [{"name": name, "inputSchema": {"type": "object"}} for name in names]
+    return {"jsonrpc": "2.0", "id": 4, "result": {"tools": tools, **extra}}
+
+
+def test_a_tool_list_keeps_only_the_allowed_tools_and_everything_else_of_the_answer() -> None:
+    body = json.dumps(_tool_list("read", "write", "delete", nextCursor="2")).encode()
+
+    kept = keep_tools("application/json", body, frozenset({"read", "delete"}))
+
+    assert kept is not None
+    answer = json.loads(kept)
+    assert [tool["name"] for tool in answer["result"]["tools"]] == ["read", "delete"]
+    assert answer["result"]["nextCursor"] == "2"
+    assert answer["id"] == 4
+
+
+def test_a_tool_list_sent_as_an_event_stream_is_filtered_too() -> None:
+    progress = {"jsonrpc": "2.0", "method": "notifications/progress", "params": {}}
+    events = f"data: {json.dumps(progress)}\n\ndata: {json.dumps(_tool_list('read', 'write'))}\n\n"
+
+    kept = keep_tools("text/event-stream", events.encode(), frozenset({"write"}))
+
+    assert kept is not None
+    assert [tool["name"] for tool in json.loads(kept)["result"]["tools"]] == ["write"]
+
+
+def test_an_error_in_place_of_a_tool_list_is_passed_on() -> None:
+    error = {"jsonrpc": "2.0", "id": 4, "error": {"code": -32601, "message": "Method not found"}}
+
+    kept = keep_tools("application/json", json.dumps(error).encode(), frozenset())
+
+    assert kept is not None
+    assert json.loads(kept) == error
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        b"not json",
+        b"[]",
+        json.dumps({"jsonrpc": "2.0", "id": 4}).encode(),
+        json.dumps({"jsonrpc": "2.0", "id": 4, "result": {"tools": "read"}}).encode(),
+        json.dumps({"jsonrpc": "2.0", "id": 4, "result": {}}).encode(),
+    ],
+)
+def test_an_answer_that_is_not_a_tool_list_gives_nothing_to_relay(body: bytes) -> None:
+    assert keep_tools("application/json", body, frozenset({"read"})) is None

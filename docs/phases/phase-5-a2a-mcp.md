@@ -1,6 +1,9 @@
 # Phase 5: A2A and MCP
 
-- **Status**: implemented on 2026-10-05; waits for the project owner's approval
+- **Status**: implemented and approved by the project owner on 2026-10-05. Done after
+  the approval, so not in the text below: the A2A proxy joined to the client and a
+  server of the official SDK (I-45), and `tools/list` filtered to what the caller may
+  call (part of I-41)
 - **Date**: 2026-10-05
 - **Inputs**: [Phase 5 preparation](phase-5-preparation.md) (the two protocols checked on
   their own sources, decisions P5-1 to P5-8), ADR-0046 to ADR-0055, the gateway and the

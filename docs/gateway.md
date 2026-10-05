@@ -431,8 +431,9 @@ Limits of the proxy in this release:
 - Only Streamable HTTP. Notifications from a client are not forwarded: the revision
   defines none on this transport.
 - The content of a call is not inspected: no detection or redaction of personal data
-  in arguments and results (a deferrable item of ADR-0049). `tools/list` shows every
-  tool of the server, also the ones the caller may not call.
+  in arguments and results (a deferrable item of ADR-0049). The one answer the proxy
+  reads is the list of tools, and of it only the names: `tools/list` shows a caller
+  the tools its grants name, unless `mcp.filter_tool_list` is `false`.
 - The allowlist is about tools. Resources and prompts are all or nothing.
 - The proxy was tested against a stand-in server written from the specification, and
   with the client and a server of the official Python SDK (`mcp` 2.3.0) joined through
@@ -546,8 +547,9 @@ redirect is not followed. A stream is relayed as it arrives.
 Limits in this release: gRPC is not proxied; the extended card is passed through, not
 stored; cards are read on request, not on a schedule; the proxy does not serve a card
 of its own, so clients are configured with its address directly. The registry and the
-proxy were tested with cards signed by the official SDK and against a stand-in agent
-written from the specification, not with a real agent or the SDK's own client.
+proxy were tested with cards signed by the official SDK, against a stand-in agent and
+with the client and a server of the SDK joined in process, not with a real agent on a
+network.
 
 ## Roles
 

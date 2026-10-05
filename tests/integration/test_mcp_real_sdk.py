@@ -161,10 +161,12 @@ async def test_a_real_client_is_refused_the_tool_its_grant_does_not_name(
             tool="read",
         )
         async with mcp_client(app, developer) as client:
+            shown = await client.list_tools()
             allowed = await client.call_tool("read", {"path": "a.txt"})
             with pytest.raises(Exception, match="No grant allows") as refused:
                 await client.call_tool("write", {"path": "a.txt", "text": "secret words"})
 
+    assert [tool.name for tool in shown.tools] == ["read"]
     assert not allowed.is_error
     assert refused.value is not None
     async with database.session() as session:

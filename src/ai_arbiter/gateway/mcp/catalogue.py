@@ -3,6 +3,7 @@
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import delete, or_, select
@@ -50,6 +51,28 @@ class Caller:
     tenant_id: UUID
     project_id: UUID | None
     ai_system_id: UUID | None
+
+
+def _granted_to(server: McpServer, caller: Caller) -> tuple[Any, ...]:
+    """The conditions that select the grants on ``server`` that reach the caller."""
+    scopes = [
+        (McpGrant.scope_type == ScopeType.TENANT.value) & (McpGrant.scope_id == caller.tenant_id)
+    ]
+    if caller.project_id is not None:
+        scopes.append(
+            (McpGrant.scope_type == ScopeType.PROJECT.value)
+            & (McpGrant.scope_id == caller.project_id)
+        )
+    if caller.ai_system_id is not None:
+        scopes.append(
+            (McpGrant.scope_type == ScopeType.AI_SYSTEM.value)
+            & (McpGrant.scope_id == caller.ai_system_id)
+        )
+    return (
+        McpGrant.tenant_id == caller.tenant_id,
+        McpGrant.server_id == server.id,
+        or_(*scopes),
+    )
 
 
 class McpCatalogue:
@@ -271,25 +294,20 @@ class McpCatalogue:
         every tool counts: that is what anything other than listing and calling a tool
         needs, because a grant for one tool says nothing about resources and prompts.
         """
-        scopes = [
-            (McpGrant.scope_type == ScopeType.TENANT.value)
-            & (McpGrant.scope_id == caller.tenant_id)
-        ]
-        if caller.project_id is not None:
-            scopes.append(
-                (McpGrant.scope_type == ScopeType.PROJECT.value)
-                & (McpGrant.scope_id == caller.project_id)
-            )
-        if caller.ai_system_id is not None:
-            scopes.append(
-                (McpGrant.scope_type == ScopeType.AI_SYSTEM.value)
-                & (McpGrant.scope_id == caller.ai_system_id)
-            )
-        query = select(McpGrant.id).where(
-            McpGrant.tenant_id == caller.tenant_id, McpGrant.server_id == server.id, or_(*scopes)
-        )
+        query = select(McpGrant.id).where(*_granted_to(server, caller))
         if whole_server:
             query = query.where(McpGrant.tool == ANY_TOOL)
         elif tool is not None:
             query = query.where(McpGrant.tool.in_((tool, ANY_TOOL)))
         return await session.scalar(query.limit(1)) is not None
+
+    async def callable_tools(
+        self, session: AsyncSession, server: McpServer, caller: Caller
+    ) -> frozenset[str] | None:
+        """The tools the caller's grants name, or ``None`` when a grant covers every tool."""
+        named = (
+            await session.scalars(
+                select(McpGrant.tool).where(*_granted_to(server, caller)).distinct()
+            )
+        ).all()
+        return None if ANY_TOOL in named else frozenset(named)

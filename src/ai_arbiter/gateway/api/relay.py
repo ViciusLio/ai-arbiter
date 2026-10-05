@@ -24,6 +24,7 @@ async def relay(
     max_bytes: int,
     complete: Completion,
     failure: Callable[[], Response],
+    rewrite: Callable[[str, bytes], bytes | None] | None = None,
 ) -> Response:
     """Relay an open upstream response and record how it ended through ``complete``.
 
@@ -31,9 +32,13 @@ async def relay(
     ``max_bytes``, and passed on with its status and content type. The body is relayed
     decoded: how the upstream compressed it is not passed on. ``failure`` builds the
     answer when the body cannot be relayed.
+
+    With ``rewrite``, the answer is always read whole, also an event stream, and a
+    successful one is replaced by the JSON that ``rewrite`` returns; when it returns
+    nothing, the answer is not relayed at all.
     """
     content_type = upstream.headers.get("content-type", "application/json")
-    if content_type.startswith("text/event-stream"):
+    if rewrite is None and content_type.startswith("text/event-stream"):
 
         async def stream() -> AsyncIterator[bytes]:
             sent = 0
@@ -73,6 +78,12 @@ async def relay(
         reason = type(error).__name__
     finally:
         await upstream.aclose()
+    if rewrite is not None and reason is None and upstream.status_code == 200:
+        rewritten = rewrite(content_type, received)
+        if rewritten is None:
+            reason = "UnreadableResponse"
+        else:
+            received, content_type = rewritten, "application/json"
     await complete(
         status_code=upstream.status_code,
         response_bytes=len(received),

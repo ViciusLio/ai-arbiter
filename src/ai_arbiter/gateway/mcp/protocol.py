@@ -34,6 +34,7 @@ NAMED_METHODS: Mapping[str, str] = {
     "resources/read": "uri",
 }
 TOOL_CALL = "tools/call"
+TOOL_LIST = "tools/list"
 # Methods that only say what a server offers. Any grant on the server allows them.
 LISTING_METHODS = frozenset(
     {
@@ -235,6 +236,28 @@ def forwarded_headers(headers: Mapping[str, str]) -> dict[str, str]:
         if name.startswith(PARAM_HEADER_PREFIX):
             kept[name] = value
     return kept
+
+
+def keep_tools(content_type: str, body: bytes, allowed: frozenset[str]) -> bytes | None:
+    """The answer to ``tools/list`` with only the tools named in ``allowed``.
+
+    Only the names are read. An answer that carries an error is passed on as it is; one
+    that cannot be read as a JSON-RPC response gives nothing, and is not relayed.
+    """
+    answer = read_response(content_type, body)
+    if answer is None:
+        return None
+    result = answer.get("result")
+    if isinstance(result, dict):
+        tools = result.get("tools")
+        if not isinstance(tools, list):
+            return None
+        result["tools"] = [
+            tool for tool in tools if isinstance(tool, dict) and tool.get("name") in allowed
+        ]
+    elif "error" not in answer:
+        return None
+    return json.dumps(answer, separators=(",", ":")).encode()
 
 
 def read_response(content_type: str, body: bytes) -> dict[str, Any] | None:
