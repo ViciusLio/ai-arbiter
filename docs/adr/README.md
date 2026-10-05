@@ -67,6 +67,7 @@ supersedes the old one.
 | [0055](0055-semantic-pii-detection-as-an-optional-plugin.md) | Personal data written in words is detected by an optional local plugin (Presidio), with measured precision and recall | Accepted | 5 |
 | [0056](0056-a-demonstration-for-an-it-consulting-firm.md) | A demonstration built on an IT consulting firm, with its internal regulation as a policy pack, and a script for a live session | Accepted | 5 |
 | [0057](0057-pdf-reports-as-an-optional-extra.md) | Reports as PDF through an optional extra on WeasyPrint, rendered from the HTML report without fetching anything | Accepted | 5 |
+| [0058](0058-network-logs-as-a-source-of-discovery.md) | Network and SASE logs as a source of discovery: inbound only, a generic source with mappings as data, no person stored, a file given to the importer; after 0.3 | Accepted | 5 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".

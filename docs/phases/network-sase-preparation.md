@@ -1,7 +1,8 @@
 # Network and SASE: preparation
 
-- **Status**: prepared on 2026-10-05; a wish of the project owner (I-48), with no date.
-  No code exists and none is written before the decisions below
+- **Status**: prepared on 2026-10-05; a wish of the project owner (I-48). The owner
+  decided N1 to N7 the same day, each as recommended: ADR-0058. The work is done after
+  0.3; no code exists
 - **Date**: 2026-10-05
 - **Inputs**: the importers and the discovery of Phase 4b
   ([ADR-0019](../adr/0019-external-telemetry-ingestion.md),
