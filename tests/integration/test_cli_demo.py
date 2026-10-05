@@ -99,3 +99,37 @@ def test_the_tour_shows_the_gateway_and_the_toolkit_at_work_and_can_be_repeated(
     assert re.search(
         r"demo-routes\s+governable\s+verified", arbiter("a2a", "agents", "list", "--tenant", "demo")
     )
+
+
+def test_the_consulting_case_follows_a_firm_with_its_internal_regulation() -> None:
+    import pytest
+
+    pytest.importorskip("fastapi", reason="needs the gateway extra")
+    pytest.importorskip("mcp_types", reason="needs the mcp extra")
+    arbiter("init")
+
+    output = arbiter("demo", "tour", "--case", "consulting")
+    again = arbiter("demo", "tour", "--case", "consulting", "--locale", "it")
+
+    assert "DIFFERS" not in output
+    assert output.count("[as the scenario expects]") == 11
+    assert "cv-screening: High-risk" in output
+    assert "IR-HIGH-RISK-NOT-REVIEWED, IR-CREDENTIAL-IN-PROMPT" in output
+    assert "Masked before the model saw the prompt: email, iban." in output
+    assert "The internal rule IR-CREDENTIAL-IN-PROMPT refused the request" in output
+    assert "A request for mock-large, which the firm did not approve, was denied" in output
+    assert "Before a review the internal rule IR-HIGH-RISK-NOT-REVIEWED denied it" in output
+    assert "denied by POL-SYSTEM-PROHIBITED." in output
+    assert "client-retail has a hard budget" in output
+    assert "is shown only read_file" in output
+    assert "deleting a branch was denied by MCP-CALL-NOT-GRANTED." in output
+    assert "nordwind / lab" in output
+    assert "no broken link" in output
+    assert "It does not provide legal advice." in output
+    assert "DIVERSO" not in again
+    assert again.count("[come previsto dallo scenario]") == 11
+    assert "era già stata rivista" in again
+    # The firm has a tenant of its own: nothing of it is in the others.
+    assert "No AI system is declared." in arbiter("systems", "list")
+    assert "cv-screening" in arbiter("systems", "list", "--tenant", "demo-consulting")
+    assert "Error: " in arbiter("demo", "tour", "--case", "nope", ok=False)

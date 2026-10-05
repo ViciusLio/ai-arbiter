@@ -6,7 +6,7 @@ from typing import Annotated
 
 import typer
 
-from ai_arbiter.adapters.mock.tools import MCP_REVISION
+from ai_arbiter.adapters.mock.tools import mcp_request
 from ai_arbiter.cli.common import (
     compliance_for,
     fail,
@@ -15,6 +15,7 @@ from ai_arbiter.cli.common import (
     run,
     settings_from,
 )
+from ai_arbiter.cli.demo_consulting import CONSULTING_TENANT, consulting_tour
 from ai_arbiter.cli.systems import Locale, translator
 from ai_arbiter.compliance.inventory.declarations import parse_declarations
 from ai_arbiter.compliance.simulation.model import load_scenario, packaged_scenarios
@@ -31,6 +32,7 @@ app = typer.Typer(help="Simulation scenarios: invented systems and traffic.", no
 # an organisation's own.
 DEMO_TENANT = "demo"
 DEMO_REVIEWER = "Demo reviewer"
+CASES = ("general", "consulting")
 
 
 @app.command("list")
@@ -115,32 +117,6 @@ def run_demo(
     typer.echo(t.text("disclaimer"))
     if not all(result.as_expected for result in results):
         raise fail(ArbiterError(t.text("demo.mismatch")))
-
-
-def _mcp_call(tool: str) -> tuple[bytes, dict[str, str]]:
-    """One ``tools/call`` request as a client of MCP revision 2026-07-28 sends it."""
-    body = {
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "tools/call",
-        "params": {
-            "name": tool,
-            "arguments": {},
-            "_meta": {
-                "io.modelcontextprotocol/protocolVersion": MCP_REVISION,
-                "io.modelcontextprotocol/clientInfo": {"name": "arbiter-demo", "version": "1"},
-                "io.modelcontextprotocol/clientCapabilities": {},
-            },
-        },
-    }
-    headers = {
-        "content-type": "application/json",
-        "accept": "application/json, text/event-stream",
-        "mcp-protocol-version": MCP_REVISION,
-        "mcp-method": "tools/call",
-        "mcp-name": tool,
-    }
-    return json.dumps(body).encode(), headers
 
 
 async def _tour(settings: Settings, t: Translator) -> list[tuple[str, bool, str]]:
@@ -279,9 +255,9 @@ async def _tour(settings: Settings, t: Translator) -> list[tuple[str, bool, str]
             json={"scope_type": "ai_system", "scope_id": worker_system, "tool": "read"},
             headers=admin,
         )
-        body, headers = _mcp_call("read")
+        body, headers = mcp_request("tools/call", "read")
         allowed = await client.post("/mcp/demo-files", content=body, headers={**headers, **worker})
-        body, headers = _mcp_call("write")
+        body, headers = mcp_request("tools/call", "write")
         refused = await client.post("/mcp/demo-files", content=body, headers={**headers, **worker})
         refused_rule = ", ".join(
             (refused.json().get("error") or {}).get("data", {}).get("rules", ["-"])
@@ -349,24 +325,43 @@ async def _tour(settings: Settings, t: Translator) -> list[tuple[str, bool, str]
 
 
 @app.command("tour")
-def tour(ctx: typer.Context, locale: Locale = "en") -> None:
+def tour(
+    ctx: typer.Context,
+    case: Annotated[
+        str,
+        typer.Option(
+            "--case",
+            help="Which demonstration: general, or consulting (an IT consulting firm).",
+        ),
+    ] = "general",
+    locale: Locale = "en",
+) -> None:
     """A guided demonstration in one command: the gateway and the toolkit at work.
 
-    It loads the scenarios into the tenant ``demo``, sends requests through the gateway
-    with a mock model, calls a mock MCP server and a mock agent through the proxies, then
-    scans and verifies the audit log. Everything runs in this process: no network, no
-    real model, and no other tenant is touched.
+    ``general`` loads the scenarios into the tenant ``demo``, sends requests through the
+    gateway with a mock model, calls a mock MCP server and a mock agent through the
+    proxies, then scans and verifies the audit log. ``consulting`` follows an invented IT
+    consulting firm with its own internal regulation, in the tenant ``demo-consulting``.
+    Everything runs in this process: no network, no real model, and no other tenant is
+    touched.
     """
     t = translator(locale)
-    steps = run(_tour(settings_from(ctx), t))
-    typer.echo(t.text("demo.tour.intro"))
+    if case not in CASES:
+        raise fail(ArbiterError(f"unknown case '{case}': use {' or '.join(CASES)}"))
+    settings = settings_from(ctx)
+    if case == "consulting":
+        steps, tenant = run(consulting_tour(settings, t)), CONSULTING_TENANT
+        typer.echo(t.text("demo.consulting.intro"))
+    else:
+        steps, tenant = run(_tour(settings, t)), DEMO_TENANT
+        typer.echo(t.text("demo.tour.intro"))
     typer.echo("")
     for number, (title, ok, detail) in enumerate(steps, start=1):
         mark = t.text("demo.as_expected") if ok else t.text("demo.differs")
         typer.echo(f"{number}. {title}  [{mark}]")
         typer.echo(f"   {detail}")
     typer.echo("")
-    typer.echo(t.text("demo.next", tenant=DEMO_TENANT))
+    typer.echo(t.text("demo.next", tenant=tenant))
     typer.echo(t.text("demo.invented"))
     typer.echo(t.text("disclaimer"))
     if not all(ok for _, ok, _ in steps):

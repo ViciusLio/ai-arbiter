@@ -32,6 +32,28 @@ DEMO_CARD: dict[str, Any] = {
 }
 
 
+def mcp_request(method: str, name: str | None = None) -> tuple[bytes, dict[str, str]]:
+    """One request as a client of MCP revision 2026-07-28 sends it: the body and its headers."""
+    params: dict[str, Any] = {
+        "_meta": {
+            "io.modelcontextprotocol/protocolVersion": MCP_REVISION,
+            "io.modelcontextprotocol/clientInfo": {"name": "arbiter-demo", "version": "1"},
+            "io.modelcontextprotocol/clientCapabilities": {},
+        }
+    }
+    headers = {
+        "content-type": "application/json",
+        "accept": "application/json, text/event-stream",
+        "mcp-protocol-version": MCP_REVISION,
+        "mcp-method": method,
+    }
+    if name is not None:
+        params = {"name": name, "arguments": {}, **params}
+        headers["mcp-name"] = name
+    body = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params}
+    return json.dumps(body).encode(), headers
+
+
 def _httpx() -> Any:
     try:
         import httpx

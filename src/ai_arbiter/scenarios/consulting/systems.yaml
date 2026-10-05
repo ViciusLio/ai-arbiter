@@ -1,0 +1,102 @@
+# The AI systems of an invented IT consulting firm, for the guided demonstration
+# `arbiter demo tour --case consulting`. Every system here is invented.
+#
+# The firm works by engagement: each client is a project of the gateway. Its people use
+# a coding assistant on client code and a writer for proposals; HR ranks applications
+# with a screening tool; a vendor proposed a tool that reads the mood of a meeting.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+fact_sets:
+  in_scope:
+    scope.is_ai_system: true
+    scope.union_nexus: true
+    scope.military_defence_national_security: false
+    scope.scientific_research_only: false
+    scope.pre_market_development: false
+    scope.personal_non_professional: false
+  no_prohibited_practice:
+    prohibited.manipulative_techniques: false
+    prohibited.exploits_vulnerabilities: false
+    prohibited.intimate_content_without_consent: false
+    prohibited.child_sexual_abuse_material: false
+    prohibited.social_scoring: false
+    prohibited.crime_prediction_by_profiling: false
+    prohibited.facial_image_scraping: false
+    prohibited.emotion_inference_work_education: false
+    prohibited.biometric_categorisation_sensitive: false
+    prohibited.realtime_remote_biometric_identification: false
+  no_high_risk_area:
+    high_risk.annex1_safety_component: false
+    annex3.biometrics: false
+    annex3.critical_infrastructure: false
+    annex3.education: false
+    annex3.employment: false
+    annex3.essential_services: false
+    annex3.law_enforcement: false
+    annex3.migration: false
+    annex3.justice: false
+  no_transparency_case:
+    transparency.interacts_with_persons: false
+    transparency.generates_synthetic_content: false
+    transparency.emotion_or_biometric_categorisation: false
+    transparency.deep_fake: false
+    transparency.public_interest_text: false
+
+systems:
+  - key: code-assistant
+    name: Coding assistant
+    purpose: Suggests and explains code to consultants working on a client's repository.
+    roles:
+      - { role: deployer, basis: "Subscription used on client engagements" }
+    models:
+      - { provider: mock, model: mock-small }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      data.personal_data_processed: true
+
+  - key: proposal-writer
+    name: Proposal writer
+    purpose: Drafts the text of offers and statements of work for the sales team.
+    roles:
+      - { role: deployer, basis: "Configured on a vendor platform" }
+    models:
+      - { provider: mock, model: mock-small }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area]
+    facts:
+      transparency.interacts_with_persons: false
+      transparency.generates_synthetic_content: true
+      transparency.emotion_or_biometric_categorisation: false
+      transparency.deep_fake: false
+      transparency.public_interest_text: false
+      controls.transparency_notice: true
+
+  - key: cv-screening
+    name: CV screening
+    purpose: Ranks the applications of candidates for the recruiters of the firm.
+    roles:
+      - { role: deployer, basis: "Module of the HR suite bought from a vendor" }
+    models:
+      - { provider: mock, model: mock-small }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      annex3.employment: true
+      annex3.employment_recruitment: true
+      annex3.employment_work_decisions: false
+      high_risk.derogation_claimed: false
+      deployer.public_authority: false
+      deployer.public_law_body_or_public_service: false
+      deployer.employer_uses_at_workplace: true
+      data.personal_data_processed: true
+      controls.human_oversight_assigned: true
+
+  - key: meeting-mood-analyser
+    name: Meeting mood analyser
+    purpose: Would infer the mood of employees from the recordings of internal meetings.
+    lifecycle: planned
+    roles:
+      - { role: deployer, basis: "Proposal from a vendor, not purchased" }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      prohibited.emotion_inference_work_education: true
+      prohibited.emotion_inference_medical_or_safety: false

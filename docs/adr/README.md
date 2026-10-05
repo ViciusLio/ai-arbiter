@@ -65,6 +65,7 @@ supersedes the old one.
 | [0053](0053-a2a-card-signatures-against-configured-keys.md) | Card signatures verified only against keys the operator configured | Accepted | 5 |
 | [0054](0054-no-cache-of-key-lookups.md) | API keys and roles are read on every request, not cached | Accepted | 5 |
 | [0055](0055-semantic-pii-detection-as-an-optional-plugin.md) | Personal data written in words is detected by an optional local plugin (Presidio), with measured precision and recall | Accepted | 5 |
+| [0056](0056-a-demonstration-for-an-it-consulting-firm.md) | A demonstration built on an IT consulting firm, with its internal regulation as a policy pack, and a script for a live session | Accepted | 5 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".

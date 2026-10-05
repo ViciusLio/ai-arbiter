@@ -1,0 +1,93 @@
+# The internal AI regulation of an invented IT consulting firm, written as a gateway
+# policy pack. It is the default policy of Arbiter plus two rules of the firm's own.
+#
+# This is how an organisation turns its own rules into something the gateway enforces:
+# copy the default pack, add rules over the same facts, and point `policy.pack` at the
+# file. Nothing here is code, and nothing here comes from the AI Act unless it says so.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+pack: policy
+version: "2026.10.1+consulting.1"
+description: >-
+  The default policy, plus the internal regulation of the firm: no model for a high-risk
+  system before a person reviewed its classification, and no prompt that carries a
+  credential, not even masked.
+
+facts:
+  request.model: string
+  request.model_allowed: boolean
+  request.stream: boolean
+  budget.hard_exceeded: boolean
+  budget.soft_exceeded: boolean
+  pii.detected: boolean
+  pii.categories: list
+  system.declared: boolean
+  system.tier: string
+  system.reviewed: boolean
+
+rules:
+  # The default policy, unchanged.
+
+  - id: POL-MODEL-NOT-ALLOWED
+    kind: policy
+    description: The requested model is not on the list of models the firm approved.
+    when: { fact: request.model_allowed, eq: false }
+    then:
+      outcome: deny
+      message_key: policy.model_not_allowed
+
+  - id: POL-SYSTEM-PROHIBITED
+    kind: policy
+    description: The system behind the request is classified as a prohibited practice.
+    when: { fact: system.tier, eq: prohibited }
+    then:
+      outcome: deny
+      legal_refs:
+        - { regulation: EU-AI-ACT, article: "5" }
+      applies_from: 2025-02-02
+      message_key: policy.system_prohibited
+
+  - id: POL-BUDGET-EXCEEDED
+    kind: policy
+    description: The budget of the engagement is used up.
+    when: { fact: budget.hard_exceeded, eq: true }
+    then:
+      outcome: deny
+      message_key: policy.budget_exceeded
+
+  - id: POL-PII-REDACT
+    kind: policy
+    description: Personal data in a prompt is redacted before the prompt leaves the gateway.
+    when: { fact: pii.detected, eq: true }
+    then:
+      outcome: redact
+      legal_refs:
+        - { regulation: EU-GDPR, article: "5(1)(c)" }
+      message_key: policy.pii_redacted
+
+  # The internal regulation of the firm.
+
+  - id: IR-HIGH-RISK-NOT-REVIEWED
+    kind: policy
+    description: >-
+      Internal regulation, section 3: a system whose indicative classification is high
+      risk gets no model until a person of the AI committee has reviewed that
+      classification.
+    when:
+      all:
+        - { fact: system.tier, eq: high_risk }
+        - { fact: system.reviewed, eq: false }
+    then:
+      outcome: deny
+      message_key: demo.consulting.rule.high_risk_not_reviewed
+
+  - id: IR-CREDENTIAL-IN-PROMPT
+    kind: policy
+    description: >-
+      Internal regulation, section 5: a prompt that carries a credential of a client is
+      refused, not sent on with the credential masked.
+    when: { fact: pii.categories, contains: secret }
+    then:
+      outcome: deny
+      message_key: demo.consulting.rule.credential_in_prompt

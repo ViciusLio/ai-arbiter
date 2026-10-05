@@ -377,7 +377,10 @@ data:
 ```bash
 arbiter init
 arbiter demo tour                 # or: --locale it
+arbiter demo tour --case consulting   # an IT consulting firm with its own regulation
 ```
+
+The second one, and how to give it live, is described in [Giving a demonstration](demo.md).
 
 | Step | What it shows |
 |---|---|

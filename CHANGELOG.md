@@ -100,6 +100,10 @@ Entries link to the decision record that motivated them, where one exists.
     (`mcp.filter_tool_list`, on by default).
   - The test suite joins the client and a server of the official A2A SDK through the
     proxy, on both bindings.
+  - `arbiter demo tour --case consulting`: an invented IT consulting firm, in a tenant
+    of its own, whose internal regulation is a policy pack on top of the default one;
+    `docs/demo.md` is the script of a live session
+    ([ADR-0056](docs/adr/0056-a-demonstration-for-an-it-consulting-firm.md)).
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

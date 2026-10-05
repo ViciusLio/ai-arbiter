@@ -37,6 +37,7 @@ Updated at every commit. Last update: 2026-10-05.
 | 4b Deferrable items of v0.1 | Done: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
 | Improvements after Phase 4b | Done for what needed no decision: see the [tracking table](#release-improvement-tracking) |
 | 5 A2A and MCP (v0.2) | **Done, approved by the owner on 2026-10-05**: every step below is done and the full check passed ([summary](docs/phases/phase-5-a2a-mcp.md)) |
+| After Phase 5, asked by the owner on 2026-10-05 | **In progress**. Done: the A2A proxy with the official SDK (I-45), the filter of `tools/list` (I-41, in part), a demonstration built on an IT consulting firm with its internal regulation ([how to give it](docs/demo.md), ADR-0056). Next: reports as PDF (I-36), a preparation on network and SASE sources (I-48), a declaration that covers several projects (I-33), then the other open improvements one at a time |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
 
@@ -132,6 +133,7 @@ arbiter report audit --format html -o out/       # the audit log of the last 30 
 arbiter ingest examples/litellm-logs.jsonl --source litellm   # records of another gateway
 arbiter systems discover                         # what in the traffic nobody declared
 arbiter demo tour                                # the guided demonstration: gateway, tools, agents, scan, audit
+arbiter demo tour --case consulting              # an invented IT consulting firm and its internal regulation
 arbiter demo run --all                           # three invented scenarios, in the tenant "demo"
 ```
 
@@ -170,7 +172,7 @@ How to configure and use each of them: [the gateway](docs/gateway.md) and
 | Importers | Records of another gateway (LiteLLM, or Arbiter's own JSON lines) are imported without their content and scanned like the gateway's own |
 | Digest | Inventory, findings, traffic and the audit head, in Markdown and HTML, in English and Italian; sent by e-mail to each recipient in their language |
 | Reports | Everything recorded about one system, and the audit log over a period; Markdown and HTML that prints well |
-| Demonstration | `arbiter demo tour` walks through the gateway and the toolkit in one command; three scenarios of invented systems and traffic, each with the outcome it expects |
+| Demonstration | `arbiter demo tour` walks through the gateway and the toolkit in one command; `--case consulting` follows an invented IT consulting firm whose internal regulation is a policy pack ([how to give a demonstration](docs/demo.md)); three scenarios of invented systems and traffic, each with the outcome it expects |
 | Link to the gateway | A system classified as a prohibited practice gets no model; routing can be limited by risk tier |
 
 How it works and what it does not cover: [the compliance toolkit](docs/compliance.md).
@@ -325,7 +327,7 @@ written. The last column says what has changed since, as of 2026-10-05.
 | I-32 | 4b | Attribute imported records to a system after the import, so that a candidate from an external source closes when its system is declared | Imported records are attributed at import only; the candidate stays until the records leave the 30-day window | 0.1.x | Open |
 | I-33 | 4b | Let a declaration name several projects, and let the gateway resolve the system of a key from its project | A project that runs several systems shows as one candidate; the gateway applies a tier only to keys tied to the system | 0.1.x | Open |
 | I-34 | 4b | Reports, discovery and digest delivery over HTTP where they are missing (`systems discover`, `digest --send`) | They exist on the command line only | 0.2 | Done after Phase 4b: `GET /api/v1/candidates` (auditor or admin) and `POST /api/v1/digests/deliveries` (admin; 409 when the configuration cannot deliver, 502 when the server refuses). Reports were already served. Verified by tests on both engines |
-| I-35 | 4b | More scenarios, with expected outcomes written by someone other than the author of the rules | Three scenarios, written together with the rules they check | 0.1.x | Open |
+| I-35 | 4b | More scenarios, with expected outcomes written by someone other than the author of the rules | Three scenarios, written together with the rules they check | 0.1.x | Partly done after Phase 5: a fourth case, the consulting firm of `arbiter demo tour --case consulting`, with expected outcomes checked by a test. It was written by the author of the rules like the others: the part that asks for another author stays open |
 | I-36 | 4b | PDF output of the reports as an optional extra | ADR-0044 chose printing the HTML; a scheduled job cannot print | When asked for | Open |
 | I-37 | 4b | Escape text typed by people in the cells of Markdown tables | A system name with a `|` or a line break broke the inventory table of the digest | 0.1.x | Done after Phase 4b: a `cell` filter in the templates, with a test |
 | I-38 | 2 | Make the message of a missing extra true before publication | It told users to `pip install "ai-arbiter[...]"`, which does not exist yet | 0.1.x | Done after Phase 4b: the message gives the way from a clone first, then the `pip` command "once published" |
@@ -338,6 +340,8 @@ written. The last column says what has changed since, as of 2026-10-05.
 | I-45 | 5 | Join the client and a server of the official A2A SDK through the proxy, as was done for MCP | The A2A proxy was tested against a stand-in agent written from the specification | Before 0.2.0 | Done after Phase 5: `tests/integration/test_a2a_real_sdk.py` joins the client and a server of `a2a-sdk` 1.2.1 through the proxy in process: the card the agent serves, a message on JSON-RPC and on HTTP+JSON, with and without streaming, and a refusal. Found: the client shows a refusal as HTTP 403 and drops the reason. Not done: anything over a real network |
 | I-46 | 5 | Serve a card at the proxy for each agent, with the proxy's own address in it | Clients are configured with the address of the proxy by hand | 0.2.x | Open |
 | I-47 | 5 | Detect health data and the other special categories; measure on a larger set written by someone else, and on real prompt lengths | Neither detector looks for them; the set has about fifty short sentences per language | 0.2.x | Open |
+| I-48 | 5 | Network and SASE: read the logs of a secure web gateway or a CASB to find AI use that does not pass through Arbiter, and export the approved and the refused AI destinations for the network to enforce | Arbiter sees only what goes through its gateway or is imported; a firm with a SASE already has the other half of the picture | Wish of the owner (2026-10-05); after 0.3 | Open: first a preparation, with the log formats of the main vendors checked on their own sources and the decisions to take; no code before it |
+| I-49 | 5 | Report on an organisation's internal rules in the scan, the digest and the reports, apart from the AI Act | The internal regulation of the consulting case is enforced on requests and audited, but gives no findings (ADR-0056, option R2) | When asked for | Open |
 
 ## Licence
 
