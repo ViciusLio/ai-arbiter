@@ -96,6 +96,19 @@ def compliance_for(settings: Settings) -> ComplianceRuntime:
     return build_compliance(settings, audit=DatabaseAuditLog(), bus=bus)
 
 
+def short_id(identifier: UUID) -> str:
+    """The last characters of an id. Its first ones are a timestamp (UUIDv7), shared by
+    whatever was created in the same moment, so they tell nothing apart.
+    """
+    return identifier.hex[-8:]
+
+
+def refers_to(identifier: UUID, reference: str) -> bool:
+    """Whether ``reference`` is the full id or the short id shown in lists."""
+    reference = reference.strip().lower()
+    return reference in (str(identifier), identifier.hex, short_id(identifier))
+
+
 def notifier_for(settings: Settings) -> Notifier:
     """The notifier named in the configuration, with its settings checked."""
     registry = PluginRegistry()

@@ -186,7 +186,7 @@ arbiter budgets create --limit 50 --hard                 # on the tenant, per mo
 arbiter budgets create --system cv-screening --limit 10.50 --period day
 arbiter budgets create --scope project --id <project id> --limit 20
 arbiter budgets list                                     # with what was spent so far
-arbiter budgets delete 1a2b3c4d                          # the id, or its first characters
+arbiter budgets delete 1a2b3c4d                          # the short id shown by the list, or the full one
 ```
 
 - Scopes: `tenant`, `team`, `project`, `principal`, `ai_system`. Periods: `day`, `month`.
@@ -272,6 +272,43 @@ scanned: post-call evaluation is planned for v0.1.x.
 ### Audit
 
 See [the audit log](audit.md) for the chain, its verification and `audit.fail_mode`.
+
+## MCP servers: the catalogue
+
+Phase 5, in progress. What exists today is the catalogue: the list of the MCP servers an
+organisation knows, and of who may call them. The proxy that enforces it is being built
+and nothing forwards a call yet.
+
+```bash
+arbiter mcp servers add files --name "File tools" --url https://tools.example.org/mcp \
+    --system cv-screening --credential secret://files-token
+arbiter mcp servers add local-git --name "Git" --stdio     # declared only
+arbiter mcp servers list
+arbiter mcp grants add files                                # the whole tenant, every tool
+arbiter mcp grants add files --system cv-screening --tool read
+arbiter mcp grants list
+arbiter mcp grants remove 1a2b3c4d                          # the short id shown by the list
+```
+
+- **Nothing is allowed until a grant says so.** A grant is given to the tenant, to a
+  project or to a declared AI system, for one tool or for every tool of a server
+  (ADR-0049). Withdrawing it takes effect at the next request.
+- **A server needs an `https` URL.** Plain `http` is accepted only for the hosts listed
+  in `mcp.allow_http_hosts`. A URL with credentials in it is refused: the credential
+  sent upstream is a secret reference (`secret://NAME`), never a value.
+- **A stdio server is only declared** (ADR-0048). The proxy never starts a process, so a
+  catalogue entry cannot become a way to run a program.
+- **Governability.** Each server is `governable`, `not_asked` (its revisions were never
+  read), `legacy_only` (it offers no revision the proxy speaks: ADR-0046),
+  `not_proxied` (stdio) or `disabled`.
+- Of the tools a server lists, the catalogue keeps the names. Descriptions and schemas
+  are not stored.
+- Every change is an audit entry: `mcp_server.registered`, `mcp_server.removed`,
+  `mcp_grant.created`, `mcp_grant.revoked`.
+
+Over HTTP, under `/api/v1/mcp`: `servers` (list, register, read, remove) and `grants`
+(list, create under a server, withdraw). Reading needs the auditor or the admin role,
+changing needs the admin role.
 
 ## Roles
 

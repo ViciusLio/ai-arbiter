@@ -13,7 +13,7 @@ from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.ports import AuditLog, EventBus, SystemDirectory
 from ai_arbiter.core.telemetry import configure_logging, setup_telemetry
-from ai_arbiter.gateway.api import admin, chat, compliance, errors, health
+from ai_arbiter.gateway.api import admin, chat, compliance, errors, health, mcp
 from ai_arbiter.gateway.runtime import build_runtime
 
 DESCRIPTION = """
@@ -44,6 +44,11 @@ OPENAPI_TAGS = [
     },
     {"name": "findings", "description": "Scans, findings and their review, suppressions."},
     {"name": "digest", "description": "The daily digest."},
+    {"name": "reports", "description": "The system report and the audit report."},
+    {
+        "name": "mcp",
+        "description": "The catalogue of MCP servers, their tools and who may call them.",
+    },
     {"name": "health", "description": "Liveness and readiness of this process."},
 ]
 
@@ -110,4 +115,5 @@ def create_app(
     if Role.ADMIN in resolved.server.roles:
         app.include_router(admin.router)
         app.include_router(compliance.router)
+        app.include_router(mcp.admin_router)
     return app

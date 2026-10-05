@@ -309,6 +309,16 @@ class NotificationSettings(_Section):
         return value if value is None else check_address(value)
 
 
+class McpSettings(_Section):
+    """The MCP catalogue and proxy (ADR-0046 to ADR-0050)."""
+
+    # Hosts a server may be registered for with plain http. Everything else needs https.
+    allow_http_hosts: tuple[str, ...] = ()
+    timeout_seconds: int = Field(default=30, ge=1)
+    # Larger request bodies are refused before they are read into memory.
+    max_request_bytes: int = Field(default=1_048_576, ge=1024)
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -341,6 +351,7 @@ class Settings(BaseSettings):
     ingest: IngestSettings = IngestSettings()
     retention: RetentionSettings = RetentionSettings()
     notifications: NotificationSettings = NotificationSettings()
+    mcp: McpSettings = McpSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

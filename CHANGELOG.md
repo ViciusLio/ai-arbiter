@@ -44,6 +44,12 @@ Entries link to the decision record that motivated them, where one exists.
     uses the standard library and takes its password from a secret reference. Each
     delivery is an audit entry without addresses. The `smtp` notifier was not run
     against a real mail server.
+- **A2A and MCP** (Phase 5, in progress;
+  [ADR-0046](docs/adr/0046-mcp-proxy-speaks-the-modern-revision.md) to
+  [ADR-0054](docs/adr/0054-no-cache-of-key-lookups.md)).
+  - MCP catalogue: servers, the names of the tools they list, and grants to the
+    tenant, a project or an AI system, for one tool or for all. Nothing is allowed
+    without a grant. `arbiter mcp servers`, `arbiter mcp grants`, `/api/v1/mcp`.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.
@@ -267,6 +273,9 @@ Entries link to the decision record that motivated them, where one exists.
 
 ### Fixed
 
+- Budgets were listed with the first characters of their id, which are a timestamp: two
+  budgets created together showed the same short id. Short ids are now the last
+  characters, as for findings.
 - A system name with a `|` or a line break broke the inventory table of the Markdown
   digest. Names are now escaped in table cells.
 - A PostgreSQL database URL on an install without the `gateway` extra failed with an

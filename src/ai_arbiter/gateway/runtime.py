@@ -34,6 +34,7 @@ from ai_arbiter.gateway.finops.metering import UsageMeter
 from ai_arbiter.gateway.identity.service import IdentityService, PepperRing
 from ai_arbiter.gateway.llm_router.deployments import build_targets
 from ai_arbiter.gateway.llm_router.router import Router
+from ai_arbiter.gateway.mcp.catalogue import McpCatalogue
 from ai_arbiter.gateway.policy.engine import RulePolicyEngine, load_policy_pack
 
 SystemDirectoryFactory = Callable[[AuditLog, EventBus, Clock], SystemDirectory]
@@ -50,6 +51,7 @@ class GatewayRuntime:
     bus: EventBus
     router: Router
     catalogue: PriceCatalogue
+    mcp: McpCatalogue
     meter: UsageMeter
     budgets: BudgetService
     detector: PIIDetector
@@ -133,6 +135,7 @@ async def build_runtime(
         detector=detector,
         policy=policy,
         chat=chat,
+        mcp=McpCatalogue(allow_http_hosts=settings.mcp.allow_http_hosts, clock=clock),
         providers=providers,
     )
 

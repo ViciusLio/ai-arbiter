@@ -6,7 +6,15 @@ from uuid import UUID
 import typer
 from sqlalchemy import select
 
-from ai_arbiter.cli.common import fail, open_database, run, settings_from, tenant_id_for
+from ai_arbiter.cli.common import (
+    fail,
+    open_database,
+    refers_to,
+    run,
+    settings_from,
+    short_id,
+    tenant_id_for,
+)
 from ai_arbiter.compliance.inventory.model import AISystem
 from ai_arbiter.core.audit import AuditRecord, DatabaseAuditLog
 from ai_arbiter.core.config.settings import Settings, parse_decimal
@@ -28,7 +36,7 @@ def _service(settings: Settings) -> BudgetService:
 def _line(state: BudgetState) -> str:
     kind = "hard" if state.hard else "soft"
     return (
-        f"{str(state.budget_id)[:8]}  {state.scope_type:<10} {state.scope_id}  "
+        f"{short_id(state.budget_id)}  {state.scope_type:<10} {state.scope_id}  "
         f"{state.period:<6} {kind:<5} {state.spent:.6f} of {state.limit_amount:.6f} "
         f"{state.currency}  {state.level.value}"
     )
@@ -166,11 +174,11 @@ async def _delete(settings: Settings, tenant: str, reference: str) -> UUID:
             matches = [
                 budget.id
                 for budget in await service.list(session, tenant_id)
-                if str(budget.id).startswith(reference.lower())
+                if refers_to(budget.id, reference)
             ]
             if len(matches) != 1:
                 problem = "no budget" if not matches else "more than one budget"
-                raise NotFoundError(f"{problem} with an id that starts with '{reference}'")
+                raise NotFoundError(f"{problem} with the id '{reference}'")
             await service.delete(session, tenant_id, matches[0])
             await DatabaseAuditLog().append(
                 session,
@@ -188,7 +196,7 @@ async def _delete(settings: Settings, tenant: str, reference: str) -> UUID:
 @app.command("delete")
 def delete(
     ctx: typer.Context,
-    budget: Annotated[str, typer.Argument(help="Id of the budget, or its first characters.")],
+    budget: Annotated[str, typer.Argument(help="Id of the budget, full or short.")],
     tenant: TenantSlug = LOCAL_TENANT_SLUG,
 ) -> None:
     """Delete a budget."""

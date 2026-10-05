@@ -38,7 +38,7 @@ Phase 5, step by step:
 |---|---|
 | Check A2A and MCP on their official sources ([preparation](docs/phases/phase-5-preparation.md)) | Done |
 | Decisions P5-1 to P5-8, and the one on key lookups | Done: ADR-0046 to ADR-0054 |
-| MCP catalogue: servers and their tools, tied to declared AI systems | Not started |
+| MCP catalogue: servers and their tools, tied to declared AI systems | Done: `arbiter mcp servers` and `mcp grants`, `/api/v1/mcp`, an allowlist that allows nothing by default. Nothing forwards a call yet |
 | MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Not started |
 | A2A registry: agent cards fetched, stored and verified against configured keys | Not started |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Not started |
@@ -99,6 +99,7 @@ curl http://127.0.0.1:8080/v1/chat/completions \
 
 arbiter usage report        # what was used and its estimated cost; --locale it for Italian
 arbiter budgets create --limit 50 --hard   # a monthly limit on the tenant; budgets list
+arbiter mcp servers add files --name "File tools" --url https://tools.example.org/mcp   # the MCP catalogue
 arbiter audit verify        # recomputes the hash chain of the audit log
 arbiter pii detectors       # what is detected in prompts, and what is not
 ```
@@ -137,6 +138,7 @@ The command is `arbiter`; `ai-arbiter` is an alias for it.
 | FinOps | Tokens and estimated cost per tenant, team, project, principal and AI system; soft and hard budgets, set over HTTP or from the command line |
 | Audit | One hash chain per tenant, verifiable and exportable; no content, no names |
 | Providers | OpenAI-compatible endpoints, Azure OpenAI, and a mock |
+| MCP catalogue (Phase 5, in progress) | The MCP servers an organisation knows and who may call which tool. The proxy that enforces it is not built yet |
 
 How to configure and use each of them: [the gateway](docs/gateway.md) and
 [the audit log](docs/audit.md).
@@ -300,6 +302,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-36 | 4b | PDF output of the reports as an optional extra | ADR-0044 chose printing the HTML; a scheduled job cannot print | When asked for | Open |
 | I-37 | 4b | Escape text typed by people in the cells of Markdown tables | A system name with a `|` or a line break broke the inventory table of the digest | 0.1.x | Done after Phase 4b: a `cell` filter in the templates, with a test |
 | I-38 | 2 | Make the message of a missing extra true before publication | It told users to `pip install "ai-arbiter[...]"`, which does not exist yet | 0.1.x | Done after Phase 4b: the message gives the way from a clone first, then the `pip` command "once published" |
+| I-39 | 4b | Show and match short ids by their last characters everywhere | Budgets showed the first eight characters of an id, which are a timestamp: two budgets created together looked the same and could not be deleted by short id | 0.1.x | Done in Phase 5: found by a test of the MCP grants; one helper for findings, budgets and grants, with a test that creates two budgets together |
 
 ## Licence
 

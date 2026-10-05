@@ -16,6 +16,7 @@ from ai_arbiter.cli import budgets as budgets_commands
 from ai_arbiter.cli import demo as demo_commands
 from ai_arbiter.cli import findings as findings_commands
 from ai_arbiter.cli import keys as keys_commands
+from ai_arbiter.cli import mcp as mcp_commands
 from ai_arbiter.cli import operations as operations_commands
 from ai_arbiter.cli import pii as pii_commands
 from ai_arbiter.cli import reports as reports_commands
@@ -114,6 +115,7 @@ app.add_typer(operations_commands.digest_app, name="digest")
 app.add_typer(operations_commands.retention_app, name="retention")
 app.add_typer(reports_commands.app, name="report")
 app.add_typer(demo_commands.app, name="demo")
+app.add_typer(mcp_commands.app, name="mcp")
 app.command(name="classify")(systems_commands.classify)
 app.command(name="scan")(findings_commands.scan)
 app.command(name="worker")(operations_commands.worker)

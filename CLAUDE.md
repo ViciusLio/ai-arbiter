@@ -33,7 +33,7 @@ Update this list at every commit.
 | # | Item | State |
 |---|---|---|
 | 1 | Decisions recorded | Done: ADR-0046 to ADR-0054 |
-| 2 | MCP catalogue: servers and tools, tied to declared AI systems (`gateway/mcp`) | Not started |
+| 2 | MCP catalogue: servers and tools, tied to declared AI systems (`gateway/mcp`) | Done: `gateway/mcp/model.py` and `catalogue.py` (migration 0008), `cli/mcp.py`, `gateway/api/mcp.py`, setting `mcp.allow_http_hosts`. `McpCatalogue.allows(session, server, Caller, tool)` is what the proxy will ask; `record_discovery` is what it will fill. On the command line short ids are the last eight characters (`cli.common.short_id`, `refers_to`) |
 | 3 | MCP proxy: Streamable HTTP, revision `2026-07-28` only, allowlist, an audit entry per call without arguments; `mcp-types` as an optional extra | Not started |
 | 4 | A2A registry: cards fetched, stored, verified against configured keys (`a2a-sdk[signing]` behind a port, in `adapters`) | Not started |
 | 5 | A2A proxy for JSON-RPC and HTTP+JSON, with authorization and audit; gRPC not proxied | Not started |
@@ -186,6 +186,7 @@ uv run arbiter keys create --name demo --role admin   # prints an API key once
 uv run arbiter serve              # HTTP application on 127.0.0.1:8080, docs at /docs
 uv run arbiter usage report       # usage and estimated cost; --locale it
 uv run arbiter budgets list       # budgets create --limit 50 --hard; budgets delete ID
+uv run arbiter mcp servers list   # MCP catalogue; mcp servers add KEY --name N --url U; mcp grants add KEY
 uv run arbiter audit verify       # recompute the audit chain
 uv run arbiter pii detectors      # what PII detection validates and misses
 uv run arbiter systems apply -f examples/systems.yaml   # declare and classify systems
