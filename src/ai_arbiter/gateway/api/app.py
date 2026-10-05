@@ -13,7 +13,7 @@ from ai_arbiter.core.domain.time import Clock
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.ports import AuditLog, EventBus, SystemDirectory
 from ai_arbiter.core.telemetry import configure_logging, setup_telemetry
-from ai_arbiter.gateway.api import admin, chat, compliance, errors, health, mcp
+from ai_arbiter.gateway.api import a2a, admin, chat, compliance, errors, health, mcp
 from ai_arbiter.gateway.runtime import build_runtime
 
 DESCRIPTION = """
@@ -49,6 +49,10 @@ OPENAPI_TAGS = [
         "name": "mcp",
         "description": "The catalogue of MCP servers, their tools and who may call them.",
     },
+    {
+        "name": "a2a",
+        "description": "The registry of A2A agents, what their card says and who may call them.",
+    },
     {"name": "health", "description": "Liveness and readiness of this process."},
 ]
 
@@ -59,12 +63,13 @@ def create_app(
     provider_options: dict[str, dict[str, Any]] | None = None,
     clock: Clock | None = None,
     mcp_transport: Any = None,
+    a2a_transport: Any = None,
 ) -> FastAPI:
     """Build the application.
 
-    ``provider_options``, ``clock`` and ``mcp_transport`` exist for tests: extra
-    constructor arguments per provider plugin, the clock every service reads, and the
-    HTTP transport the MCP proxy forwards through.
+    ``provider_options``, ``clock``, ``mcp_transport`` and ``a2a_transport`` exist for
+    tests: extra constructor arguments per provider plugin, the clock every service
+    reads, and the HTTP transports the MCP proxy and the A2A registry go out through.
     """
     resolved = settings if settings is not None else load_settings()
 
@@ -89,6 +94,7 @@ def create_app(
                 clock=clock,
                 systems=systems,
                 mcp_transport=mcp_transport,
+                a2a_transport=a2a_transport,
             )
         except BaseException:
             await database.dispose()
@@ -125,4 +131,5 @@ def create_app(
         app.include_router(admin.router)
         app.include_router(compliance.router)
         app.include_router(mcp.admin_router)
+        app.include_router(a2a.admin_router)
     return app

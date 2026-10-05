@@ -65,6 +65,12 @@ Entries link to the decision record that motivated them, where one exists.
     never fetched
     ([ADR-0053](docs/adr/0053-a2a-card-signatures-against-configured-keys.md)). New
     optional extra, `a2a`.
+  - A2A registry: agents registered by the address of their card, read over https
+    without following redirects; the name, the version, the interfaces and a checksum of
+    the card are kept. An interface counts only on the host the card was read from.
+    Grants to the tenant, a project or an AI system. `arbiter a2a agents`,
+    `arbiter a2a grants`, `/api/v1/a2a`
+    ([ADR-0051](docs/adr/0051-a2a-registry-then-proxy.md)).
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

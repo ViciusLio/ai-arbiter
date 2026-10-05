@@ -14,6 +14,7 @@ from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.domain.time import Clock, SystemClock
 from ai_arbiter.core.persistence.database import Database
 from ai_arbiter.core.plugins.registry import (
+    AGENT_CARD_READERS,
     EVENT_BUSES,
     PII_DETECTORS,
     SECRET_STORES,
@@ -28,6 +29,7 @@ from ai_arbiter.core.ports import (
     SecretStore,
     SystemDirectory,
 )
+from ai_arbiter.gateway.a2a.registry import A2aRegistry
 from ai_arbiter.gateway.chat import ChatService
 from ai_arbiter.gateway.finops.budgets import BudgetService
 from ai_arbiter.gateway.finops.catalogue import PriceCatalogue, load_catalogue
@@ -55,6 +57,7 @@ class GatewayRuntime:
     catalogue: PriceCatalogue
     mcp: McpCatalogue
     mcp_proxy: McpProxy
+    a2a: A2aRegistry
     meter: UsageMeter
     budgets: BudgetService
     detector: PIIDetector
@@ -68,6 +71,7 @@ class GatewayRuntime:
         for provider in self.providers.values():
             await provider.aclose()
         await self.mcp_proxy.aclose()
+        await self.a2a.aclose()
 
 
 async def build_runtime(
@@ -79,6 +83,7 @@ async def build_runtime(
     clock: Clock | None = None,
     systems: SystemDirectoryFactory | None = None,
     mcp_transport: Any = None,
+    a2a_transport: Any = None,
 ) -> GatewayRuntime:
     """Validate the configuration against the installed plugins and build the services.
 
@@ -141,6 +146,12 @@ async def build_runtime(
         detector=detector,
         policy=policy,
         chat=chat,
+        a2a=A2aRegistry(
+            reader=registry.load(AGENT_CARD_READERS, settings.plugins.agent_card_reader)(),
+            settings=settings.a2a,
+            clock=clock,
+            transport=a2a_transport,
+        ),
         mcp=mcp_catalogue,
         mcp_proxy=McpProxy(
             database=database,

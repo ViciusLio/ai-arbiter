@@ -391,6 +391,70 @@ Limits of the proxy in this release:
   it in process. It has not met a server or a client of another vendor, nor a real
   network.
 
+## A2A agents: the registry
+
+Arbiter keeps a registry of the Agent2Agent (A2A) agents an organisation calls: what
+their Agent Card says, whether a trusted key signed it, and who may call them. It needs
+the `a2a` extra (from a clone, `uv sync --all-extras` includes it). The proxy that will
+stand in front of the agents is not built yet: today the registry informs and nothing
+forwards a call.
+
+```bash
+arbiter a2a agents add routes --name "Route planner" \
+    --card-url https://agent.example.org/.well-known/agent-card.json --system cv-screening
+arbiter a2a agents refresh routes      # read the card and verify its signatures
+arbiter a2a agents list
+arbiter a2a grants add routes --system cv-screening
+arbiter a2a grants list
+```
+
+```yaml
+a2a:
+  trusted_keys:                 # public keys, as JSON Web Keys: they are not secrets
+    - kid: partner-2026
+      jwk: { kty: EC, crv: P-256, x: "...", y: "..." }
+  algorithms: [ES256, ES384, EdDSA, RS256, PS256]
+  allow_http_hosts: []
+  timeout_seconds: 30
+  max_card_bytes: 262144
+```
+
+- **A card is read from the address the operator registered**, over `https`, without
+  following redirects, and only when asked (`refresh`, or `POST .../card`).
+- **Signatures are verified only against `a2a.trusted_keys`** (ADR-0053). A card may say
+  where its own key set is (`jku`): that address is never fetched, because a card that
+  brings its own key vouches for itself. Only asymmetric algorithms are accepted, and a
+  key with private material in the configuration is refused.
+
+  | Verification | Means |
+  |---|---|
+  | `verified` | A signature verifies with a trusted key |
+  | `unsigned` | The card carries no signature. A2A makes signing optional |
+  | `unknown_key` | It is signed, with no key the operator trusts |
+  | `invalid` | A trusted key is named and the signature does not verify: the card changed after signing, or someone else signed it |
+  | `not_fetched` | The card was never read |
+
+- **Governability.** An agent is `governable` when its card lists an interface a proxy
+  can forward to: the JSON-RPC or the HTTP+JSON binding (ADR-0051), at an `https`
+  address **on the host the card was read from**. A card cannot point requests, with
+  the agent's credential, at another host. An agent that offers only gRPC is
+  `no_proxied_binding`.
+- Of a card, the registry keeps the name, the version, the interfaces and a SHA-256 of
+  the document. The description and the skills, which are text written by whoever runs
+  the agent, are not stored. When a card changes, the audit entry of the reading says so.
+- Every change is an audit entry: `a2a_agent.registered`, `a2a_agent.card_read` (with
+  the verification as its outcome), `a2a_agent.removed`, `a2a_grant.created`,
+  `a2a_grant.revoked`.
+
+Over HTTP, under `/api/v1/a2a`: `agents` (list, register, read, remove), `agents/{key}/card`
+(read the card again), and `grants`. Reading needs the auditor or the admin role,
+changing needs the admin role.
+
+Limits in this release: no proxy yet, so calls to agents are neither authorized nor
+recorded; the extended card, which needs authentication, is not read; cards are read on
+request, not on a schedule. The reader was tested with cards signed by the official SDK
+in the test suite, not with the card of a real agent on the network.
+
 ## Roles
 
 | Role | May |

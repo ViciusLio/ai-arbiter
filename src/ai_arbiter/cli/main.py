@@ -11,6 +11,7 @@ import yaml
 
 from ai_arbiter import __version__
 from ai_arbiter.adapters.local.secrets import DEFAULT_DOTENV, EnvSecretStore, read_dotenv_secrets
+from ai_arbiter.cli import a2a as a2a_commands
 from ai_arbiter.cli import audit as audit_commands
 from ai_arbiter.cli import budgets as budgets_commands
 from ai_arbiter.cli import demo as demo_commands
@@ -116,6 +117,7 @@ app.add_typer(operations_commands.retention_app, name="retention")
 app.add_typer(reports_commands.app, name="report")
 app.add_typer(demo_commands.app, name="demo")
 app.add_typer(mcp_commands.app, name="mcp")
+app.add_typer(a2a_commands.app, name="a2a")
 app.command(name="classify")(systems_commands.classify)
 app.command(name="scan")(findings_commands.scan)
 app.command(name="worker")(operations_commands.worker)

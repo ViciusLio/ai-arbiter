@@ -40,7 +40,7 @@ Phase 5, step by step:
 | Decisions P5-1 to P5-8, and the one on key lookups | Done: ADR-0046 to ADR-0054 |
 | MCP catalogue: servers and their tools, tied to declared AI systems | Done: `arbiter mcp servers` and `mcp grants`, `/api/v1/mcp`, an allowlist that allows nothing by default. Nothing forwards a call yet |
 | MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Done: `POST /mcp/{server}`; decide, record, then forward. Tested with the client and a server of the official SDK, in process |
-| A2A registry: agent cards fetched, stored and verified against configured keys | In progress. Done: reading a card and judging its signatures against trusted keys, on the official SDK, with cards signed in the tests. Not yet: the registry itself, its commands and endpoints |
+| A2A registry: agent cards fetched, stored and verified against configured keys | Done: `arbiter a2a agents` and `a2a grants`, `/api/v1/a2a`; a card is verified only against `a2a.trusted_keys`, and an interface counts only on the host of the card. Tested with cards signed by the official SDK, not with a real agent on the network |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Not started |
 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
 | Demo with mock agents and a mock MCP server | Not started |
@@ -101,6 +101,7 @@ arbiter usage report        # what was used and its estimated cost; --locale it 
 arbiter budgets create --limit 50 --hard   # a monthly limit on the tenant; budgets list
 arbiter mcp servers add files --name "File tools" --url https://tools.example.org/mcp   # the MCP catalogue
 arbiter mcp grants add files --tool read          # then clients call http://127.0.0.1:8080/mcp/files
+arbiter a2a agents add routes --name "Route planner" --card-url https://agent.example.org/.well-known/agent-card.json
 arbiter audit verify        # recomputes the hash chain of the audit log
 arbiter pii detectors       # what is detected in prompts, and what is not
 ```
@@ -140,6 +141,7 @@ The command is `arbiter`; `ai-arbiter` is an alias for it.
 | Audit | One hash chain per tenant, verifiable and exportable; no content, no names |
 | Providers | OpenAI-compatible endpoints, Azure OpenAI, and a mock |
 | MCP catalogue and proxy (Phase 5, in progress) | The MCP servers an organisation knows and who may call which tool; a proxy that forwards a call only when a grant allows it and records every call without its arguments |
+| A2A registry (Phase 5, in progress) | The agents an organisation calls: what their Agent Card says, whether a key the operator trusts signed it, who may call them. The proxy for agent calls is not built yet |
 
 How to configure and use each of them: [the gateway](docs/gateway.md) and
 [the audit log](docs/audit.md).
@@ -193,6 +195,9 @@ How it works and what it does not cover: [the compliance toolkit](docs/complianc
   inspect the content of a call. It was tested with the client and a server of the
   official Python SDK, joined in process; no server or client of another vendor, and
   nothing over a real network, has gone through it yet.
+- **A2A.** Only the registry exists: cards are read and verified, calls to agents are
+  not proxied yet. A signature counts only against keys you configured; signing is
+  optional in A2A, so many cards will be `unsigned`.
 
 ## Configuration
 
@@ -311,6 +316,8 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-40 | 5 | Run the MCP proxy between a real MCP client and a real MCP server | It was tested against a stand-in server written from the specification | Before 0.2.0 | Done in Phase 5 for the official SDK: the client and a server of `mcp` 2.3.0 are joined through the proxy in process, in the test suite (discovery, a call that is allowed, a call that is refused). Not done: a server or a client of another vendor, and anything over a real network |
 | I-41 | 5 | Detect and redact personal data in the arguments and results of MCP calls; filter `tools/list` to what the caller may call | ADR-0049 left content inspection as a deferrable item | 0.2.x | Open |
 | I-42 | 5 | Grants for resources and prompts, not only for tools | Anything other than listing and calling a tool needs a grant for the whole server | 0.2.x | Open |
+| I-43 | 5 | Read the card of a real A2A agent over the network; read cards on a schedule and report a card that changed | The reader was tested with cards signed in the test suite; cards are read only on request | Before 0.2.0 | Open |
+| I-44 | 5 | Follow the key set a card names (`jku`) for domains on an allowlist | ADR-0053 chose configured keys only; keys are rotated by hand | 0.2.x | Open |
 
 ## Licence
 
