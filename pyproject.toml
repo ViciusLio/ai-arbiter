@@ -60,7 +60,13 @@ otel = [
 mcp = [
     "mcp-types>=2.2,<3",
 ]
-all = ["ai-arbiter[gateway,mcp,otel]"]
+# The Agent2Agent protocol through its official SDK, with what verifying the signature of
+# an Agent Card needs (ADR-0052, ADR-0053).
+a2a = [
+    "a2a-sdk[signing]>=1.2,<2",
+    "cryptography>=43",
+]
+all = ["ai-arbiter[a2a,gateway,mcp,otel]"]
 
 [project.scripts]
 arbiter = "ai_arbiter.cli.main:app"
@@ -86,6 +92,9 @@ builtin = "ai_arbiter.core.redaction.builtin:BuiltinDetector"
 jsonl = "ai_arbiter.compliance.ingest.sources:JsonlSource"
 litellm = "ai_arbiter.compliance.ingest.sources:LiteLLMSource"
 
+[project.entry-points."ai_arbiter.agent_card_readers"]
+a2a = "ai_arbiter.adapters.a2a.cards:SdkAgentCardReader"
+
 [project.entry-points."ai_arbiter.notifiers"]
 file = "ai_arbiter.adapters.local.notifiers:FileNotifier"
 smtp = "ai_arbiter.adapters.local.notifiers:SmtpNotifier"
@@ -100,6 +109,7 @@ dev = [
     "pytest-cov>=6.0",
     "rfc8785>=0.1.4",
     "ruff>=0.8",
+    "types-protobuf>=7.35.1.20260906",
     "types-pyyaml>=6.0.12",
 ]
 

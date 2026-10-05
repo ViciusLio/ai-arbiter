@@ -60,6 +60,11 @@ Entries link to the decision record that motivated them, where one exists.
     server which revisions it speaks and which tools it lists.
   - The test suite joins the client and a server of the official MCP SDK through the
     proxy, in process. The SDK is a development dependency only.
+  - A2A Agent Cards are read and their signatures judged against keys the operator
+    trusts, through the official A2A SDK behind a port; a key a card names for itself is
+    never fetched
+    ([ADR-0053](docs/adr/0053-a2a-card-signatures-against-configured-keys.md)). New
+    optional extra, `a2a`.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

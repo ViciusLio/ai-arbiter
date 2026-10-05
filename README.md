@@ -40,7 +40,7 @@ Phase 5, step by step:
 | Decisions P5-1 to P5-8, and the one on key lookups | Done: ADR-0046 to ADR-0054 |
 | MCP catalogue: servers and their tools, tied to declared AI systems | Done: `arbiter mcp servers` and `mcp grants`, `/api/v1/mcp`, an allowlist that allows nothing by default. Nothing forwards a call yet |
 | MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Done: `POST /mcp/{server}`; decide, record, then forward. Tested with the client and a server of the official SDK, in process |
-| A2A registry: agent cards fetched, stored and verified against configured keys | Not started |
+| A2A registry: agent cards fetched, stored and verified against configured keys | In progress. Done: reading a card and judging its signatures against trusted keys, on the official SDK, with cards signed in the tests. Not yet: the registry itself, its commands and endpoints |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Not started |
 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
 | Demo with mock agents and a mock MCP server | Not started |

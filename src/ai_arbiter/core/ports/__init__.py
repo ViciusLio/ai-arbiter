@@ -12,6 +12,7 @@ from uuid import UUID
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ai_arbiter.core.agents import AgentCardReader
 from ai_arbiter.core.audit.chain import VerificationReport
 from ai_arbiter.core.audit.log import AuditReceipt, AuditRecord
 from ai_arbiter.core.config.secrets import SecretRef
@@ -93,6 +94,7 @@ class PolicyEngine(Protocol):
 
 
 __all__ = [
+    "AgentCardReader",
     "AuditLog",
     "Clock",
     "EventBus",

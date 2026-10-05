@@ -78,6 +78,8 @@ class PluginSettings(_Section):
     pii_detector: str = "builtin"
     # "file" writes messages to a directory: nothing leaves the machine by default.
     notifier: str = "file"
+    # Reads and verifies A2A Agent Cards. Needs the a2a extra when first used.
+    agent_card_reader: str = "a2a"
 
 
 def _secret_reference(value: str) -> str:
