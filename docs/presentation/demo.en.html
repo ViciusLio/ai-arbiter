@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A day at Nordwind</title>
+<style>
+/* Layout: a deck read from left to right, one screen for each part of the run. */
+:root {
+  color-scheme: dark;
+  --bg: #0d1117; --panel: #161c26; --panel-2: #1d2532; --line: #2b3545;
+  --text: #e8edf4; --muted: #9aa8bb; --accent: #5eb0ff; --accent-2: #7ee0b8;
+  --warn: #ffb454; --danger: #ff7a85; --ok: #7ee0b8;
+  --ok-bg: rgba(126, 224, 184, .13); --no-bg: rgba(255, 122, 133, .14);
+  --shadow: 0 18px 50px rgba(0, 0, 0, .35);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f5f7fa; --panel: #ffffff; --panel-2: #eef2f7; --line: #d5dce6;
+    --text: #16202e; --muted: #56657a; --accent: #1668c7; --accent-2: #0d8a63;
+    --warn: #a8620a; --danger: #c2313f; --ok: #0d8a63;
+    --ok-bg: rgba(13, 138, 99, .10); --no-bg: rgba(194, 49, 63, .09);
+    --shadow: 0 14px 40px rgba(20, 40, 80, .12);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f7fa; --panel: #ffffff; --panel-2: #eef2f7; --line: #d5dce6;
+  --text: #16202e; --muted: #56657a; --accent: #1668c7; --accent-2: #0d8a63;
+  --warn: #a8620a; --danger: #c2313f; --ok: #0d8a63;
+  --ok-bg: rgba(13, 138, 99, .10); --no-bg: rgba(194, 49, 63, .09);
+  --shadow: 0 14px 40px rgba(20, 40, 80, .12);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text); overflow: hidden;
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3 { line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 4.6vw, 3.4rem); }
+h2 { font-size: clamp(1.4rem, 2.8vw, 2.1rem); }
+h3 { font-size: 1.1rem; }
+p { margin: 0 0 1em; }
+.lead { font-size: clamp(1rem, 1.8vw, 1.2rem); color: var(--muted); max-width: 48rem; }
+.kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; color: var(--accent); font-weight: 700; margin-bottom: 1rem; }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; }
+#bar { position: fixed; top: 0; left: 0; height: 4px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 30; }
+nav.top { position: fixed; top: 10px; right: 14px; z-index: 31; }
+button { font: inherit; color: var(--text); cursor: pointer; }
+nav.top button, .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: .85rem; }
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#deck { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; }
+#deck::-webkit-scrollbar { display: none; }
+section { flex: 0 0 100%; height: 100%; overflow-y: auto; scroll-snap-align: start; scroll-snap-stop: always; padding: 3.4rem 3.6rem 4rem; display: flex; }
+.wrap { width: min(1100px, 100%); margin: auto; }
+#pager { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; z-index: 29; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.arrow { position: fixed; top: 50%; transform: translateY(-50%); z-index: 29; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 1.5rem; line-height: 1; }
+.arrow[disabled] { opacity: .3; cursor: default; }
+#prev { left: 10px; } #next { right: 10px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem; box-shadow: var(--shadow); }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid > * { min-width: 0; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.no { color: var(--danger); } .pill.info { color: var(--accent); }
+.models { display: flex; flex-wrap: wrap; gap: 8px; margin: .4rem 0 1rem; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+td.cell { text-align: center; font-variant-numeric: tabular-nums; }
+td.cell .n { display: block; font-weight: 700; }
+td.cell.go { background: var(--ok-bg); } td.cell.stop { background: var(--no-bg); }
+td.cell .go { color: var(--ok); } td.cell .stop { color: var(--danger); }
+th.model { text-align: center; text-transform: none; letter-spacing: 0; font-size: .85rem; color: var(--text); }
+th.model span { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.steps { display: flex; flex-wrap: wrap; gap: 8px; margin: 1rem 0; }
+.steps button { flex: 1 1 150px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: .6rem .8rem; font-size: .9rem; transition: border-color .2s, transform .2s; }
+.steps button .n { display: block; font-size: .7rem; color: var(--muted); font-weight: 700; letter-spacing: .08em; }
+.steps button.on { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
+.steps button.bad .n { color: var(--danger); }
+.stage { min-height: 9.5rem; }
+.stage h3 { color: var(--accent); }
+.note { border-left: 4px solid var(--warn); background: var(--panel-2); padding: .8rem 1rem; border-radius: 0 12px 12px 0; margin-top: 1rem; }
+ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem; }
+.hint { margin-top: 2rem; color: var(--muted); font-size: .9rem; }
+@media (max-width: 720px) { section { padding: 3.2rem 1rem 4.2rem; } .arrow { top: auto; bottom: 8px; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #deck { scroll-behavior: auto; } }
+@media print {
+  html, body { height: auto; } body { overflow: visible; }
+  nav.top, #pager, .arrow, #bar, .hint, #play { display: none; }
+  #deck { display: block; height: auto; overflow: visible; }
+  section { height: auto; overflow: visible; padding: 1.5rem 0; page-break-inside: avoid; }
+}
+
+/* The story: one scene on each screen, large enough to read from the back of a room. */
+.premise { font-size: clamp(1.1rem, 2.1vw, 1.4rem); max-width: 46rem; line-height: 1.6; }
+.cast { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); margin-top: 1rem; }
+.person { display: flex; gap: .8rem; align-items: flex-start; }
+.avatar { flex: 0 0 auto; width: 2.6rem; height: 2.6rem; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: .95rem; background: var(--panel-2); border: 1px solid var(--line); color: var(--accent); }
+.person b { display: block; }
+.rulebox { font-size: clamp(1.25rem, 2.6vw, 1.8rem); font-weight: 700; line-height: 1.3; border-left: 5px solid var(--accent); padding: .4rem 0 .4rem 1.1rem; margin: 1rem 0 1.2rem; max-width: 40rem; }
+.scene-head { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1.1rem; }
+.clock { font-size: clamp(1.6rem, 3.4vw, 2.4rem); font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.scene-head .who b { font-size: 1.05rem; }
+.scene h2 { font-size: clamp(1.5rem, 3.2vw, 2.3rem); margin-bottom: 1rem; }
+.scene .cols { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+.scene .cols > * { min-width: 0; }
+.label { text-transform: uppercase; letter-spacing: .12em; font-size: .74rem; font-weight: 700; color: var(--muted); margin-bottom: .5rem; }
+.tale { font-size: clamp(1.02rem, 1.7vw, 1.2rem); line-height: 1.6; margin: 0; }
+.verdict { display: inline-block; font-weight: 800; font-size: 1.05rem; padding: .35rem .8rem; border-radius: 10px; margin-bottom: .7rem; }
+.verdict.ok { background: var(--ok-bg); color: var(--ok); }
+.verdict.no { background: var(--no-bg); color: var(--danger); }
+.verdict.warn { background: var(--panel-2); color: var(--warn); }
+.verdict.info { background: var(--panel-2); color: var(--accent); }
+.outcome { border-left: 5px solid var(--line); }
+.outcome.ok { border-left-color: var(--ok); } .outcome.no { border-left-color: var(--danger); }
+.outcome.warn { border-left-color: var(--warn); } .outcome.info { border-left-color: var(--accent); }
+.ruleid { margin-top: .8rem; font-size: .8rem; color: var(--muted); }
+#dots { display: inline-flex; gap: 6px; margin-right: 10px; vertical-align: middle; }
+#dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: block; }
+#dots i.on { background: var(--accent); transform: scale(1.5); }
+@media (max-width: 900px) { #dots { display: none; } }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav class="top"><button id="theme" type="button">Theme</button></nav>
+<button class="arrow" id="prev" type="button" aria-label="Previous section">&lsaquo;</button>
+<button class="arrow" id="next" type="button" aria-label="Next section">&rsaquo;</button>
+<div id="pager"><span id="dots"></span><span id="count" aria-live="polite"></span></div>
+
+<main id="deck">
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Arbiter at work</div>
+    <h1>A day at Nordwind</h1>
+    <p class="premise">Nordwind Consulting (invented) is an IT consulting firm. It decided one thing about AI: its people may use Claude, and nothing else. But they do not use Claude directly: they use tools, and some of those tools can switch to other engines with one click. This is what happens on an ordinary day, with Arbiter in between.</p>
+    <p><span class="pill ok">13 of 13 steps went as expected</span></p>
+    <p class="muted small">Run of 2026-10-05 14:35 UTC, in the tenant demo-consulting</p>
+    <p class="hint">Go forward with the right arrow, back with the left one, or use the buttons at the sides.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">The rule of the firm</div>
+    <h2>The rule, in one sentence</h2>
+    <p class="rulebox">You may use the tools the firm declared, and only with the models it approved.</p>
+    <div class="models">
+      <span class="muted small">Approved:</span>
+      <span class="pill ok mono">claude-sonnet-5-5</span>
+      <span class="pill ok mono">claude-haiku-4-5</span>
+    </div>
+    <p class="lead">Two more rules of the firm: a risky tool waits until a person has reviewed it, and a password or a token never leaves the firm.</p>
+    <p class="muted small">The rule is a file, version 2026.10.1+consulting.2. Arbiter reads it and applies it to every request before the request leaves.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">A day at Nordwind</div>
+    <h2>Who is in the story</h2>
+    <div class="cast">
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">EF</div>
+        <div><b>Elena Ferri</b><span class="muted small">Leads the AI committee. She wrote the rule and reviews the risky tools.</span></div>
+      </div>
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">GC</div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+      </div>
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">MR</div>
+        <div><b>Marco Rinaldi</b><span class="muted small">Developer on the same engagement. He works with GitHub Copilot.</span></div>
+      </div>
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">SV</div>
+        <div><b>Sara Vitale</b><span class="muted small">Recruiter. She uses the CV screening.</span></div>
+      </div>
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">LM</div>
+        <div><b>Luca Moretti</b><span class="muted small">Sales. He drafts offers with Claude.</span></div>
+      </div>
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">TL</div>
+        <div><b>The lab</b><span class="muted small">An internal team that tries things out.</span></div>
+      </div>
+      <div class="card person">
+        <div class="avatar" aria-hidden="true">AV</div>
+        <div><b>A vendor</b><span class="muted small">Proposed a tool to HR. Nobody bought it.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">08:30 · The inventory</div>
+    <h2>The tools the firm declared</h2>
+    <p class="lead">At 08:30 Elena checks the list. For each tool Arbiter proposes how risky it is under the European AI Act. A proposal stays a proposal until a person confirms it.</p>
+    <div class="scroll card" style="margin-top:1rem">
+      <table>
+        <thead><tr>
+          <th>Tool</th><th>What it is for</th>
+          <th>Indicative tier</th><th>Review</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Claude for staff</strong></td>
+            <td class="small">The chat assistant every employee may use to draft, summarise and research.</td>
+            <td><span class="pill info">Transparency obligations</span></td>
+            <td class="small">Awaiting review</td>
+          </tr>
+          <tr>
+            <td><strong>CV screening</strong></td>
+            <td class="small">Ranks the applications of candidates for the recruiters of the firm.</td>
+            <td><span class="pill warn">High-risk</span></td>
+            <td class="small">Confirmed by a person</td>
+          </tr>
+          <tr>
+            <td><strong>GitHub Copilot</strong></td>
+            <td class="small">Code completion and chat in the editor. Claude engine only.</td>
+            <td><span class="pill ok">Minimal</span></td>
+            <td class="small">Awaiting review</td>
+          </tr>
+          <tr>
+            <td><strong>Kiro</strong></td>
+            <td class="small">Coding environment used by consultants on a client&#39;s repository. Claude engine only.</td>
+            <td><span class="pill ok">Minimal</span></td>
+            <td class="small">Awaiting review</td>
+          </tr>
+          <tr>
+            <td><strong>Meeting mood analyser</strong></td>
+            <td class="small">Would infer the mood of employees from the recordings of internal meetings.</td>
+            <td><span class="pill no">Prohibited practice</span></td>
+            <td class="small">Awaiting review</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">09:10</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">GC</div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+      </div>
+    </div>
+    <h2>Kiro on the approved engine</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">Giulia is chasing a bug in the bank&#39;s transfer code. To explain it she pastes a real case into Kiro: the e-mail address and the IBAN of one of the bank&#39;s customers. Kiro is set to Claude, the approved engine.</p>
+      </div>
+      <div class="card outcome ok">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict ok">Went through, with the data masked</div>
+        <p class="tale">It lets the question through, because Claude is approved. But first it replaces the data of the bank&#39;s customer with placeholders (email, iban): the model never sees them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">09:40</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">GC</div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+      </div>
+    </div>
+    <h2>The same tool on another engine</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">A colleague told her another engine is quicker at rewriting code. Giulia changes the engine in Kiro&#39;s settings and tries again. She is doing nothing odd: the tool lets her.</p>
+      </div>
+      <div class="card outcome no">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict no">Stopped</div>
+        <p class="tale">It stops the request before it leaves. Kiro is a declared tool, but gpt-4o is not among the approved models. Giulia gets a message that says why.</p>
+        <div class="ruleid">Rule: <span class="mono">POL-MODEL-NOT-ALLOWED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">10:15</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">MR</div>
+        <div><b>Marco Rinaldi</b><span class="muted small">Developer on the same engagement. He works with GitHub Copilot.</span></div>
+      </div>
+    </div>
+    <h2>The rule is about the model, not the tool</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">Marco works on the same project with GitHub Copilot. First he asks Claude to complete a test; then, out of curiosity, he tries the same with another engine.</p>
+      </div>
+      <div class="card outcome warn">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict warn">Partly through, partly stopped</div>
+        <p class="tale">With claude-sonnet-5-5 the request goes through. With gemini-2.5-pro it is stopped, exactly as it happened to Giulia: the rule looks at the model, not at the tool.</p>
+        <div class="ruleid">Rule: <span class="mono">POL-MODEL-NOT-ALLOWED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">11:30</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">GC</div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+      </div>
+    </div>
+    <h2>A credential of the client does not leave at all</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">The release pipeline is stuck. Giulia copies the error message as it is and pastes it into Kiro to get help. Inside it there is an access token of the bank&#39;s repository.</p>
+      </div>
+      <div class="card outcome no">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict no">Stopped</div>
+        <p class="tale">It stops the request. Personal data can be masked; for a credential the firm decided that nothing leaves at all, not even masked.</p>
+        <div class="ruleid">Rule: <span class="mono">IR-CREDENTIAL-IN-PROMPT</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">14:00</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">SV</div>
+        <div><b>Sara Vitale</b><span class="muted small">Recruiter. She uses the CV screening.</span></div>
+      </div>
+    </div>
+    <h2>A high-risk system waits for a person</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">Sara has to rank the applications for an analyst position and opens the CV screening. It is a tool that affects people: under the AI Act it is indicatively high risk, and the firm wants someone to have reviewed that classification before it is used. Elena, of the AI committee, reviews it and confirms it.</p>
+      </div>
+      <div class="card outcome warn">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict warn">Stopped, then through after the review</div>
+        <p class="tale">Sara&#39;s first request is stopped: nobody has reviewed the classification yet. After Elena confirms it, the same request goes through. The review stays on record with who made it.</p>
+        <div class="ruleid">Rule: <span class="mono">IR-HIGH-RISK-NOT-REVIEWED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">15:20</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">AV</div>
+        <div><b>A vendor</b><span class="muted small">Proposed a tool to HR. Nobody bought it.</span></div>
+      </div>
+    </div>
+    <h2>A prohibited practice gets no model</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">A vendor proposed to HR a tool that infers the mood of employees from the recordings of meetings. Someone connects it for a trial. It asks for Claude, the approved model.</p>
+      </div>
+      <div class="card outcome no">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict no">Stopped</div>
+        <p class="tale">It stops the request, although the model is approved. Inferring the emotions of people at work is a practice the AI Act prohibits: that tool is given no model at all.</p>
+        <div class="ruleid">Rule: <span class="mono">POL-SYSTEM-PROHIBITED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">16:00</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">LM</div>
+        <div><b>Luca Moretti</b><span class="muted small">Sales. He drafts offers with Claude.</span></div>
+      </div>
+    </div>
+    <h2>The budget of an engagement</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">Luca is preparing the offer for a retail client and gets help from Claude. The engagement has a monthly budget for AI, agreed with the client.</p>
+      </div>
+      <div class="card outcome no">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict no">Stopped</div>
+        <p class="tale">The first request goes through. With it the budget of the engagement client-retail is used up, and the next one is stopped until someone decides to raise it.</p>
+        <div class="ruleid">Rule: <span class="mono">POL-BUDGET-EXCEEDED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">16:45</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">GC</div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+      </div>
+    </div>
+    <h2>Tools on the client&#39;s repository</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">Kiro can also act on the bank&#39;s repository through a tool server: read files, open pull requests, delete branches. The firm granted Kiro one of these actions only.</p>
+      </div>
+      <div class="card outcome warn">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict warn">Partly through, partly stopped</div>
+        <p class="tale">It shows Kiro only the action that was granted (read_file), of the three the server offers. Reading a file works; the attempt to delete a branch is stopped.</p>
+        <div class="ruleid">Rule: <span class="mono">MCP-CALL-NOT-GRANTED</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="scene">
+  <div class="wrap">
+    <div class="scene-head">
+      <div class="clock">17:30</div>
+      <div class="person who">
+        <div class="avatar" aria-hidden="true">TL</div>
+        <div><b>The lab</b><span class="muted small">An internal team that tries things out.</span></div>
+      </div>
+    </div>
+    <h2>What nobody declared</h2>
+    <div class="cols">
+      <div>
+        <div class="label">What happens</div>
+        <p class="tale">In the internal lab someone is trying to have Claude sort support tickets by urgency. They use a key of the lab: the model is approved, but nobody ever declared this use.</p>
+      </div>
+      <div class="card outcome info">
+        <div class="label">What Arbiter does</div>
+        <div class="verdict info">Noticed and reported</div>
+        <p class="tale">The requests go through: the model is approved. But Arbiter notices that no declared tool is behind them and reports it as a system that may need declaring: nordwind / lab.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">End of the day</div>
+    <h2>The day in one table</h2>
+    <p class="lead">Each tool, each engine it asked for, and how it went. Green went through, red was stopped before reaching any model.</p>
+    <div class="scroll card" style="margin-top:1rem">
+      <table>
+        <thead><tr>
+          <th>Tool</th>
+          <th class="model"><code>claude-haiku-4-5</code><span class="pill ok">approved</span></th>
+          <th class="model"><code>claude-sonnet-5-5</code><span class="pill ok">approved</span></th>
+          <th class="model"><code>gemini-2.5-pro</code><span class="pill no">not approved</span></th>
+          <th class="model"><code>gpt-4o</code><span class="pill no">not approved</span></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>CV screening</strong></td>
+            <td class="cell muted">·</td>
+            <td class="cell ">
+<span class="n go">1 went through</span><span class="n stop">1 refused</span>            </td>
+            <td class="cell muted">·</td>
+            <td class="cell muted">·</td>
+          </tr>
+          <tr>
+            <td><strong>Claude for staff</strong></td>
+            <td class="cell ">
+<span class="n go">1 went through</span><span class="n stop">1 refused</span>            </td>
+            <td class="cell muted">·</td>
+            <td class="cell muted">·</td>
+            <td class="cell muted">·</td>
+          </tr>
+          <tr>
+            <td><strong>GitHub Copilot</strong></td>
+            <td class="cell muted">·</td>
+            <td class="cell go">
+<span class="n go">1 went through</span>            </td>
+            <td class="cell stop">
+<span class="n stop">1 refused</span>            </td>
+            <td class="cell muted">·</td>
+          </tr>
+          <tr>
+            <td><strong>Kiro</strong></td>
+            <td class="cell muted">·</td>
+            <td class="cell ">
+<span class="n go">1 went through</span><span class="n stop">1 refused</span>            </td>
+            <td class="cell muted">·</td>
+            <td class="cell stop">
+<span class="n stop">1 refused</span>            </td>
+          </tr>
+          <tr>
+            <td><strong>Meeting mood analyser</strong></td>
+            <td class="cell muted">·</td>
+            <td class="cell stop">
+<span class="n stop">1 refused</span>            </td>
+            <td class="cell muted">·</td>
+            <td class="cell muted">·</td>
+          </tr>
+          <tr>
+            <td><strong>No declared tool</strong></td>
+            <td class="cell muted">·</td>
+            <td class="cell go">
+<span class="n go">3 went through</span>            </td>
+            <td class="cell muted">·</td>
+            <td class="cell muted">·</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small" style="margin-top:.8rem">A refusal on an approved model has another reason: a prohibited practice, a missing review, a credential in the prompt or a budget.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">18:00 · End of the day</div>
+    <h2>What Elena finds on her desk</h2>
+    <p class="lead">Arbiter compared what the firm declared with what happened during the day. These are proposals: a person confirms, rejects or accepts each one.</p>
+    <div class="scroll card" style="margin-top:1rem">
+      <table>
+        <thead><tr>
+          <th>Severity</th><th>Tool</th><th>Finding</th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="pill no">Critical</span></td>
+            <td>Meeting mood analyser</td>
+            <td>The system is classified as a prohibited practice and is not retired.</td>
+          </tr>
+          <tr>
+            <td><span class="pill warn">Medium</span></td>
+            <td>GitHub Copilot</td>
+            <td>Traffic of the system reached a model that its declaration does not list.</td>
+          </tr>
+          <tr>
+            <td><span class="pill warn">Medium</span></td>
+            <td>Kiro</td>
+            <td>Traffic of the system reached a model that its declaration does not list.</td>
+          </tr>
+          <tr>
+            <td><span class="pill warn">Medium</span></td>
+            <td>Meeting mood analyser</td>
+            <td>Traffic of the system reached a model that its declaration does not list.</td>
+          </tr>
+          <tr>
+            <td><span class="pill warn">Medium</span></td>
+            <td>·</td>
+            <td>A project, or a group of an external source, makes requests that no declared system accounts for: it may be an AI system nobody declared.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:.8rem">And 10 smaller notes, such as a tool with no named owner or a classification nobody has confirmed yet.</p>
+    <div class="note">Use that nobody declared, by project: nordwind / lab.</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Proof and limits</div>
+    <h2>What stays, and what this story does not prove</h2>
+    <p class="lead">Everything that was decided today is written in a log where each entry is chained to the one before: changing one breaks the chain. What people typed is not kept.</p>
+    <div class="grid g2" style="margin-top:1rem">
+      <div class="card">
+        <p>54 entries in the audit chain, recomputed with no broken link. No prompt, argument or answer is stored.</p>
+        <p class="muted small">Fingerprint of the last entry:<br><span class="mono" style="word-break:break-all">b263b72ad7a252634aac663b38ba35837705fb8891b8a450f026ca10a25423f2</span></p>
+      </div>
+      <div class="card">
+        <h3>Said plainly</h3>
+        <ul class="plain small">
+          <li>The model and the tool server are stand-ins inside one process. No real provider and no real tool was called.</li>
+          <li>The product names are examples of how a firm labels its tools. Which engines a product offers, and whether it can be pointed at a gateway, is for each organisation to check with the vendor.</li>
+          <li>Arbiter sees what passes through it. A service opened in a browser does not: reading the logs of the company network is on the wish list.</li>
+          <li>Classifications are indicative, and the rule pack has not been reviewed by a person with legal training.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">Every system and every request of a scenario is invented. Arbiter is a support tool. It does not provide legal advice.</div>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var stored = null;
+  try { stored = localStorage.getItem("arbiter-theme"); } catch (e) { stored = null; }
+  if (stored === "light" || stored === "dark") { root.setAttribute("data-theme", stored); }
+  document.getElementById("theme").addEventListener("click", function () {
+    var now = root.getAttribute("data-theme");
+    if (!now) { now = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"; }
+    var next = now === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("arbiter-theme", next); } catch (e) { /* private window */ }
+  });
+
+  // The deck: one screen for each part of the story, read from left to right.
+  var deck = document.getElementById("deck");
+  var sections = Array.prototype.slice.call(deck.querySelectorAll("section"));
+  var dots = document.getElementById("dots");
+  var counter = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+  var index = 0;
+  sections.forEach(function () { dots.appendChild(document.createElement("i")); });
+  function go(i) {
+    i = Math.max(0, Math.min(sections.length - 1, i));
+    deck.scrollTo({ left: i * deck.clientWidth, behavior: reduced ? "auto" : "smooth" });
+  }
+  function update() {
+    var width = deck.clientWidth || 1;
+    index = Math.round(deck.scrollLeft / width);
+    var max = deck.scrollWidth - width;
+    bar.style.width = (max > 0 ? (deck.scrollLeft / max) * 100 : 0) + "%";
+    Array.prototype.forEach.call(dots.children, function (d, k) { d.classList.toggle("on", k === index); });
+    counter.textContent = (index + 1) + " / " + sections.length;
+    prev.disabled = index === 0;
+    next.disabled = index === sections.length - 1;
+  }
+  deck.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", function () { deck.scrollLeft = index * deck.clientWidth; update(); });
+  prev.addEventListener("click", function () { go(index - 1); });
+  next.addEventListener("click", function () { go(index + 1); });
+  document.addEventListener("keydown", function (ev) {
+    var to = null;
+    if (ev.key === "ArrowRight" || ev.key === "PageDown" || ev.key === " ") { to = index + 1; }
+    if (ev.key === "ArrowLeft" || ev.key === "PageUp") { to = index - 1; }
+    if (ev.key === "Home") { to = 0; }
+    if (ev.key === "End") { to = sections.length - 1; }
+    if (to === null) { return; }
+    ev.preventDefault();
+    go(to);
+  });
+  update();
+})();
+</script>
+</body>
+</html>

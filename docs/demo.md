@@ -93,6 +93,11 @@ the run as the story of one day at the firm, a deck read from left to right:
    matter, and a count of the smaller notes;
 8. what stays on record, and what the story does not prove.
 
+The pages of the demonstration on the project's site,
+<https://viciuslio.github.io/ai-arbiter/demo.en.html> and `demo.it.html`, are written by
+`uv run python scripts/build_demo_pages.py`: one run for each language, each in an empty
+workspace. Run it again when the demonstration changes.
+
 The people are invented, like the firm. Every outcome and every figure comes from the
 run and from what the tenant holds: the story around them is fixed text. The page
 contains no text of any request. It prints as a document, one section after the other.

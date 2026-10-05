@@ -12,18 +12,24 @@ without the other.
 > OpenAI-compatible endpoint with policy, redaction of personal data, routing, metering,
 > budgets and a hash-chained audit log. The compliance toolkit: an inventory of AI
 > systems, an indicative AI Act classification that a person reviews, findings, discovery
-> of systems nobody declared, reports and a daily digest that can be sent by e-mail. See
-> the [roadmap](#roadmap).
+> of systems nobody declared, reports and a daily digest that can be sent by e-mail. The
+> same control covers the tools (MCP) and the agents (A2A) a system reaches. See the
+> [roadmap](#roadmap).
 
 > Arbiter is a support tool. It does not provide legal advice.
 
-**New here, and not a developer?** Open the presentation:
+**New here, and not a developer?** Two things to open, each in English and in Italian:
 
-- in English: <https://viciuslio.github.io/ai-arbiter/arbiter.en.html>
-- in Italian: <https://viciuslio.github.io/ai-arbiter/arbiter.it.html>
+| | English | Italian |
+|---|---|---|
+| **See it at work**: a day at an invented firm that approved one family of models, told scene by scene from a real run of the demonstration | [A day at Nordwind](https://viciuslio.github.io/ai-arbiter/demo.en.html) | [Una giornata alla Nordwind](https://viciuslio.github.io/ai-arbiter/demo.it.html) |
+| **What it is**: what Arbiter does, how it works and where it stands | [Arbiter in brief](https://viciuslio.github.io/ai-arbiter/arbiter.en.html) | [Arbiter in breve](https://viciuslio.github.io/ai-arbiter/arbiter.it.html) |
 
 Each is one self-contained file, also in [`docs/presentation/`](docs/presentation/). The site
-holds the presentations and nothing else of the repository.
+holds these pages and nothing else of the repository. The pages of the demonstration are
+written by `scripts/build_demo_pages.py` from a run of
+`arbiter demo tour --case consulting`: the firm, its people and its requests are invented,
+the outcomes are what the run produced. To make your own: [how to give a demonstration](docs/demo.md).
 
 ## Where the project is
 
@@ -37,7 +43,7 @@ Updated at every commit. Last update: 2026-10-05.
 | 4b Deferrable items of v0.1 | Done: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
 | Improvements after Phase 4b | Done for what needed no decision: see the [tracking table](#release-improvement-tracking) |
 | 5 A2A and MCP (v0.2) | **Done, approved by the owner on 2026-10-05**: every step below is done and the full check passed ([summary](docs/phases/phase-5-a2a-mcp.md)) |
-| After Phase 5, asked by the owner on 2026-10-05 | **In progress**. Done: the A2A proxy with the official SDK (I-45), the filter of `tools/list` (I-41, in part), a demonstration built on an IT consulting firm that approved one family of models, with its internal regulation, declared tools that could use other engines, and a page written by the run ([how to give it](docs/demo.md), ADR-0056, ADR-0060), reports as PDF through an optional extra (I-36, ADR-0057), and a [preparation on network and SASE sources](docs/phases/network-sase-preparation.md) with its decisions (I-48, ADR-0058), and a declaration that covers several projects, whose keys the gateway then treats as the system's (I-33, ADR-0059). Next: the other open improvements, one at a time |
+| After Phase 5, asked by the owner on 2026-10-05 | **In progress**. Done: the A2A proxy with the official SDK (I-45), the filter of `tools/list` (I-41, in part), a demonstration built on an IT consulting firm that approved one family of models, with its internal regulation, declared tools that could use other engines, and a page written by the run that tells it as the story of a day, published on the site ([how to give it](docs/demo.md), ADR-0056, ADR-0060), reports as PDF through an optional extra (I-36, ADR-0057), and a [preparation on network and SASE sources](docs/phases/network-sase-preparation.md) with its decisions (I-48, ADR-0058), and a declaration that covers several projects, whose keys the gateway then treats as the system's (I-33, ADR-0059). Next: the other open improvements, one at a time |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
 
@@ -55,6 +61,7 @@ Phase 5, step by step:
 | A presentation for people who are not developers, in Italian and in English | Done: `docs/presentation/`, a deck read from left to right, one screen per section. The English page is built from the Italian one by `scripts/build_presentation_en.py`. Not viewed in a browser by its author |
 | Semantic detection of personal data: an optional plugin on Presidio, with measured precision and recall (ADR-0055) | Done: plugin `presidio`, extra `pii`, figures in `docs/pii-evaluation.md` |
 | A guided demonstration: gateway, toolkit, a mock MCP server and a mock agent | Done: `arbiter demo tour`, seven steps in one process, about a minute, repeatable; covered by a test |
+| The consulting demonstration as a story, published | Done after the phase: `arbiter demo tour --case consulting --report FILE` (ADR-0056, ADR-0060), and its pages on the site in both languages. The owner saw the Italian page in a browser on 2026-10-05; its author did not |
 | Phase summary and the full check, containers included | Done on 2026-10-05: 1132 tests on Python 3.12 with 97% coverage, the suite on 3.13 and 3.14 and without extras, the image, the Compose stack, the scenarios and the guided demonstration in the container. What was not verified is listed in the summary |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
@@ -264,7 +271,7 @@ A container image and a Compose file are in `deploy/`.
 | Version | Content |
 |---|---|
 | 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI), with importers, discovery, reports, e-mail delivery and scenarios: **built, not released**. `0.1.0` waits for a legal review of the rule pack |
-| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo: **built, not released**. The proxies were tested against stand-ins and, for MCP, the official SDK; not against real servers or agents on a network |
+| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo, and a demonstration told as the story of a day: **built, not released**. The proxies were tested against stand-ins and, for MCP, the official SDK; not against real servers or agents on a network |
 | 0.3 | Azure: Bicep, Container Apps, Entra ID, observability, hardening |
 | 1.0 | Documentation, quickstart, demo scenarios |
 
