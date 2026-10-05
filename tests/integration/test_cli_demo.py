@@ -1,6 +1,7 @@
 """``arbiter demo`` end to end. Synchronous: the CLI runs its own event loop."""
 
 import re
+from pathlib import Path
 
 from tests.integration.test_cli_compliance import arbiter
 
@@ -101,35 +102,65 @@ def test_the_tour_shows_the_gateway_and_the_toolkit_at_work_and_can_be_repeated(
     )
 
 
-def test_the_consulting_case_follows_a_firm_with_its_internal_regulation() -> None:
+def test_the_consulting_case_follows_a_firm_that_approved_one_family_of_models(
+    tmp_path: Path,
+) -> None:
     import pytest
 
     pytest.importorskip("fastapi", reason="needs the gateway extra")
     pytest.importorskip("mcp_types", reason="needs the mcp extra")
     arbiter("init")
+    page = tmp_path / "out" / "demo.html"
 
-    output = arbiter("demo", "tour", "--case", "consulting")
-    again = arbiter("demo", "tour", "--case", "consulting", "--locale", "it")
+    output = arbiter("demo", "tour", "--case", "consulting", "--report", str(page))
+    first = page.read_text(encoding="utf-8")
+    again = arbiter("demo", "tour", "--case", "consulting", "--locale", "it", "--report", str(page))
+    second = page.read_text(encoding="utf-8")
 
     assert "DIFFERS" not in output
-    assert output.count("[as the scenario expects]") == 11
+    assert output.count("[as the scenario expects]") == 13
+    assert "kiro-ide: Minimal" in output
     assert "cv-screening: High-risk" in output
-    assert "IR-HIGH-RISK-NOT-REVIEWED, IR-CREDENTIAL-IN-PROMPT" in output
-    assert "Masked before the model saw the prompt: email, iban." in output
+    assert "Approved models: claude-sonnet-5-5, claude-haiku-4-5." in output
+    assert "set to claude-sonnet-5-5" in output
+    assert "masked before the model saw the prompt: email, iban." in output
+    assert "switched Kiro to gpt-4o." in output
+    assert "the model is not approved: denied by POL-MODEL-NOT-ALLOWED." in output
+    assert "with gemini-2.5-pro it was denied by POL-MODEL-NOT-ALLOWED." in output
     assert "The internal rule IR-CREDENTIAL-IN-PROMPT refused the request" in output
-    assert "A request for mock-large, which the firm did not approve, was denied" in output
     assert "Before a review the internal rule IR-HIGH-RISK-NOT-REVIEWED denied it" in output
-    assert "denied by POL-SYSTEM-PROHIBITED." in output
+    assert "an approved model. It is classified as a prohibited practice" in output
     assert "client-retail has a hard budget" in output
-    assert "is shown only read_file" in output
+    assert "Kiro is shown only read_file" in output
     assert "deleting a branch was denied by MCP-CALL-NOT-GRANTED." in output
     assert "nordwind / lab" in output
     assert "no broken link" in output
+    assert f"Wrote {page}" in output
     assert "It does not provide legal advice." in output
     assert "DIVERSO" not in again
-    assert again.count("[come previsto dallo scenario]") == 11
+    assert again.count("[come previsto dallo scenario]") == 13
     assert "era già stata rivista" in again
+    # The page of the run: one file, nothing loaded from elsewhere, figures of the run.
+    assert first.startswith("<!DOCTYPE html>")
+    assert '<html lang="en">' in first
+    assert "13 of 13 steps went as expected" in first
+    assert "http://" not in first
+    assert "https://" not in first
+    for expected in ("Kiro", "GitHub Copilot", "gpt-4o", "gemini-2.5-pro", "not approved"):
+        assert expected in first
+    assert "No declared tool" in first
+    assert "1 refused" in first
+    assert "3 went through" in first
+    assert '<html lang="it">' in second
+    assert "13 passi su 13 sono andati come previsto" in second
+    assert "Nessuno strumento dichiarato" in second
+    # No request text reaches the page: it holds what the gateway recorded, and no more.
+    assert "anna.bianchi" not in first
+    assert "IT60X" not in first
     # The firm has a tenant of its own: nothing of it is in the others.
     assert "No AI system is declared." in arbiter("systems", "list")
-    assert "cv-screening" in arbiter("systems", "list", "--tenant", "demo-consulting")
+    assert "kiro-ide" in arbiter("systems", "list", "--tenant", "demo-consulting")
     assert "Error: " in arbiter("demo", "tour", "--case", "nope", ok=False)
+    assert "Error: --report is for the consulting case" in arbiter(
+        "demo", "tour", "--report", str(page), ok=False
+    )

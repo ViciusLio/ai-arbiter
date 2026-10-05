@@ -31,3 +31,48 @@ def test_the_firm_declares_the_systems_the_demonstration_expects() -> None:
     )
 
     assert {declaration.key for declaration in declared} == set(EXPECTED_TIERS)
+
+
+def test_the_page_of_a_run_escapes_what_it_shows_and_loads_nothing() -> None:
+    from ai_arbiter.cli.demo_consulting import DemoRun, DemoStep, ToolUse
+    from ai_arbiter.cli.demo_report import render_demo_report
+    from ai_arbiter.core.i18n import Translator
+
+    run = DemoRun(
+        steps=(
+            DemoStep("inventory", "A <b>title</b>", True, "</script><script>alert(1)</script>"),
+            DemoStep("audit", "Second", False, "It differs"),
+        ),
+        pack_version="1+test",
+        systems=(
+            {
+                "key": "kiro-ide",
+                "name": "Kiro <i>IDE</i>",
+                "purpose": "Code",
+                "classification": {"tier": "minimal", "status": "confirmed"},
+            },
+        ),
+        usage=(
+            ToolUse("Kiro", "claude-sonnet-5-5", True, 2, 0),
+            ToolUse("Kiro", "gpt-4o", False, 0, 3),
+        ),
+        findings=({"severity": "critical", "text": "A finding & more", "system": "Kiro"},),
+        candidates=("nordwind / lab",),
+        audit_entries=7,
+        audit_head="abc123",
+    )
+
+    page = render_demo_report(run, Translator("en"))
+
+    assert "1 of 2 steps went as expected" in page
+    assert "Kiro &lt;i&gt;IDE&lt;/i&gt;" in page
+    assert "A finding &amp; more" in page
+    assert "<script>alert(1)</script>" not in page
+    assert "\\u003c/script\\u003e" in page
+    assert "2 went through" in page
+    assert "3 refused" in page
+    assert "Confirmed by a person" in page
+    assert "nordwind / lab" in page
+    assert "abc123" in page
+    assert "http://" not in page
+    assert "https://" not in page

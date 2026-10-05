@@ -385,7 +385,8 @@ data:
 ```bash
 arbiter init
 arbiter demo tour                 # or: --locale it
-arbiter demo tour --case consulting   # an IT consulting firm with its own regulation
+arbiter demo tour --case consulting   # a firm that approved one family of models
+arbiter demo tour --case consulting --report out/demo.html   # and the run as a page
 ```
 
 The second one, and how to give it live, is described in [Giving a demonstration](demo.md).

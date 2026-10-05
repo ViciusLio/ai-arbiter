@@ -8,11 +8,11 @@
 # Arbiter is a support tool. It does not provide legal advice.
 
 pack: policy
-version: "2026.10.1+consulting.1"
+version: "2026.10.1+consulting.2"
 description: >-
-  The default policy, plus the internal regulation of the firm: no model for a high-risk
-  system before a person reviewed its classification, and no prompt that carries a
-  credential, not even masked.
+  The default policy, plus the internal regulation of the firm: approved models only, no
+  model for a high-risk system before a person reviewed its classification, and no
+  prompt that carries a credential, not even masked.
 
 facts:
   request.model: string
@@ -31,7 +31,9 @@ rules:
 
   - id: POL-MODEL-NOT-ALLOWED
     kind: policy
-    description: The requested model is not on the list of models the firm approved.
+    description: >-
+      Internal regulation, section 2: only the models the firm approved may be used,
+      whatever tool asks for them. The list is `policy.allowed_models`.
     when: { fact: request.model_allowed, eq: false }
     then:
       outcome: deny

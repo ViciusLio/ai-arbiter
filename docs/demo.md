@@ -1,6 +1,6 @@
 # Giving a demonstration
 
-Two ways, both on invented data, with no network, no cloud account and no real model.
+Three ways, all on invented data, with no network, no cloud account and no real model.
 
 > Arbiter is a support tool. It does not provide legal advice. Every system, firm and
 > request in a demonstration is invented.
@@ -8,148 +8,178 @@ Two ways, both on invented data, with no network, no cloud account and no real m
 | What | Command | Takes |
 |---|---|---|
 | The product in general: gateway, tools, agents, scan, audit | `arbiter demo tour` | About a minute |
-| An IT consulting firm with its own internal regulation | `arbiter demo tour --case consulting` | A few seconds |
+| A firm that approved one family of models, step by step in the terminal | `arbiter demo tour --case consulting` | A few seconds |
+| The same run as a page to show: a deck with the steps and the figures | Add `--report out/demo.html` | A few seconds |
 | The same firm, live: the service answers while people watch | The script below | Ten to fifteen minutes |
 
 From a clone, put `uv run` in front of every `arbiter` command. Add `--locale it` to
-have the texts in Italian.
+have the texts, and the page, in Italian.
 
-## The case: an IT consulting firm
+## The case: one approved model, many tools
 
 Nordwind Consulting (invented) works by engagement: each client is a project of the
-gateway. Its people use four AI tools, declared in
+gateway. It approved one family of models, Claude, and nothing else. Its people reach
+those models through several tools, and two of them could run on other engines. The
+tools are declared in
 [`scenarios/consulting/systems.yaml`](../src/ai_arbiter/scenarios/consulting/systems.yaml):
 
-| System | Used by | Indicative tier |
+| System | What it is | Indicative tier |
 |---|---|---|
-| `code-assistant` | Consultants, on a client's repository | Minimal |
-| `proposal-writer` | Sales, for offers | Transparency obligations |
-| `cv-screening` | Recruiters | High-risk (Annex III, employment) |
-| `meeting-mood-analyser` | Nobody: a vendor proposed it | Prohibited practice (Article 5) |
+| `claude-assistant` | The chat assistant every employee may use | Transparency obligations |
+| `kiro-ide` | A coding environment, on a client's repository | Minimal |
+| `github-copilot` | Code completion and chat in the editor | Minimal |
+| `cv-screening` | Ranks applications for the recruiters | High-risk (Annex III, employment) |
+| `meeting-mood-analyser` | Nobody uses it: a vendor proposed it | Prohibited practice (Article 5) |
 
-The firm has an internal AI regulation. In Arbiter it is a file,
+The firm's internal AI regulation is a file,
 [`scenarios/consulting/policy.yaml`](../src/ai_arbiter/scenarios/consulting/policy.yaml):
-the default gateway policy plus the firm's own rules, with a list of approved models,
+the default gateway policy plus the firm's own rules, with the list of approved models,
 a budget per engagement and grants on tools.
 
 | Internal rule | How it is enforced |
 |---|---|
-| Only approved models | `policy.allowed_models`, rule `POL-MODEL-NOT-ALLOWED` |
+| Only approved models, whatever tool asks | `policy.allowed_models`, rule `POL-MODEL-NOT-ALLOWED` |
 | Personal data of a client's customers never reaches a model | Redaction, rule `POL-PII-REDACT` |
 | A credential of a client never leaves, not even masked | The firm's rule `IR-CREDENTIAL-IN-PROMPT` |
 | A high-risk system gets no model before a person reviewed its classification | The firm's rule `IR-HIGH-RISK-NOT-REVIEWED` |
 | Each engagement has a budget | A hard budget on the project, rule `POL-BUDGET-EXCEEDED` |
 | On a client's repository, only the tools that were granted | Grants of the MCP catalogue, rule `MCP-CALL-NOT-GRANTED` |
 
-What this does not show: the internal rules are enforced on requests and written to the
-audit log, but the scan does not report on them as it does on the AI Act; the findings
-of the scan come from the packs shipped with Arbiter.
+What to say plainly while showing it:
+
+- The product names are examples of how a firm labels its tools. Which engines a
+  product offers, and whether it can be pointed at a gateway, is for each organisation
+  to check with the vendor: nothing in Arbiter states it.
+- Arbiter governs what passes through it. A request a tool sends straight to its
+  vendor, or a service opened in a browser, is not seen: that is what reading the logs
+  of the company network is for, which is planned and not built (ADR-0058).
+- The internal rules are enforced on requests and written to the audit log. The scan
+  reports the attempts through the rules shipped with Arbiter (a model the declaration
+  does not list); it has no findings of the firm's own.
 
 ## In one command
 
 ```bash
 arbiter init
-arbiter demo tour --case consulting
+arbiter demo tour --case consulting --report out/demo.html
 ```
 
-Eleven steps, each marked as expected or not: the inventory and its tiers, the internal
-regulation, masking of personal data, a refused credential, a model that is not
-approved, the high-risk system before and after a review, the prohibited practice, the
-budget of an engagement, the tools on the client's repository, the use nobody declared,
-and the audit chain. Everything lands in the tenant `demo-consulting`, apart from your
-own data and from the other scenarios. The command can be repeated; on a second run the
-high-risk system is already reviewed, and the step says so.
+Thirteen steps, each marked as expected or not: the inventory and its tiers, the
+internal regulation, Kiro on the approved engine with personal data masked, the same
+tool refused on another engine, Copilot allowed and refused in the same way, a refused
+credential, the high-risk system before and after a review, the prohibited practice
+refused even on an approved model, the budget of an engagement, the tools on the
+client's repository, the use nobody declared, the findings, and the audit chain.
+
+Everything lands in the tenant `demo-consulting`, apart from your own data and from the
+other scenarios. The command can be repeated; on a second run the high-risk system is
+already reviewed, and the step says so. A fresh directory shows the refusal again.
+
+## The page
+
+`--report FILE` writes the run as one self-contained HTML file: nothing is loaded from
+anywhere, so it can be opened from disk, sent, or shown without a connection. It is a
+deck read from left to right:
+
+1. the outcome of the run;
+2. the rule of the firm and the approved models;
+3. the declared tools with their indicative tiers;
+4. the steps, to click through or to play;
+5. tool by engine: who asked which model, how many requests went through and how many
+   were refused;
+6. the findings, and the use nobody declared;
+7. the audit chain, and what the demonstration does not prove.
+
+Every figure comes from the run and from what the tenant holds. The page contains no
+text of any request. It prints as a document, one section after the other.
 
 ## Live, step by step
 
-Checked by hand on 2026-10-05 in a fresh workspace, with the commands below.
+Checked by hand on 2026-10-05 in a fresh workspace: the service started with the
+settings below, a request for the approved model went through and one for another
+engine was refused.
 
 **Before people arrive.** In an empty directory:
 
 ```bash
 arbiter init
-arbiter demo tour --case consulting --locale it
+arbiter demo tour --case consulting --locale it --report out/demo.html
 ```
 
-**1. What the firm runs, and what the AI Act makes of it.**
+**1. The page.** Open `out/demo.html` and go through it: it is the story in seven
+screens.
+
+**2. What the firm runs, and what the AI Act makes of it.**
 
 ```bash
 arbiter systems list --tenant demo-consulting
 arbiter systems show cv-screening --tenant demo-consulting --locale it
 ```
 
-Say: the tier is indicative until a person reviews it; every outcome names the
-provision and the date behind it.
-
-**2. Start the service with the firm's regulation.** `REPO` is the path of the clone.
+**3. Start the service with the firm's regulation.** `REPO` is the path of the clone;
+[`examples/consulting/live.env`](../examples/consulting/live.env) sets the regulation,
+the approved models and a stand-in that answers them.
 
 ```bash
-export ARBITER_POLICY__PACK=$REPO/src/ai_arbiter/scenarios/consulting/policy.yaml
-export ARBITER_POLICY__ALLOWED_MODELS='["mock-small"]'
+REPO=/path/to/ai-arbiter source $REPO/examples/consulting/live.env
 arbiter serve
 ```
 
-**3. A consultant at work.** In a second terminal, create a key for the coding
-assistant on the bank engagement. It is printed once.
+**4. A consultant at work.** In a second terminal, in the same directory, create a key
+for Kiro on the bank engagement. It is printed once.
 
 ```bash
 arbiter keys create --tenant demo-consulting --name live --role developer \
-  --team nordwind --project client-bank --system code-assistant
+  --team nordwind --project client-bank --system kiro-ide
 ```
 
-Send a question that carries an e-mail address, and look at the response headers:
+Kiro on the approved engine, with an e-mail address in the question:
 
 ```bash
 curl -i http://127.0.0.1:8080/v1/chat/completions \
   -H "Authorization: Bearer arb_..." -H "Content-Type: application/json" \
-  -d '{"model": "mock-small", "messages": [{"role": "user", "content": "Write to anna.bianchi@example.com about the release."}]}'
+  -d '{"model": "claude-sonnet-5-5", "messages": [{"role": "user", "content": "Write to anna.bianchi@example.com about the release."}]}'
 ```
 
 `X-Arbiter-Redacted: email` and `X-Arbiter-Policy: redact`: the address was replaced
-before the prompt left. Then ask for a model the firm did not approve:
+before the prompt left. Then the same tool on another engine:
 
 ```bash
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Authorization: Bearer arb_..." -H "Content-Type: application/json" \
   -H "Accept-Language: it" \
-  -d '{"model": "mock-large", "messages": [{"role": "user", "content": "Hello"}]}'
+  -d '{"model": "gpt-4o", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
 The answer is a 403 that names the rule, `POL-MODEL-NOT-ALLOWED`, and the version of
-the firm's pack.
+the firm's pack. `curl http://127.0.0.1:8080/v1/models -H "Authorization: Bearer arb_..."`
+lists what a tool may ask for: the two Claude models and nothing else.
 
-**4. What the firm has to look at.**
+**5. What the firm has to look at.**
 
 ```bash
+arbiter scan --tenant demo-consulting
 arbiter findings list --tenant demo-consulting --locale it
 arbiter systems discover --tenant demo-consulting
 ```
 
-The prohibited practice is on top. The project `nordwind / lab` is named as a candidate
-system: someone uses a model there and nobody declared it.
+The prohibited practice is on top; the attempts on other engines show as traffic to a
+model the declaration does not list; the project `nordwind / lab` is a candidate system.
 
-**5. Something to hand to people.** Open the two files in a browser.
+**6. Something to hand to people, money and proof.**
 
 ```bash
 arbiter report system cv-screening --tenant demo-consulting --format html --locale it -o out
 arbiter digest run --tenant demo-consulting --format html --locale it -o out
-```
-
-**6. Money and proof.**
-
-```bash
 arbiter usage report --tenant demo-consulting --locale it
 arbiter audit verify --tenant demo-consulting
 ```
-
-Say: no prompt, no argument and no answer is stored; the audit log is a chain that can
-be recomputed.
 
 **Afterwards.** Stop `arbiter serve` with Ctrl+C.
 
 ## What a demonstration does not prove
 
 The model, the tool server and the agent are stand-ins. No real provider, no real MCP
-server and no real agent is involved, and nothing here says that an organisation meets
-its obligations: the classification is indicative and the rule pack has not been
-reviewed by a person with legal training.
+server and no real agent is involved, no real product was connected to the gateway, and
+nothing here says that an organisation meets its obligations: the classification is
+indicative and the rule pack has not been reviewed by a person with legal training.

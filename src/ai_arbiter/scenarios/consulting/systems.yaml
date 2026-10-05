@@ -1,9 +1,14 @@
 # The AI systems of an invented IT consulting firm, for the guided demonstration
 # `arbiter demo tour --case consulting`. Every system here is invented.
 #
-# The firm works by engagement: each client is a project of the gateway. Its people use
-# a coding assistant on client code and a writer for proposals; HR ranks applications
-# with a screening tool; a vendor proposed a tool that reads the mood of a meeting.
+# The firm works by engagement: each client is a project of the gateway. It approved
+# one family of models, Claude, and declares the tools its people reach those models
+# through: a chat assistant, two coding tools that can run on several engines, and a
+# screening tool of HR. A vendor proposed a tool that reads the mood of a meeting.
+#
+# The product names are examples of how a firm would label its own tools. Which
+# engines a product offers, and whether it can be pointed at a gateway, is for each
+# organisation to check with the vendor: nothing here states it.
 #
 # Arbiter is a support tool. It does not provide legal advice.
 
@@ -44,32 +49,45 @@ fact_sets:
     transparency.public_interest_text: false
 
 systems:
-  - key: code-assistant
-    name: Coding assistant
-    purpose: Suggests and explains code to consultants working on a client's repository.
+  - key: claude-assistant
+    name: Claude for staff
+    purpose: The chat assistant every employee may use to draft, summarise and research.
     roles:
-      - { role: deployer, basis: "Subscription used on client engagements" }
+      - { role: deployer, basis: "Company subscription" }
     models:
-      - { provider: mock, model: mock-small }
-    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
-    facts:
-      data.personal_data_processed: true
-
-  - key: proposal-writer
-    name: Proposal writer
-    purpose: Drafts the text of offers and statements of work for the sales team.
-    roles:
-      - { role: deployer, basis: "Configured on a vendor platform" }
-    models:
-      - { provider: mock, model: mock-small }
+      - { provider: anthropic, model: claude-sonnet-5-5, general_purpose: true }
+      - { provider: anthropic, model: claude-haiku-4-5, general_purpose: true }
     use: [in_scope, no_prohibited_practice, no_high_risk_area]
     facts:
-      transparency.interacts_with_persons: false
+      transparency.interacts_with_persons: true
       transparency.generates_synthetic_content: true
       transparency.emotion_or_biometric_categorisation: false
       transparency.deep_fake: false
       transparency.public_interest_text: false
       controls.transparency_notice: true
+      data.personal_data_processed: true
+
+  - key: kiro-ide
+    name: Kiro
+    purpose: Coding environment used by consultants on a client's repository. Claude engine only.
+    roles:
+      - { role: deployer, basis: "Licences for the delivery teams" }
+    models:
+      - { provider: anthropic, model: claude-sonnet-5-5, general_purpose: true }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      data.personal_data_processed: true
+
+  - key: github-copilot
+    name: GitHub Copilot
+    purpose: Code completion and chat in the editor. Claude engine only.
+    roles:
+      - { role: deployer, basis: "Licences for the delivery teams" }
+    models:
+      - { provider: anthropic, model: claude-sonnet-5-5, general_purpose: true }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      data.personal_data_processed: true
 
   - key: cv-screening
     name: CV screening
@@ -77,7 +95,7 @@ systems:
     roles:
       - { role: deployer, basis: "Module of the HR suite bought from a vendor" }
     models:
-      - { provider: mock, model: mock-small }
+      - { provider: anthropic, model: claude-sonnet-5-5, general_purpose: true }
     use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
     facts:
       annex3.employment: true

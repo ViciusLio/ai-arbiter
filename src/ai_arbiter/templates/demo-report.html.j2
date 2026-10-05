@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ t("demo.report.kicker") }}: {{ r.firm }}</title>
+<style>
+/* Layout: a deck read from left to right, one screen for each part of the run. */
+:root {
+  color-scheme: dark;
+  --bg: #0d1117; --panel: #161c26; --panel-2: #1d2532; --line: #2b3545;
+  --text: #e8edf4; --muted: #9aa8bb; --accent: #5eb0ff; --accent-2: #7ee0b8;
+  --warn: #ffb454; --danger: #ff7a85; --ok: #7ee0b8;
+  --ok-bg: rgba(126, 224, 184, .13); --no-bg: rgba(255, 122, 133, .14);
+  --shadow: 0 18px 50px rgba(0, 0, 0, .35);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f5f7fa; --panel: #ffffff; --panel-2: #eef2f7; --line: #d5dce6;
+    --text: #16202e; --muted: #56657a; --accent: #1668c7; --accent-2: #0d8a63;
+    --warn: #a8620a; --danger: #c2313f; --ok: #0d8a63;
+    --ok-bg: rgba(13, 138, 99, .10); --no-bg: rgba(194, 49, 63, .09);
+    --shadow: 0 14px 40px rgba(20, 40, 80, .12);
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f7fa; --panel: #ffffff; --panel-2: #eef2f7; --line: #d5dce6;
+  --text: #16202e; --muted: #56657a; --accent: #1668c7; --accent-2: #0d8a63;
+  --warn: #a8620a; --danger: #c2313f; --ok: #0d8a63;
+  --ok-bg: rgba(13, 138, 99, .10); --no-bg: rgba(194, 49, 63, .09);
+  --shadow: 0 14px 40px rgba(20, 40, 80, .12);
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text); overflow: hidden;
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3 { line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.01em; text-wrap: balance; }
+h1 { font-size: clamp(1.9rem, 4.6vw, 3.4rem); }
+h2 { font-size: clamp(1.4rem, 2.8vw, 2.1rem); }
+h3 { font-size: 1.1rem; }
+p { margin: 0 0 1em; }
+.lead { font-size: clamp(1rem, 1.8vw, 1.2rem); color: var(--muted); max-width: 48rem; }
+.kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; color: var(--accent); font-weight: 700; margin-bottom: 1rem; }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; }
+#bar { position: fixed; top: 0; left: 0; height: 4px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 30; }
+nav.top { position: fixed; top: 10px; right: 14px; z-index: 31; }
+button { font: inherit; color: var(--text); cursor: pointer; }
+nav.top button, .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font-size: .85rem; }
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#deck { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; }
+#deck::-webkit-scrollbar { display: none; }
+section { flex: 0 0 100%; height: 100%; overflow-y: auto; scroll-snap-align: start; scroll-snap-stop: always; padding: 3.4rem 3.6rem 4rem; display: flex; }
+.wrap { width: min(1100px, 100%); margin: auto; }
+#pager { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; z-index: 29; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.arrow { position: fixed; top: 50%; transform: translateY(-50%); z-index: 29; width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 1px solid var(--line); background: var(--panel); font-size: 1.5rem; line-height: 1; }
+.arrow[disabled] { opacity: .3; cursor: default; }
+#prev { left: 10px; } #next { right: 10px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem; box-shadow: var(--shadow); }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid > * { min-width: 0; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.no { color: var(--danger); } .pill.info { color: var(--accent); }
+.models { display: flex; flex-wrap: wrap; gap: 8px; margin: .4rem 0 1rem; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 700; }
+td.cell { text-align: center; font-variant-numeric: tabular-nums; }
+td.cell .n { display: block; font-weight: 700; }
+td.cell.go { background: var(--ok-bg); } td.cell.stop { background: var(--no-bg); }
+td.cell .go { color: var(--ok); } td.cell .stop { color: var(--danger); }
+th.model { text-align: center; text-transform: none; letter-spacing: 0; font-size: .85rem; color: var(--text); }
+th.model span { display: block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.steps { display: flex; flex-wrap: wrap; gap: 8px; margin: 1rem 0; }
+.steps button { flex: 1 1 150px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: .6rem .8rem; font-size: .9rem; transition: border-color .2s, transform .2s; }
+.steps button .n { display: block; font-size: .7rem; color: var(--muted); font-weight: 700; letter-spacing: .08em; }
+.steps button.on { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
+.steps button.bad .n { color: var(--danger); }
+.stage { min-height: 9.5rem; }
+.stage h3 { color: var(--accent); }
+.note { border-left: 4px solid var(--warn); background: var(--panel-2); padding: .8rem 1rem; border-radius: 0 12px 12px 0; margin-top: 1rem; }
+ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem; }
+.hint { margin-top: 2rem; color: var(--muted); font-size: .9rem; }
+@media (max-width: 720px) { section { padding: 3.2rem 1rem 4.2rem; } .arrow { top: auto; bottom: 8px; transform: none; } }
+@media (prefers-reduced-motion: reduce) { #deck { scroll-behavior: auto; } }
+@media print {
+  html, body { height: auto; } body { overflow: visible; }
+  nav.top, #pager, .arrow, #bar, .hint, #play { display: none; }
+  #deck { display: block; height: auto; overflow: visible; }
+  section { height: auto; overflow: visible; padding: 1.5rem 0; page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav class="top"><button id="theme" type="button">{{ t("demo.report.nav.theme") }}</button></nav>
+<button class="arrow" id="prev" type="button" aria-label="{{ t('demo.report.nav.prev') }}">&lsaquo;</button>
+<button class="arrow" id="next" type="button" aria-label="{{ t('demo.report.nav.next') }}">&rsaquo;</button>
+<div id="pager" aria-live="polite"></div>
+
+<main id="deck">
+
+<section id="s1">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.kicker") }} · {{ r.firm }}</div>
+    <h1>{{ t("demo.report.title") }}</h1>
+    <p class="lead">{{ t("demo.report.lead", firm=r.firm) }}</p>
+    <p>
+      <span class="pill {{ 'ok' if r.as_expected else 'no' }}">{{ t("demo.report.outcome", ok=passed, total=r.steps | length) }}</span>
+    </p>
+    <p class="muted small">{{ t("demo.report.generated", date=r.generated_at.strftime("%Y-%m-%d %H:%M"), tenant=r.tenant) }}</p>
+    <p class="hint">{{ t("demo.report.hint") }}</p>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.rule.kicker") }}</div>
+    <h2>{{ t("demo.report.rule.title") }}</h2>
+    <p class="lead">{{ t("demo.report.rule.lead", version=r.pack_version) }}</p>
+    <div class="grid g2" style="margin-top:1.2rem">
+      <div class="card">
+        <h3>{{ t("demo.report.rule.approved") }}</h3>
+        <div class="models">
+          {% for model in r.approved_models %}
+          <span class="pill ok mono">{{ model }}</span>
+          {% endfor %}
+        </div>
+        <p class="muted small">{{ t("demo.report.rule.r1") }}</p>
+      </div>
+      <div class="card">
+        <h3>{{ t("demo.report.rule.own") }}</h3>
+        <ul class="plain">
+          <li>{{ t("demo.report.rule.r2") }}</li>
+          <li>{{ t("demo.report.rule.r3") }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.inventory.kicker") }}</div>
+    <h2>{{ t("demo.report.inventory.title") }}</h2>
+    <p class="lead">{{ t("demo.report.inventory.lead") }}</p>
+    <div class="scroll card" style="margin-top:1rem">
+      <table>
+        <thead><tr>
+          <th>{{ t("demo.report.col.tool") }}</th><th>{{ t("demo.report.col.purpose") }}</th>
+          <th>{{ t("demo.report.col.tier") }}</th><th>{{ t("demo.report.col.review") }}</th>
+        </tr></thead>
+        <tbody>
+          {% for system in systems %}
+          <tr>
+            <td><strong>{{ system.name }}</strong><br><span class="muted small mono">{{ system.key }}</span></td>
+            <td class="small">{{ system.purpose }}</td>
+            <td><span class="pill {{ system.tone }}">{{ system.tier }}</span></td>
+            <td class="small">{{ system.review }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.steps.kicker") }}</div>
+    <h2>{{ t("demo.report.steps.title") }}</h2>
+    <p class="lead">{{ t("demo.report.steps.lead") }}</p>
+    <div class="steps" id="steps" role="tablist"></div>
+    <div class="card stage" id="stage" aria-live="polite"></div>
+    <p style="margin-top:.9rem"><button class="chip" id="play" type="button">&#9654; {{ t("demo.report.steps.play") }}</button></p>
+    <noscript>
+      <ol>
+        {% for step in r.steps %}
+        <li><strong>{{ step.title }}</strong>: {{ step.detail }}</li>
+        {% endfor %}
+      </ol>
+    </noscript>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.matrix.kicker") }}</div>
+    <h2>{{ t("demo.report.matrix.title") }}</h2>
+    <p class="lead">{{ t("demo.report.matrix.lead") }}</p>
+    <div class="scroll card" style="margin-top:1rem">
+      <table>
+        <thead><tr>
+          <th>{{ t("demo.report.col.tool") }}</th>
+          {% for model in models %}
+          <th class="model"><code>{{ model.name }}</code><span class="{{ 'pill ok' if model.approved else 'pill no' }}">{{ t("demo.report.matrix.approved") if model.approved else t("demo.report.matrix.not_approved") }}</span></th>
+          {% endfor %}
+        </tr></thead>
+        <tbody>
+          {% for row in matrix %}
+          <tr>
+            <td><strong>{{ row.tool }}</strong></td>
+            {% for cell in row.cells %}
+            {% if cell is none %}
+            <td class="cell muted">·</td>
+            {% else %}
+            <td class="cell {{ 'go' if cell.allowed and not cell.denied else ('stop' if cell.denied and not cell.allowed else '') }}">
+              {% if cell.allowed %}<span class="n go">{{ cell.allowed }} {{ t("demo.report.matrix.allowed") }}</span>{% endif %}
+              {% if cell.denied %}<span class="n stop">{{ cell.denied }} {{ t("demo.report.matrix.denied") }}</span>{% endif %}
+            </td>
+            {% endif %}
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small" style="margin-top:.8rem">{{ t("demo.report.matrix.note") }}</p>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.findings.kicker") }}</div>
+    <h2>{{ t("demo.report.findings.title") }}</h2>
+    <p class="lead">{{ t("demo.report.findings.lead") }}</p>
+    <div class="scroll card" style="margin-top:1rem">
+      <table>
+        <thead><tr>
+          <th>{{ t("demo.report.col.severity") }}</th><th>{{ t("demo.report.col.tool") }}</th><th>{{ t("demo.report.col.finding") }}</th>
+        </tr></thead>
+        <tbody>
+          {% for finding in findings %}
+          <tr>
+            <td><span class="pill {{ finding.tone }}">{{ finding.severity }}</span></td>
+            <td class="small">{{ finding.system or "·" }}</td>
+            <td class="small">{{ finding.text }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if r.candidates %}
+    <div class="note">{{ t("demo.report.findings.candidates", names=r.candidates | join(", ")) }}</div>
+    {% endif %}
+  </div>
+</section>
+
+<section id="s7">
+  <div class="wrap">
+    <div class="kicker">{{ t("demo.report.proof.kicker") }}</div>
+    <h2>{{ t("demo.report.proof.title") }}</h2>
+    <div class="grid g2" style="margin-top:1rem">
+      <div class="card">
+        <p>{{ t("demo.report.proof.audit", entries=r.audit_entries) }}</p>
+        {% if r.audit_head %}
+        <p class="muted small">{{ t("demo.report.proof.head") }}:<br><span class="mono" style="word-break:break-all">{{ r.audit_head }}</span></p>
+        {% endif %}
+      </div>
+      <div class="card">
+        <ul class="plain small">
+          <li>{{ t("demo.report.limit.1") }}</li>
+          <li>{{ t("demo.report.limit.2") }}</li>
+          <li>{{ t("demo.report.limit.3") }}</li>
+          <li>{{ t("demo.report.limit.4") }}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="note">{{ t("demo.invented") }} {{ t("disclaimer") }}</div>
+  </div>
+</section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var STEPS = {{ steps_json }};
+  var LABELS = {{ labels_json }};
+
+  var stored = null;
+  try { stored = localStorage.getItem("arbiter-theme"); } catch (e) { stored = null; }
+  if (stored === "light" || stored === "dark") { root.setAttribute("data-theme", stored); }
+  document.getElementById("theme").addEventListener("click", function () {
+    var now = root.getAttribute("data-theme");
+    if (!now) { now = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"; }
+    var next = now === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("arbiter-theme", next); } catch (e) { /* private window */ }
+  });
+
+  // The steps of the run.
+  var stepsEl = document.getElementById("steps");
+  var stage = document.getElementById("stage");
+  var playBtn = document.getElementById("play");
+  var current = 0, timer = null;
+  function show(i) {
+    current = i;
+    Array.prototype.forEach.call(stepsEl.children, function (b, k) {
+      b.classList.toggle("on", k === i);
+      b.setAttribute("aria-selected", k === i ? "true" : "false");
+    });
+    var s = STEPS[i];
+    stage.textContent = "";
+    var h = document.createElement("h3"); h.textContent = (i + 1) + ". " + s.title;
+    var p = document.createElement("p"); p.textContent = s.detail;
+    var mark = document.createElement("span");
+    mark.className = "pill " + (s.ok ? "ok" : "no");
+    mark.textContent = s.ok ? LABELS.expected : LABELS.differs;
+    stage.appendChild(h); stage.appendChild(p); stage.appendChild(mark);
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶ " + LABELS.play; } }
+  STEPS.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "tab");
+    if (!s.ok) { b.className = "bad"; }
+    var n = document.createElement("span"); n.className = "n"; n.textContent = LABELS.step + " " + (i + 1);
+    b.appendChild(n); b.appendChild(document.createTextNode(s.title));
+    b.addEventListener("click", function () { stop(); show(i); });
+    stepsEl.appendChild(b);
+  });
+  playBtn.addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    playBtn.textContent = "⏸ " + LABELS.pause;
+    timer = setInterval(function () { show((current + 1) % STEPS.length); }, 4200);
+  });
+  if (STEPS.length) { show(0); }
+
+  // The deck: one screen for each section, read from left to right.
+  var deck = document.getElementById("deck");
+  var sections = Array.prototype.slice.call(deck.querySelectorAll("section"));
+  var pager = document.getElementById("pager");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+  var index = 0;
+  function go(i) {
+    i = Math.max(0, Math.min(sections.length - 1, i));
+    deck.scrollTo({ left: i * deck.clientWidth, behavior: reduced ? "auto" : "smooth" });
+  }
+  function update() {
+    var width = deck.clientWidth || 1;
+    index = Math.round(deck.scrollLeft / width);
+    var max = deck.scrollWidth - width;
+    bar.style.width = (max > 0 ? (deck.scrollLeft / max) * 100 : 0) + "%";
+    pager.textContent = (index + 1) + " / " + sections.length;
+    prev.disabled = index === 0;
+    next.disabled = index === sections.length - 1;
+  }
+  deck.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", function () { deck.scrollLeft = index * deck.clientWidth; update(); });
+  prev.addEventListener("click", function () { go(index - 1); });
+  next.addEventListener("click", function () { go(index + 1); });
+  document.addEventListener("keydown", function (ev) {
+    var to = null;
+    if (ev.key === "ArrowRight" || ev.key === "PageDown") { to = index + 1; }
+    if (ev.key === "ArrowLeft" || ev.key === "PageUp") { to = index - 1; }
+    if (ev.key === "Home") { to = 0; }
+    if (ev.key === "End") { to = sections.length - 1; }
+    if (to === null) { return; }
+    ev.preventDefault();
+    go(to);
+  });
+  update();
+})();
+</script>
+</body>
+</html>

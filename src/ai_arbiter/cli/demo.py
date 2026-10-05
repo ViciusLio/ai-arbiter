@@ -3,6 +3,7 @@
 import json
 import logging
 from importlib import resources
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -17,6 +18,7 @@ from ai_arbiter.cli.common import (
     settings_from,
 )
 from ai_arbiter.cli.demo_consulting import CONSULTING_TENANT, consulting_tour
+from ai_arbiter.cli.demo_report import render_demo_report
 from ai_arbiter.cli.systems import Locale, translator
 from ai_arbiter.compliance.inventory.declarations import parse_declarations
 from ai_arbiter.compliance.simulation.model import load_scenario, packaged_scenarios
@@ -335,6 +337,13 @@ def tour(
             help="Which demonstration: general, or consulting (an IT consulting firm).",
         ),
     ] = "general",
+    report: Annotated[
+        Path | None,
+        typer.Option(
+            "--report",
+            help="Also write the run as one HTML page to show. Only with --case consulting.",
+        ),
+    ] = None,
     locale: Locale = "en",
 ) -> None:
     """A guided demonstration in one command: the gateway and the toolkit at work.
@@ -342,21 +351,27 @@ def tour(
     ``general`` loads the scenarios into the tenant ``demo``, sends requests through the
     gateway with a mock model, calls a mock MCP server and a mock agent through the
     proxies, then scans and verifies the audit log. ``consulting`` follows an invented IT
-    consulting firm with its own internal regulation, in the tenant ``demo-consulting``.
-    Everything runs in this process: no network, no real model, and no other tenant is
-    touched.
+    consulting firm that approved one family of models, in the tenant ``demo-consulting``,
+    and can write what happened as a page to show. Everything runs in this process: no
+    network, no real model, and no other tenant is touched.
     """
     t = translator(locale)
     if case not in CASES:
         raise fail(ArbiterError(f"unknown case '{case}': use {' or '.join(CASES)}"))
+    if report is not None and case != "consulting":
+        raise fail(ArbiterError("--report is for the consulting case: add --case consulting"))
     settings = settings_from(ctx)
     # The demonstration makes dozens of requests inside this process: one log line for
     # each would bury the steps it prints.
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    steps: list[tuple[str, bool, str]]
     if case == "consulting":
-        steps, tenant = run(consulting_tour(settings, t)), CONSULTING_TENANT
+        result = run(consulting_tour(settings, t))
+        steps = [(step.title, step.ok, step.detail) for step in result.steps]
+        tenant = CONSULTING_TENANT
         typer.echo(t.text("demo.consulting.intro"))
     else:
+        result = None
         steps, tenant = run(_tour(settings, t)), DEMO_TENANT
         typer.echo(t.text("demo.tour.intro"))
     typer.echo("")
@@ -365,6 +380,10 @@ def tour(
         typer.echo(f"{number}. {title}  [{mark}]")
         typer.echo(f"   {detail}")
     typer.echo("")
+    if report is not None and result is not None:
+        report.parent.mkdir(parents=True, exist_ok=True)
+        report.write_text(render_demo_report(result, t), encoding="utf-8", newline="\n")
+        typer.echo(t.text("demo.report.written", path=report))
     typer.echo(t.text("demo.next", tenant=tenant))
     typer.echo(t.text("demo.invented"))
     typer.echo(t.text("disclaimer"))
