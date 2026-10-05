@@ -1,0 +1,66 @@
+# The two systems the guided demonstration (`arbiter demo tour`) sends traffic for.
+# Every system here is invented.
+#
+# They are kept apart from the scenarios: the tour makes requests on their behalf, and
+# that traffic must not change what a scenario expects of its own systems.
+#
+# Arbiter is a support tool. It does not provide legal advice.
+
+fact_sets:
+  in_scope:
+    scope.is_ai_system: true
+    scope.union_nexus: true
+    scope.military_defence_national_security: false
+    scope.scientific_research_only: false
+    scope.pre_market_development: false
+    scope.personal_non_professional: false
+  no_prohibited_practice:
+    prohibited.manipulative_techniques: false
+    prohibited.exploits_vulnerabilities: false
+    prohibited.intimate_content_without_consent: false
+    prohibited.child_sexual_abuse_material: false
+    prohibited.social_scoring: false
+    prohibited.crime_prediction_by_profiling: false
+    prohibited.facial_image_scraping: false
+    prohibited.emotion_inference_work_education: false
+    prohibited.biometric_categorisation_sensitive: false
+    prohibited.realtime_remote_biometric_identification: false
+  no_high_risk_area:
+    high_risk.annex1_safety_component: false
+    annex3.biometrics: false
+    annex3.critical_infrastructure: false
+    annex3.education: false
+    annex3.employment: false
+    annex3.essential_services: false
+    annex3.law_enforcement: false
+    annex3.migration: false
+    annex3.justice: false
+  no_transparency_case:
+    transparency.interacts_with_persons: false
+    transparency.generates_synthetic_content: false
+    transparency.emotion_or_biometric_categorisation: false
+    transparency.deep_fake: false
+    transparency.public_interest_text: false
+
+systems:
+  - key: tour-office-assistant
+    name: Office assistant of the tour
+    purpose: Drafts reminders and looks things up for the back office. Invented.
+    roles:
+      - { role: deployer, basis: "Part of the guided demonstration" }
+    models:
+      - { provider: mock, model: mock-small }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      data.personal_data_processed: true
+
+  - key: tour-mood-monitor
+    name: Mood monitor of the tour
+    purpose: Would infer the mood of employees from their messages. Invented.
+    lifecycle: planned
+    roles:
+      - { role: deployer, basis: "Part of the guided demonstration" }
+    use: [in_scope, no_prohibited_practice, no_high_risk_area, no_transparency_case]
+    facts:
+      prohibited.emotion_inference_work_education: true
+      prohibited.emotion_inference_medical_or_safety: false

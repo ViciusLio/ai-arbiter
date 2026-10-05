@@ -9,7 +9,8 @@ import typer
 from ai_arbiter.cli.common import DISCLAIMER, fail, settings_from
 from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.errors import ArbiterError
-from ai_arbiter.core.plugins.registry import PII_DETECTORS, PluginRegistry
+from ai_arbiter.core.plugins.detectors import load_detector
+from ai_arbiter.core.plugins.registry import PluginRegistry
 from ai_arbiter.core.redaction import (
     GENERAL_LIMITS,
     PIIDetector,
@@ -23,9 +24,7 @@ app = typer.Typer(help="Inspect and try PII detection.", no_args_is_help=True)
 
 def _detector(settings: Settings) -> PIIDetector:
     try:
-        detector: PIIDetector = PluginRegistry().load(
-            PII_DETECTORS, settings.plugins.pii_detector
-        )()
+        detector = load_detector(PluginRegistry(), settings)
     except ArbiterError as error:
         raise fail(error) from error
     return detector

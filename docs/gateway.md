@@ -247,11 +247,59 @@ Run `arbiter pii detectors` for the list below as the installed version sees it,
 | `ip_address` | IPv4 and IPv6 literals | Host names |
 | `secret` | Private key blocks, JSON Web Tokens, keys with well-known prefixes | Passwords; credentials with no recognisable format |
 
-**The built-in detectors recognise formats, not meaning. They do not detect names,
+**The built-in detectors recognise formats, not meaning.** They do not detect names,
 postal addresses, dates of birth, health data or any personal data written as free
-text.** Identity documents and the phone and VAT formats of other member states arrive in
-v0.1.x (ADR-0027). Precision and recall have not been measured yet. Treat redaction as a
-reduction of exposure, not as a guarantee.
+text. Identity documents and the phone and VAT formats of other member states arrive in
+v0.1.x (ADR-0027). Treat redaction as a reduction of exposure, not as a guarantee.
+
+#### Names and places written in words
+
+An optional detector adds what only meaning can find (ADR-0055). It runs Microsoft
+Presidio with spaCy language models **in the process**: no text leaves the machine and
+none is kept. It adds to the built-in detectors and does not replace them.
+
+```bash
+uv sync --all-extras --group pii-models     # from a clone: the extra and two models
+# once published: pip install "ai-arbiter[pii]", then the models for your languages:
+#   python -m spacy download en_core_web_md
+#   python -m spacy download it_core_news_md
+```
+
+```yaml
+plugins:
+  pii_detector: presidio          # default: builtin
+redaction:
+  detector_settings:              # all optional; these are the defaults
+    models: { en: en_core_web_md, it: it_core_news_md }
+    entities: [PERSON, LOCATION]  # add NRP for nationality, religious or political group
+    min_score: 0.5
+```
+
+| Category | What marks it | What is missed |
+|---|---|---|
+| `person_name` | A statistical language model | Names it does not know, lower-case names, initials; ordinary words are sometimes marked |
+| `location` | A statistical language model | Street addresses as a whole; a city is usually found, a street often is not |
+| `group_affiliation` | The same, in English only; off by default | Anything said indirectly. Health data is not found by any detector |
+
+Measured on 2026-10-05 on about fifty invented sentences per language
+([the figures, and their limits](pii-evaluation.md)):
+
+| Detector | Language | Recall | Precision | Median time per sentence |
+|---|---|---:|---:|---:|
+| `builtin` | English | 14% | 100% | under 0.1 ms |
+| `builtin` | Italian | 17% | 100% | under 0.1 ms |
+| `presidio` | English | 81% | 97% | about 6 ms |
+| `presidio` | Italian | 93% | 93% | about 7 ms |
+
+- The set is small, synthetic and written by the author of the detectors: the figures
+  show the direction, they do not promise that personal data will be found in your
+  prompts.
+- A text is read by the model of its language only, chosen from its common words: a
+  model reading another language marks ordinary words as names.
+- The models take several seconds to load, once per process, and a few hundred megabytes
+  of memory. A model that is not installed is an error; it is never downloaded for you.
+- Group affiliations are off by default: switched on, six detections in ten were
+  ordinary adjectives.
 
 ```yaml
 redaction:

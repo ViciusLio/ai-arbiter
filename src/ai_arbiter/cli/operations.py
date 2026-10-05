@@ -37,7 +37,8 @@ from ai_arbiter.core.domain.time import utcnow
 from ai_arbiter.core.errors import ArbiterError
 from ai_arbiter.core.events.bus import InProcessEventBus
 from ai_arbiter.core.persistence.tenant import Tenant
-from ai_arbiter.core.plugins.registry import PII_DETECTORS, TELEMETRY_SOURCES, PluginRegistry
+from ai_arbiter.core.plugins.detectors import load_detector
+from ai_arbiter.core.plugins.registry import TELEMETRY_SOURCES, PluginRegistry
 from ai_arbiter.gateway.finops.catalogue import load_catalogue
 from ai_arbiter.gateway.finops.metering import UsageMeter
 
@@ -46,7 +47,7 @@ async def _ingest(
     settings: Settings, tenant: str, path: Path, source_name: str, strict: bool
 ) -> IngestReport:
     registry = PluginRegistry()
-    detector = registry.load(PII_DETECTORS, settings.plugins.pii_detector)()
+    detector = load_detector(registry, settings)
     source = registry.load(TELEMETRY_SOURCES, source_name)(detector)
     compliance = compliance_for(settings)
     # Imported records are counted in the usage roll-ups like the gateway's own.

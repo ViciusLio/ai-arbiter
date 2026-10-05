@@ -1,0 +1,65 @@
+# Frasi sintetiche per misurare il riconoscimento dei dati personali, in italiano.
+#
+# Ogni riga è un testo. Ciò che andrebbe riconosciuto è scritto come [testo](categoria).
+# Le righe senza etichette sono lì per contare i falsi positivi. Persone, indirizzi e
+# numeri sono inventati; IBAN, codici fiscali e carte sono esempi di formato valido.
+#
+# L'insieme è piccolo ed è stato scritto da chi ha scritto i riconoscitori: dà
+# un'indicazione, non una garanzia. Vedi docs/pii-evaluation.md.
+
+# Nomi di persona
+Scrivi una risposta a [Maria Rossi](person_name) sul ritardo della consegna.
+Il contratto è stato firmato da [Giovanni Bianchi](person_name) il mese scorso.
+[Luca Ferrari](person_name) chiede se può spostare l'appuntamento a giovedì.
+Riassumi la lamentela della signora [Esposito](person_name).
+La pratica è seguita dall'avvocato [Chiara De Luca](person_name).
+Ho parlato con [Alessandro Conti](person_name) e con [Sara Gallo](person_name) della fattura.
+Il paziente [Marco Romano](person_name) ha chiamato due volte.
+Prepara una lettera di benvenuto per [Francesca Marino](person_name), la nuova collega.
+il cliente si chiama [paolo greco](person_name) e non ha ancora risposto
+Valuta la candidatura di [Elena Bruno](person_name) per il ruolo di analista.
+[Yusuf Demir](person_name) ha chiesto il rimborso del biglietto.
+Il dottor [Ricci](person_name) conferma la visita di controllo.
+Inoltra il messaggio a [Giulia](person_name) dell'amministrazione.
+La relazione di [Anna Maria Colombo](person_name) va corretta entro venerdì.
+Secondo [Roberto Fontana](person_name) il preventivo è troppo alto.
+
+# Luoghi
+La sede si trova a [Bologna](location), vicino alla stazione.
+Il cliente abita in [via Garibaldi 14](location) a [Torino](location).
+Spedisci il pacco a [Napoli](location) entro lunedì.
+Si è trasferita da [Palermo](location) a [Milano](location) per lavoro.
+L'incontro è fissato a [Firenze](location) in [piazza della Repubblica](location).
+Organizza la trasferta in [Sardegna](location) per il gruppo vendite.
+Il magazzino di [Verona](location) ha finito le scorte.
+Abita in [corso Vittorio Emanuele 120](location), secondo piano.
+
+# Formati
+Rispondi a [l.ferrari@example.com](email) con il preventivo.
+Il mio numero è [+39 02 1234 5678](phone), chiamami dopo le 15.
+Bonifico su [IT60X0542811101000000123456](iban) entro fine mese.
+Il codice fiscale del richiedente è [RSSMRA85T10A562S](it_fiscal_code).
+Addebita sulla carta [4111 1111 1111 1111](payment_card) come l'altra volta.
+Contatta [Marta Villa](person_name) a [marta.villa@example.org](email) o al [+39 347 1234567](phone).
+
+# Più cose insieme
+[Davide Rizzo](person_name), residente a [Genova](location), chiede la disdetta del contratto.
+Scrivi a [Laura Moretti](person_name) di [Bari](location) che la pratica è chiusa.
+La signora [Barbieri](person_name) di [Padova](location) ha un saldo scoperto.
+
+# Nessun dato personale
+Riassumi il verbale della riunione di ieri.
+Traduci in inglese questa descrizione del prodotto.
+Quali sono i vantaggi del modello Premium rispetto al Base?
+Scrivi un titolo per l'articolo sulle energie rinnovabili.
+Correggi gli errori di grammatica nel testo seguente.
+Il rapporto trimestrale mostra una crescita del dodici per cento.
+Confronta le offerte di tre fornitori di software gestionale.
+Prepara una scaletta per il corso di Excel avanzato.
+Il sistema operativo Windows va aggiornato a marzo.
+Genera dieci idee per la campagna di Natale.
+Spiega la differenza tra leasing e noleggio a lungo termine.
+Il team Marketing presenta i risultati lunedì mattina.
+Elenca i passaggi per configurare la stampante di rete.
+La versione Aurora del prodotto esce in primavera.
+Che cosa prevede il regolamento europeo sulla protezione dei dati?

@@ -16,7 +16,7 @@ step "Lock file is up to date"
 uv lock --check
 
 step "Install (Python $(cat .python-version), all extras)"
-uv sync --locked --all-extras
+uv sync --locked --all-extras --group pii-models
 
 step "Lint"
 uv run ruff check .
@@ -30,7 +30,7 @@ step "Import rules"
 uv run lint-imports
 
 step "Tests with coverage (Python $(cat .python-version))"
-uv run pytest --cov
+uv run --group pii-models pytest --cov
 
 for version in 3.13 3.14; do
     step "Tests (Python ${version})"

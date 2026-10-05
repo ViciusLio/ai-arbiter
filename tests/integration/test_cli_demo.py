@@ -65,3 +65,37 @@ def test_a_demo_needs_one_scenario_or_all_and_a_name_that_exists() -> None:
         "demo", "run", "nope", ok=False
     )
     assert "Error: " in arbiter("demo", "run", "--all", "--locale", "fr", ok=False)
+
+
+def test_the_tour_shows_the_gateway_and_the_toolkit_at_work_and_can_be_repeated() -> None:
+    import pytest
+
+    pytest.importorskip("fastapi", reason="needs the gateway extra")
+    pytest.importorskip("mcp_types", reason="needs the mcp extra")
+    pytest.importorskip("a2a", reason="needs the a2a extra")
+    arbiter("init")
+
+    output = arbiter("demo", "tour")
+    again = arbiter("demo", "tour", "--locale", "it")
+
+    assert "DIFFERS" not in output
+    assert output.count("[as the scenario expects]") == 7
+    assert "10 invented systems were declared, classified and scanned." in output
+    assert "Categories masked before the model saw the prompt: email." in output
+    assert "was denied by the rule POL-SYSTEM-PROHIBITED." in output
+    assert "listed the tools read, write." in output
+    assert "calling another was denied by MCP-CALL-NOT-GRANTED." in output
+    assert "The card of the agent was verified and the call went through." in output
+    assert "it was invalid, and the call was denied by A2A-CARD-NOT-TRUSTED." in output
+    assert "no broken link" in output
+    assert "It does not provide legal advice." in output
+    assert "DIVERSO" not in again
+    assert again.count("[come previsto dallo scenario]") == 7
+    # Nothing of the demonstration is in the tenant of the organisation.
+    assert "No AI system is declared." in arbiter("systems", "list")
+    assert "No MCP server is registered." in arbiter("mcp", "servers", "list")
+    listed = arbiter("mcp", "servers", "list", "--tenant", "demo")
+    assert re.search(r"demo-files\s+governable\s+streamable_http\s+2 tools", listed)
+    assert re.search(
+        r"demo-routes\s+governable\s+verified", arbiter("a2a", "agents", "list", "--tenant", "demo")
+    )

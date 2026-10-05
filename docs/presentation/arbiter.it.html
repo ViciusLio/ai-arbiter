@@ -6,7 +6,7 @@
 <title>Arbiter in breve</title>
 <meta name="description" content="Che cosa fa Arbiter, come funziona e a che punto è, spiegato a chi non è tecnico.">
 <style>
-/* Layout: one column of wide sections, each a step of the story; cards only where items are peers. */
+/* Layout: a deck read from left to right, one screen for each step of the story. */
 :root {
   color-scheme: dark;
   --bg: #0d1117; --panel: #161c26; --panel-2: #1d2532; --line: #2b3545;
@@ -34,16 +34,16 @@
   --glow-1: rgba(22, 104, 199, .10); --glow-2: rgba(13, 138, 99, .08);
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html, body { height: 100%; }
 body {
-  margin: 0; background: var(--bg); color: var(--text);
+  margin: 0; background: var(--bg); color: var(--text); overflow: hidden;
   font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 a { color: var(--accent); }
 h1, h2, h3 { line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.01em; text-wrap: balance; }
-h1 { font-size: clamp(2.2rem, 6vw, 4.2rem); }
-h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); }
+h1 { font-size: clamp(2rem, 5.2vw, 3.8rem); }
+h2 { font-size: clamp(1.45rem, 3vw, 2.2rem); }
 h3 { font-size: 1.12rem; }
 p { margin: 0 0 1em; }
 .lead { font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--muted); max-width: 46rem; }
@@ -59,25 +59,44 @@ nav.top button, .chip {
 }
 nav.top button:hover { border-color: var(--accent); }
 button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#dots { position: fixed; right: 16px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 29; }
-#dots a { width: 10px; height: 10px; border-radius: 50%; background: var(--line); display: block; transition: transform .2s, background .2s; }
-#dots a.on { background: var(--accent); transform: scale(1.5); }
+#deck {
+  display: flex; height: 100%; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none;
+}
+#deck::-webkit-scrollbar { display: none; }
+#pager {
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 29;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+}
+#dots { display: flex; gap: 7px; }
+#dots button { width: 9px; height: 9px; padding: 0; border: 0; border-radius: 50%; background: var(--line); cursor: pointer; transition: transform .2s, background .2s; }
+#dots button.on { background: var(--accent); transform: scale(1.5); }
+#count { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.arrow {
+  position: fixed; top: 50%; transform: translateY(-50%); z-index: 29; width: 2.6rem; height: 2.6rem;
+  border-radius: 50%; border: 1px solid var(--line); background: var(--panel); color: var(--text);
+  font: inherit; font-size: 1.5rem; line-height: 1; cursor: pointer;
+}
+.arrow:hover { border-color: var(--accent); }
+.arrow[disabled] { opacity: .3; cursor: default; }
+#prev { left: 10px; } #next { right: 10px; }
+@media (max-width: 720px) { .arrow { top: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); transform: none; } #dots { display: none; } }
 
 section {
-  padding: 4.5rem 1.25rem 4rem;
-  border-bottom: 1px solid var(--line);
+  flex: 0 0 100%; height: 100%; overflow-y: auto; scroll-snap-align: start; scroll-snap-stop: always;
+  padding: 3.6rem 3.6rem 4rem; display: flex;
 }
-.wrap { width: min(1080px, 100%); margin: 0 auto; }
-/* Everything is readable at rest; a section only rises a little when it comes into view. */
-.reveal { transition: transform .6s ease; }
-.reveal.below { transform: translateY(14px); }
+.wrap { width: min(1080px, 100%); margin: auto; }
+@media (max-width: 720px) { section { padding: 3.4rem 1rem 4.2rem; } }
 
 .grid { display: grid; gap: 16px; }
 .g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
 .g3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .g4 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 .card {
-  background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem 1.25rem; box-shadow: var(--shadow);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem; box-shadow: var(--shadow);
 }
 .card p:last-child { margin-bottom: 0; }
 .card .mark { width: 2.2rem; height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); margin-bottom: .8rem; }
@@ -92,7 +111,7 @@ section {
 .pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.no { color: var(--danger); } .pill.info { color: var(--accent); }
 
 /* cover */
-.cover { padding-top: 6rem; background: radial-gradient(1200px 600px at 15% 10%, var(--glow-1), transparent 60%), radial-gradient(900px 500px at 90% 90%, var(--glow-2), transparent 60%); }
+.cover { background: radial-gradient(1200px 600px at 15% 10%, var(--glow-1), transparent 60%), radial-gradient(900px 500px at 90% 90%, var(--glow-2), transparent 60%); }
 .cover .badge { display: inline-flex; gap: .5rem; align-items: center; margin-top: 1.5rem; }
 .hint { margin-top: 2.5rem; color: var(--muted); font-size: .9rem; }
 kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px; background: var(--panel); font: inherit; font-size: .85em; }
@@ -148,9 +167,14 @@ table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase;
 .big { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; letter-spacing: -.02em; color: var(--accent); font-variant-numeric: tabular-nums; }
 .stat { text-align: center; }
 .stat .lab { color: var(--muted); font-size: .88rem; }
-footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); font-size: .88rem; }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal, .reveal.below { transform: none; transition: none; } }
-@media print { nav.top, #dots, #bar, .hint { display: none; } section { page-break-inside: avoid; } .reveal.below { transform: none; } }
+.foot { margin-top: 1.2rem; text-align: center; color: var(--muted); font-size: .85rem; }
+@media (prefers-reduced-motion: reduce) { #deck { scroll-behavior: auto; } }
+@media print {
+  html, body { height: auto; } body { overflow: visible; }
+  nav.top, #pager, .arrow, #bar, .hint { display: none; }
+  #deck { display: block; height: auto; overflow: visible; }
+  section { height: auto; overflow: visible; page-break-inside: avoid; padding: 1.5rem 0; }
+}
 </style>
 </head>
 <body>
@@ -158,10 +182,14 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 <nav class="top" aria-label="Comandi">
   <button id="theme" type="button" aria-label="Cambia tema chiaro o scuro">Tema</button>
 </nav>
-<div id="dots" aria-hidden="true"></div>
+<button class="arrow" id="prev" type="button" aria-label="Sezione precedente">‹</button>
+<button class="arrow" id="next" type="button" aria-label="Sezione successiva">›</button>
+<div id="pager"><div id="dots"></div><span id="count" aria-live="polite"></span></div>
+
+<main id="deck">
 
 <section class="cover" id="s1">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Arbiter · progetto open source</div>
     <h1>Sapere quali sistemi di IA usi.<br>E poterlo mostrare.</h1>
     <p class="lead">Arbiter collega due cose che di solito restano separate: ciò che un'organizzazione <strong>dichiara</strong> sui propri sistemi di intelligenza artificiale e ciò che il loro <strong>traffico reale</strong> mostra. Lo fa con l'AI Act europeo come riferimento.</p>
@@ -170,12 +198,12 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
       <span class="pill info">Non ancora pubblicato</span>
       <span class="pill ok">Licenza Apache 2.0</span>
     </div>
-    <p class="hint">Scorri, oppure usa <kbd>↓</kbd> e <kbd>↑</kbd> per passare da una sezione all'altra. Molti riquadri si possono toccare.</p>
+    <p class="hint">Vai avanti con <kbd>→</kbd>, torna indietro con <kbd>←</kbd>, oppure usa i pulsanti ai lati. Molti riquadri si possono toccare.</p>
   </div>
 </section>
 
 <section id="s2">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Il problema</div>
     <h2>L'IA entra in azienda più in fretta di quanto la si riesca a contare</h2>
     <p class="lead">Un assistente per il servizio clienti, un modulo che ordina i curriculum, un collega che incolla dati in un chatbot. Ognuno è un sistema di IA, e la legge chiede di sapere quali sono, a cosa servono e quanto sono rischiosi.</p>
@@ -188,7 +216,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s3">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">L'idea</div>
     <h2>Due metà che si parlano</h2>
     <p class="lead">Ciascuna funziona anche da sola. Insieme fanno la cosa che conta: confrontare il dichiarato con l'osservato.</p>
@@ -210,7 +238,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s4">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Come funziona</div>
     <h2>Il viaggio di una richiesta</h2>
     <p class="lead">Tocca i passaggi, oppure lasciali scorrere.</p>
@@ -221,7 +249,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s5">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Classificazione</div>
     <h2>Una classe di rischio, sempre come proposta</h2>
     <p class="lead">Si risponde a domande prese dal testo della legge. Le stesse risposte danno sempre lo stesso risultato: nessun modello di IA decide la classe.</p>
@@ -236,7 +264,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s6">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Il calendario dell'AI Act</div>
     <h2>Cosa si applica, e da quando</h2>
     <p class="lead">Le date sono quelle del Regolamento (UE) 2024/1689 come modificato nel 2026, lette sul testo della Gazzetta ufficiale.</p>
@@ -254,7 +282,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s7">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Dichiarato contro osservato</div>
     <h2>Quando i fatti contraddicono le carte</h2>
     <p class="lead">Arbiter non legge il contenuto delle conversazioni: guarda solo i dati di contorno. Bastano per accorgersi di molto.</p>
@@ -276,7 +304,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s8">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Strumenti e agenti</div>
     <h2>L'IA che usa strumenti e parla con altre IA</h2>
     <p class="lead">I sistemi di oggi non si limitano a rispondere: leggono file, interrogano archivi, chiedono aiuto ad altri agenti. Arbiter si mette in mezzo anche lì.</p>
@@ -295,7 +323,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s9">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Di cosa ci si può fidare</div>
     <h2>Come è costruito</h2>
     <div class="grid g3" style="margin-top:1rem">
@@ -316,13 +344,13 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s10">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">Con onestà</div>
     <h2>Cosa Arbiter non fa</h2>
     <div class="grid g2" style="margin-top:1rem">
       <div class="card"><h3><span class="pill no">No</span> Non è consulenza legale</h3><p class="muted">È uno strumento di supporto. Non dice mai che un sistema "è conforme": dice "indicativo" e "nessun rilievo".</p></div>
       <div class="card"><h3><span class="pill no">No</span> Non verifica che le dichiarazioni siano vere</h3><p class="muted">Una classificazione vale quanto le risposte date. Il traffico ne smentisce alcune, non tutte.</p></div>
-      <div class="card"><h3><span class="pill warn">Limite</span> Dati personali riconosciuti per formato</h3><p class="muted">Trova email, telefoni, IBAN, codici fiscali. Non riconosce nomi, indirizzi o dati sanitari scritti a parole. È il prossimo punto da migliorare.</p></div>
+      <div class="card"><h3><span class="pill warn">Limite</span> Dati personali: formati, nomi e luoghi</h3><p class="muted">Di base trova email, telefoni, IBAN, codici fiscali. Un componente opzionale, che lavora in locale, aggiunge nomi e luoghi scritti a parole: su un centinaio di frasi inventate ne ha trovati tra l'81 e il 93 per cento. I dati sanitari non li riconosce nessuno dei due.</p></div>
       <div class="card"><h3><span class="pill warn">Limite</span> Solo chi usa l'IA, non chi la produce</h3><p class="muted">Oggi valuta gli obblighi di chi impiega un sistema. Quelli di chi lo sviluppa arriveranno dopo.</p></div>
       <div class="card"><h3><span class="pill warn">Limite</span> Registro che rivela, non che impedisce</h3><p class="muted">Una manomissione parziale si vede. Chi può riscrivere tutto il database può riscrivere tutta la catena: serve una copia esterna dell'ultima impronta.</p></div>
       <div class="card"><h3><span class="pill info">Stato</span> Non ancora pubblicato</h3><p class="muted">Nessuna versione è stata rilasciata. Diverse parti sono state provate solo con controparti simulate.</p></div>
@@ -331,7 +359,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s11">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">A che punto siamo</div>
     <h2>Il percorso, fase per fase</h2>
     <p class="lead">Stima al 5 ottobre 2026. Le percentuali misurano il lavoro di costruzione, non il valore legale delle regole.</p>
@@ -345,7 +373,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </section>
 
 <section id="s12">
-  <div class="wrap reveal">
+  <div class="wrap">
     <div class="kicker">In sintesi</div>
     <h2>Cosa ottieni</h2>
     <div class="grid g2" style="margin-top:1rem">
@@ -355,13 +383,11 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
       <div class="card"><h3>Prove che reggono</h3><p class="muted">Un registro verificabile di cosa è stato deciso e quando, senza conservare il contenuto delle conversazioni.</p></div>
     </div>
     <div class="note">Arbiter è uno strumento di supporto. Non fornisce consulenza legale.</div>
+    <p class="foot">Arbiter · <a href="https://github.com/ViciusLio/ai-arbiter">github.com/ViciusLio/ai-arbiter</a> · Apache 2.0 · Presentazione aggiornata al 5 ottobre 2026.</p>
   </div>
 </section>
+</main>
 
-<footer>
-  Arbiter · <a href="https://github.com/ViciusLio/ai-arbiter">github.com/ViciusLio/ai-arbiter</a> · Apache 2.0 · Presentazione aggiornata al 5 ottobre 2026.<br>
-  Arbiter è uno strumento di supporto. Non fornisce consulenza legale.
-</footer>
 
 <script>
 (function () {
@@ -485,52 +511,79 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
     requestAnimationFrame(frame);
   }
 
-  // Reveal on scroll, dots, progress bar.
-  var sections = Array.prototype.slice.call(document.querySelectorAll("section"));
+  // The deck: one screen for each section, read from left to right.
+  var deck = document.getElementById("deck");
+  var sections = Array.prototype.slice.call(deck.querySelectorAll("section"));
   var dots = document.getElementById("dots");
-  sections.forEach(function (s) {
-    var a = document.createElement("a"); a.href = "#" + s.id; dots.appendChild(a);
+  var counter = document.getElementById("count");
+  var bar = document.getElementById("bar");
+  var prev = document.getElementById("prev");
+  var next = document.getElementById("next");
+  var index = 0;
+  function go(i) {
+    i = Math.max(0, Math.min(sections.length - 1, i));
+    deck.scrollTo({ left: i * deck.clientWidth, behavior: reduced ? "auto" : "smooth" });
+  }
+  sections.forEach(function (s, i) {
+    var d = document.createElement("button");
+    d.type = "button";
+    d.setAttribute("aria-label", (i + 1) + " / " + sections.length);
+    d.addEventListener("click", function () { go(i); });
+    dots.appendChild(d);
   });
   function activate(s) {
-    var w = s.querySelector(".reveal"); if (w) { w.classList.remove("below"); }
     if (s.dataset.done) { return; }
     s.dataset.done = "1";
     Array.prototype.forEach.call(s.querySelectorAll("[data-count]"), count);
   }
-  if ("IntersectionObserver" in window && !reduced) {
-    // Only sections below the first screen rise into place; nothing is ever hidden.
-    sections.forEach(function (s) {
-      var w = s.querySelector(".reveal");
-      if (w && s.getBoundingClientRect().top > window.innerHeight) { w.classList.add("below"); }
-    });
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (!en.isIntersecting) { return; }
-        activate(en.target);
-        var idx = sections.indexOf(en.target);
-        Array.prototype.forEach.call(dots.children, function (d, k) { d.classList.toggle("on", k === idx); });
-      });
-    }, { threshold: 0.2 });
-    sections.forEach(function (s) { io.observe(s); });
+  function update() {
+    var width = deck.clientWidth || 1;
+    index = Math.round(deck.scrollLeft / width);
+    var max = deck.scrollWidth - width;
+    bar.style.width = (max > 0 ? (deck.scrollLeft / max) * 100 : 0) + "%";
+    Array.prototype.forEach.call(dots.children, function (d, k) { d.classList.toggle("on", k === index); });
+    counter.textContent = (index + 1) + " / " + sections.length;
+    prev.disabled = index === 0;
+    next.disabled = index === sections.length - 1;
+    activate(sections[index]);
   }
-  var bar = document.getElementById("bar");
-  window.addEventListener("scroll", function () {
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
-  }, { passive: true });
+  deck.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", function () { deck.scrollLeft = index * deck.clientWidth; update(); });
+  prev.addEventListener("click", function () { go(index - 1); });
+  next.addEventListener("click", function () { go(index + 1); });
 
-  // Keyboard: arrows, page keys and space move by section.
-  document.addEventListener("keydown", function (ev) {
-    var dir = 0;
-    if (ev.key === "ArrowDown" || ev.key === "PageDown") { dir = 1; }
-    if (ev.key === "ArrowUp" || ev.key === "PageUp") { dir = -1; }
-    if (!dir) { return; }
-    var mid = window.scrollY + window.innerHeight / 2, idx = 0;
-    sections.forEach(function (s, k) { if (s.offsetTop <= mid) { idx = k; } });
-    var next = sections[Math.max(0, Math.min(sections.length - 1, idx + dir))];
+  // A wheel that scrolls down moves to the next section, once the section itself has no more to show.
+  var wheelAt = 0;
+  deck.addEventListener("wheel", function (ev) {
+    if (Math.abs(ev.deltaY) <= Math.abs(ev.deltaX)) { return; }
+    var s = sections[index];
+    var down = ev.deltaY > 0;
+    var room = down ? s.scrollTop + s.clientHeight < s.scrollHeight - 2 : s.scrollTop > 2;
+    if (room) { return; }
     ev.preventDefault();
-    next.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+    var now = Date.now();
+    if (now - wheelAt < 650) { return; }
+    wheelAt = now;
+    go(index + (down ? 1 : -1));
+  }, { passive: false });
+
+  document.addEventListener("keydown", function (ev) {
+    var typing = ev.target && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName);
+    if (typing) { return; }
+    var to = null;
+    if (ev.key === "ArrowRight" || ev.key === "PageDown") { to = index + 1; }
+    if (ev.key === "ArrowLeft" || ev.key === "PageUp") { to = index - 1; }
+    if (ev.key === "Home") { to = 0; }
+    if (ev.key === "End") { to = sections.length - 1; }
+    if (to === null) { return; }
+    ev.preventDefault();
+    go(to);
   });
+
+  // A link to one section: the plain anchor in the address opens the deck there.
+  var wanted = sections.findIndex(function (s) { return "#" + s.id === location.hash; });
+  if (wanted > 0) { deck.scrollLeft = wanted * deck.clientWidth; }
+  update();
 })();
 </script>
 </body>

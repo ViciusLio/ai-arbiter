@@ -1,0 +1,69 @@
+# Synthetic sentences to measure the detection of personal data, in English.
+#
+# Each line is one text. What should be found is written as [text](category). Lines
+# with no label are there to count false positives. People, addresses and numbers are
+# invented; IBANs, tax codes and cards are examples with a valid format.
+#
+# The set is small and was written by the author of the detectors: it gives an
+# indication, not a guarantee. See docs/pii-evaluation.md.
+
+# Names of persons
+Write a reply to [Mary Johnson](person_name) about the late delivery.
+The contract was signed by [James Whitaker](person_name) last month.
+[Oliver Bennett](person_name) asks whether the meeting can move to Thursday.
+Summarise the complaint from Mrs [Patel](person_name).
+The case is handled by the lawyer [Charlotte Davies](person_name).
+I spoke with [Daniel Murphy](person_name) and [Sophie Clarke](person_name) about the invoice.
+The patient [Thomas Reid](person_name) called twice.
+Draft a welcome letter for [Emily Foster](person_name), the new colleague.
+the customer is called [peter walsh](person_name) and has not replied yet
+Assess the application of [Hannah Schmidt](person_name) for the analyst role.
+[Yusuf Demir](person_name) asked for a refund of the ticket.
+Dr [Kowalski](person_name) confirms the follow-up visit.
+Forward the message to [Grace](person_name) in accounting.
+The report by [Anne-Marie O'Connor](person_name) must be corrected by Friday.
+According to [Robert Fontaine](person_name) the quote is too high.
+
+# Places
+The office is in [Manchester](location), near the station.
+The customer lives at [14 Garden Street](location) in [Leeds](location).
+Ship the parcel to [Dublin](location) by Monday.
+She moved from [Glasgow](location) to [London](location) for work.
+The meeting is set in [Edinburgh](location) on [Princes Street](location).
+Plan the trip to [Cornwall](location) for the sales team.
+The warehouse in [Rotterdam](location) has run out of stock.
+He lives at [221 Baker Street](location), second floor.
+
+# Groups
+The applicant says she is [Catholic](group_affiliation) and asks for Sunday off.
+He mentioned being a [Polish](group_affiliation) citizen on the form.
+The note says the employee is a member of the [Labour](group_affiliation) party.
+
+# Formats
+Reply to [o.bennett@example.com](email) with the quote.
+My number is [+44 20 7946 0958](phone), call me after three.
+Transfer to [IT60X0542811101000000123456](iban) by the end of the month.
+Charge the card [4111 1111 1111 1111](payment_card) like last time.
+Contact [Martha Lane](person_name) at [martha.lane@example.org](email) or on [+44 7700 900123](phone).
+
+# Several things together
+[David Rhodes](person_name), who lives in [Bristol](location), asks to cancel the contract.
+Tell [Laura Moretti](person_name) from [Cardiff](location) that the case is closed.
+Mrs [Barber](person_name) of [Oxford](location) has an overdue balance.
+
+# No personal data
+Summarise the minutes of yesterday's meeting.
+Translate this product description into Italian.
+What are the advantages of the Premium plan over the Basic one?
+Write a headline for the article on renewable energy.
+Fix the grammar mistakes in the following text.
+The quarterly report shows growth of twelve per cent.
+Compare the offers of three suppliers of accounting software.
+Prepare an outline for the advanced Excel course.
+The Windows operating system must be updated in March.
+Generate ten ideas for the Christmas campaign.
+Explain the difference between leasing and long-term rental.
+The Marketing team presents the results on Monday morning.
+List the steps to configure the network printer.
+The Aurora release of the product ships in spring.
+What does the European regulation on data protection require?

@@ -47,8 +47,14 @@ TEXTS: list[tuple[str, str]] = [
     ("Non ancora pubblicato</span>", "Not published yet</span>"),
     ("Licenza Apache 2.0", "Apache 2.0 licence"),
     (
-        "Scorri, oppure usa <kbd>↓</kbd> e <kbd>↑</kbd> per passare da una sezione all'altra. Molti riquadri si possono toccare.",
-        "Scroll, or use <kbd>↓</kbd> and <kbd>↑</kbd> to move from one section to the next. Many boxes can be tapped.",
+        "Vai avanti con <kbd>→</kbd>, torna indietro con <kbd>←</kbd>, oppure usa i pulsanti ai lati. Molti riquadri si possono toccare.",
+        "Go forward with <kbd>→</kbd>, back with <kbd>←</kbd>, or use the buttons at the sides. Many boxes can be tapped.",
+    ),
+    ('aria-label="Sezione precedente"', 'aria-label="Previous section"'),
+    ('aria-label="Sezione successiva"', 'aria-label="Next section"'),
+    (
+        "Presentazione aggiornata al 5 ottobre 2026.",
+        "Presentation updated on 5 October 2026.",
     ),
     ("Il problema</div>", "The problem</div>"),
     (
@@ -252,10 +258,10 @@ TEXTS: list[tuple[str, str]] = [
     ),
     ('<span class="pill warn">Limite</span>', '<span class="pill warn">Limit</span>'),
     ('<span class="pill info">Stato</span>', '<span class="pill info">Status</span>'),
-    ("Dati personali riconosciuti per formato", "Personal data recognised by format"),
+    ("Dati personali: formati, nomi e luoghi", "Personal data: formats, names and places"),
     (
-        "Trova email, telefoni, IBAN, codici fiscali. Non riconosce nomi, indirizzi o dati sanitari scritti a parole. È il prossimo punto da migliorare.",
-        "It finds e-mail addresses, phone numbers, IBANs, tax codes. It does not recognise names, addresses or health data written in words. That is the next thing to improve.",
+        "Di base trova email, telefoni, IBAN, codici fiscali. Un componente opzionale, che lavora in locale, aggiunge nomi e luoghi scritti a parole: su un centinaio di frasi inventate ne ha trovati tra l'81 e il 93 per cento. I dati sanitari non li riconosce nessuno dei due.",
+        "By default it finds e-mail addresses, phone numbers, IBANs, tax codes. An optional component, which works locally, adds names and places written in words: on about a hundred invented sentences it found between 81% and 93% of them. Neither recognises health data.",
     ),
     ("Solo chi usa l'IA, non chi la produce", "Only those who use AI, not those who make it"),
     (
@@ -318,7 +324,6 @@ TEXTS: list[tuple[str, str]] = [
         "Arbiter è uno strumento di supporto. Non fornisce consulenza legale.",
         "Arbiter is a support tool. It does not provide legal advice.",
     ),
-    ("Presentazione aggiornata al 5 ottobre 2026.", "Presentation updated on 5 October 2026."),
     # The journey of a request.
     ('t: "Chi chiede"', 't: "Who is asking"'),
     (

@@ -85,6 +85,17 @@ Entries link to the decision record that motivated them, where one exists.
     new port, `TargetDirectory`.
   - A presentation for people who are not developers, in Italian and in English:
     `docs/presentation/`.
+  - Semantic detection of personal data
+    ([ADR-0055](docs/adr/0055-semantic-pii-detection-as-an-optional-plugin.md)): an
+    optional detector, `presidio`, adds names and places written in words to the
+    built-in formats, with Presidio and spaCy run in the process. New optional extra
+    `pii`; new setting `redaction.detector_settings`. Precision, recall and time are
+    measured by `scripts/measure_pii.py` on the labelled sentences of `evaluation/pii/`
+    and published in `docs/pii-evaluation.md`.
+  - `arbiter demo tour`: a guided demonstration in one command and one process. It
+    loads the scenarios, sends requests through the gateway with the mock provider,
+    calls a stand-in MCP server and a stand-in agent through the proxies, scans and
+    verifies the audit chain. No network and no real model.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

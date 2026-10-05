@@ -48,9 +48,9 @@ Phase 5, step by step:
 | A2A registry: agent cards fetched, stored and verified against configured keys | Done: `arbiter a2a agents` and `a2a grants`, `/api/v1/a2a`; a card is verified only against `a2a.trusted_keys`, and an interface counts only on the host of the card. Tested with cards signed by the official SDK, not with a real agent on the network |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Done: `POST /a2a/{agent}` and `/a2a/{agent}/rest/...`; decide, record, then forward. Tested against a stand-in agent, not with the SDK's client or a real agent |
 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Done: seven rules in the scan pack `2026.10.2`, read through a port from the catalogues and from the recorded calls |
-| A presentation for people who are not developers, in Italian and in English | Done: `docs/presentation/`. The English page is built from the Italian one by `scripts/build_presentation_en.py`. Not viewed in a browser by its author |
-| Semantic detection of personal data: an optional plugin on Presidio, with measured precision and recall (ADR-0055) | Not started |
-| A guided demonstration of five minutes: gateway, toolkit, a mock MCP server and a mock agent | Not started |
+| A presentation for people who are not developers, in Italian and in English | Done: `docs/presentation/`, a deck read from left to right, one screen per section. The English page is built from the Italian one by `scripts/build_presentation_en.py`. Not viewed in a browser by its author |
+| Semantic detection of personal data: an optional plugin on Presidio, with measured precision and recall (ADR-0055) | Done: plugin `presidio`, extra `pii`, figures in `docs/pii-evaluation.md` |
+| A guided demonstration: gateway, toolkit, a mock MCP server and a mock agent | Done: `arbiter demo tour`, seven steps in one process, about a minute, repeatable; covered by a test |
 | Phase summary and the full check, containers included | Not started |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
@@ -128,6 +128,7 @@ arbiter report system cv-screening               # everything recorded about one
 arbiter report audit --format html -o out/       # the audit log of the last 30 days
 arbiter ingest examples/litellm-logs.jsonl --source litellm   # records of another gateway
 arbiter systems discover                         # what in the traffic nobody declared
+arbiter demo tour                                # the guided demonstration: gateway, tools, agents, scan, audit
 arbiter demo run --all                           # three invented scenarios, in the tenant "demo"
 ```
 
@@ -142,7 +143,7 @@ The command is `arbiter`; `ai-arbiter` is an alias for it.
 |---|---|
 | Identity | Teams, projects, principals, API keys stored as keyed hashes, three roles |
 | Policy | Rules as data: model allowlist, hard budgets, redaction. A denial explains itself |
-| Redaction | Personal data and credentials in prompts are masked before the provider sees them |
+| Redaction | Personal data and credentials in prompts are masked before the provider sees them: formats by default, names and places too with an optional local plugin |
 | Routing | Deployments ordered by priority or cost, with retry and fallback |
 | FinOps | Tokens and estimated cost per tenant, team, project, principal and AI system; soft and hard budgets, set over HTTP or from the command line |
 | Audit | One hash chain per tenant, verifiable and exportable; no content, no names |
@@ -166,7 +167,7 @@ How to configure and use each of them: [the gateway](docs/gateway.md) and
 | Importers | Records of another gateway (LiteLLM, or Arbiter's own JSON lines) are imported without their content and scanned like the gateway's own |
 | Digest | Inventory, findings, traffic and the audit head, in Markdown and HTML, in English and Italian; sent by e-mail to each recipient in their language |
 | Reports | Everything recorded about one system, and the audit log over a period; Markdown and HTML that prints well |
-| Scenarios | Three sets of invented systems and traffic, each with the outcome it expects, to see the toolkit at work |
+| Demonstration | `arbiter demo tour` walks through the gateway and the toolkit in one command; three scenarios of invented systems and traffic, each with the outcome it expects |
 | Link to the gateway | A system classified as a prohibited practice gets no model; routing can be limited by risk tier |
 
 How it works and what it does not cover: [the compliance toolkit](docs/compliance.md).
@@ -178,11 +179,13 @@ How it works and what it does not cover: [the compliance toolkit](docs/complianc
   of deployers, not of providers, and not general-purpose AI models. It was written from
   the Official Journal text; its comparison with EUR-Lex by the project owner is still
   pending, and every output says so.
-- **Detection of personal data is by format, not by meaning.** The built-in detectors
-  find e-mail addresses, phone numbers (international and Italian), IBANs, payment cards,
-  Italian fiscal codes and VAT numbers, IP addresses and common credential formats. They
-  do **not** find names, postal addresses, dates of birth, health data or anything
-  written as free text. Their precision and recall have not been measured yet.
+- **Detection of personal data is by format by default.** The built-in detectors find
+  e-mail addresses, phone numbers (international and Italian), IBANs, payment cards,
+  Italian fiscal codes and VAT numbers, IP addresses and common credential formats. An
+  optional local plugin adds names and places written in words (ADR-0055). On about
+  fifty invented sentences per language it raised recall from 14-17% to 81-93%, with a
+  precision of 93-97% ([figures and limits](docs/pii-evaluation.md)). Neither finds
+  dates of birth or health data, and no figure here is a promise about your prompts.
 - **Costs are estimates**, computed from a price catalogue you fill in. Arbiter ships no
   prices for real providers.
 - **The audit log is tamper-evident, not tamper-proof.** Someone who can write to the
@@ -285,7 +288,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-01 | 0 | Verify AI Act dates and the amending regulation on EUR-Lex, article by article | The rule pack must rest on the official text | Before Phase 4 | Done against the Official Journal texts from the Publications Office: dates and act number confirmed. A spot check on EUR-Lex itself is pending with the owner |
 | I-02 | 0 | Add an English summary of the Phase 0 analysis | One language across the documentation | 1.0 | Done after Phase 4b: `docs/phases/phase-0-analysis.en.md`, a summary; the Italian text stays the reference |
 | I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Done: both documents list where the code differs |
-| I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Open |
+| I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Done in Phase 5 with another choice than Presidio alone: precision and recall are published in `docs/pii-evaluation.md`, and Presidio is offered as the optional plugin `presidio`, added to the built-in detectors (ADR-0055) |
 | I-05 | 1 | Anchor the audit chain head outside the database, then sign checkpoints | A full rewrite of the chain is otherwise undetectable | 0.1.x, then 0.3 | Open |
 | I-06 | 2 | Publish the first release, `0.1.0a1`, and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | When the owner decides | Open: `0.0.1` is skipped (ADR-0032) |
 | I-07 | 2 | Set the PostgreSQL test URL in the CI job that tests the base install | That job missed a defect the dev container found | Phase 3 | Done |
@@ -294,7 +297,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-10 | 2 | Add metrics, log export and request-path instrumentation | Only tracing is bootstrapped | 0.1.x, then 0.3 | Open: not done in Phase 3 |
 | I-11 | 2 | Reduce the image size (316 MB) | Faster pulls and cold starts | 0.3 | Open |
 | I-12 | 3 | Run the OpenAI-compatible and Azure OpenAI adapters against real endpoints | They were tested against a simulated transport only | Before 0.1.0; Azure in Phase 6 | Partly done: `openai_compat` checked by hand against a local Ollama server (ADR-0033). Hosted services and Azure OpenAI still open |
-| I-13 | 3 | Measure precision and recall of the PII detectors on a labelled set | Redaction is on by default and its error rates are unknown | 0.1.x, with the simulation scenarios | Open |
+| I-13 | 3 | Measure precision and recall of the PII detectors on a labelled set | Redaction is on by default and its error rates are unknown | 0.1.x, with the simulation scenarios | Partly done in Phase 5: `scripts/measure_pii.py` measures both detectors on `evaluation/pii/` (about fifty invented sentences per language). The set is small and written by the author of the detectors; a larger one, written by someone else, is still needed |
 | I-14 | 3 | Add the deferred detectors: identity documents, phone and VAT formats of other member states | Coverage promised by ADR-0014, deferred by ADR-0027 | 0.1.x | Open |
 | I-15 | 3 | Reduce the statements on the request path: one statement for the roll-ups, one audit entry per request | 17 statements and about 20 ms per request | 0.1.x | Open |
 | I-16 | 3 | Raise the write rate of one tenant: seal audit entries in batches (ADR-0017, option B) | Requests of one tenant queue on its chain | When a tenant needs it | Open |
@@ -328,6 +331,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-44 | 5 | Follow the key set a card names (`jku`) for domains on an allowlist | ADR-0053 chose configured keys only; keys are rotated by hand | 0.2.x | Open |
 | I-45 | 5 | Join the client and a server of the official A2A SDK through the proxy, as was done for MCP | The A2A proxy was tested against a stand-in agent written from the specification | Before 0.2.0 | Open |
 | I-46 | 5 | Serve a card at the proxy for each agent, with the proxy's own address in it | Clients are configured with the address of the proxy by hand | 0.2.x | Open |
+| I-47 | 5 | Detect health data and the other special categories; measure on a larger set written by someone else, and on real prompt lengths | Neither detector looks for them; the set has about fifty short sentences per language | 0.2.x | Open |
 
 ## Licence
 

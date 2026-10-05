@@ -66,7 +66,12 @@ a2a = [
     "a2a-sdk[signing]>=1.2,<2",
     "cryptography>=43",
 ]
-all = ["ai-arbiter[a2a,gateway,mcp,otel]"]
+# Detection of personal data written in words, run locally (ADR-0055). The language
+# models are installed separately: see docs/gateway.md.
+pii = [
+    "presidio-analyzer>=2.2,<3",
+]
+all = ["ai-arbiter[a2a,gateway,mcp,otel,pii]"]
 
 [project.scripts]
 arbiter = "ai_arbiter.cli.main:app"
@@ -87,6 +92,7 @@ azure_openai = "ai_arbiter.adapters.azure.openai:AzureOpenAIProvider"
 
 [project.entry-points."ai_arbiter.pii_detectors"]
 builtin = "ai_arbiter.core.redaction.builtin:BuiltinDetector"
+presidio = "ai_arbiter.adapters.presidio.detector:PresidioDetector"
 
 [project.entry-points."ai_arbiter.telemetry_sources"]
 jsonl = "ai_arbiter.compliance.ingest.sources:JsonlSource"
@@ -100,6 +106,13 @@ file = "ai_arbiter.adapters.local.notifiers:FileNotifier"
 smtp = "ai_arbiter.adapters.local.notifiers:SmtpNotifier"
 
 [dependency-groups]
+# The language models the semantic detector of personal data is measured with
+# (ADR-0055). They are not on PyPI, so they cannot be part of an extra: an operator
+# installs the ones for their languages. This group is for development and CI.
+pii-models = [
+    "en-core-web-md @ https://github.com/explosion/spacy-models/releases/download/en_core_web_md-3.8.0/en_core_web_md-3.8.0-py3-none-any.whl",
+    "it-core-news-md @ https://github.com/explosion/spacy-models/releases/download/it_core_news_md-3.8.0/it_core_news_md-3.8.0-py3-none-any.whl",
+]
 dev = [
     "import-linter>=2.1",
     "mcp>=2.2,<3",

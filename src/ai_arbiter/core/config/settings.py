@@ -234,6 +234,8 @@ class RedactionSettings(_Section):
     # Root secret for hashed tags and prompt fingerprints, as a secret reference. Without
     # it the hash strategy is refused and no prompt fingerprint is stored.
     key: str | None = None
+    # Settings of the detector named in plugins.pii_detector. The built-in one takes none.
+    detector_settings: dict[str, Any] = {}
 
     @model_validator(mode="after")
     def _check(self) -> "RedactionSettings":

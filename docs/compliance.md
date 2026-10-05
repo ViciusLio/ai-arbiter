@@ -369,6 +369,39 @@ the alias of the key). That is what lets the scan name a candidate system for it
 The LiteLLM mapping was written from the specification LiteLLM documents for its
 standard logging payload. It has not been run against the output of a live LiteLLM.
 
+## A guided demonstration
+
+One command shows the gateway and the toolkit at work, in about a minute, on invented
+data:
+
+```bash
+arbiter init
+arbiter demo tour                 # or: --locale it
+```
+
+| Step | What it shows |
+|---|---|
+| The inventory | The scenarios below are loaded into the tenant `demo`, classified and scanned |
+| Personal data is masked | A request with an e-mail address goes through the gateway; the address is masked before the model sees the prompt |
+| A prohibited practice gets no model | The same request, with the key of a system classified as a prohibited practice, is denied, and the answer names the rule |
+| Tools | An MCP server is registered and a grant names one of its tools: calling that one goes through, calling another is denied |
+| Agents | An agent whose card a trusted key signed is called; then the card is changed, the signature no longer verifies, and the call is denied |
+| Declared against observed | A scan compares the declarations with what just happened |
+| Everything is on record | The audit chain is recomputed over every entry |
+
+- **Everything runs in the process of the command.** The model is the mock provider;
+  the MCP server and the agent are stand-ins (`adapters/mock/tools.py`); the key that
+  signs the agent's card is made for the run and never written. No network, no real
+  model (ADR-0033).
+- It needs the `gateway`, `mcp` and `a2a` extras (`uv sync --all-extras`). Without `a2a`
+  the step on agents is skipped and said to be.
+- It touches the tenant `demo` only, uses two systems of its own
+  (`tour-office-assistant`, `tour-mood-monitor`) so that its traffic lands on no
+  scenario, and can be repeated.
+- It exits with an error when a step does not go as expected.
+- Afterwards, look at what it left: `arbiter findings list --tenant demo`,
+  `arbiter report audit --tenant demo`, `arbiter digest run --tenant demo`.
+
 ## Simulation scenarios
 
 To see the toolkit at work without declaring anything of your own, load a scenario

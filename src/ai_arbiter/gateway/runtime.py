@@ -13,10 +13,10 @@ from ai_arbiter.core.config.secrets import SecretRef
 from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.domain.time import Clock, SystemClock
 from ai_arbiter.core.persistence.database import Database
+from ai_arbiter.core.plugins.detectors import load_detector
 from ai_arbiter.core.plugins.registry import (
     AGENT_CARD_READERS,
     EVENT_BUSES,
-    PII_DETECTORS,
     SECRET_STORES,
     PluginRegistry,
 )
@@ -98,7 +98,7 @@ async def build_runtime(
     clock = clock if clock is not None else SystemClock()
     secrets: SecretStore = registry.load(SECRET_STORES, settings.plugins.secret_store)()
     bus: EventBus = registry.load(EVENT_BUSES, settings.plugins.event_bus)()
-    detector: PIIDetector = registry.load(PII_DETECTORS, settings.plugins.pii_detector)()
+    detector: PIIDetector = load_detector(registry, settings)
 
     redaction_key: bytes | None = None
     if settings.redaction.key is not None:
