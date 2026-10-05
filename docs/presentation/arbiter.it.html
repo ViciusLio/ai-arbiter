@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arbiter in breve</title>
+<meta name="description" content="Che cosa fa Arbiter, come funziona e a che punto è, spiegato a chi non è tecnico.">
+<style>
+:root {
+  --bg: #0d1117; --panel: #161c26; --panel-2: #1d2532; --line: #2b3545;
+  --text: #e8edf4; --muted: #9aa8bb; --accent: #5eb0ff; --accent-2: #7ee0b8;
+  --warn: #ffb454; --danger: #ff7a85; --ok: #7ee0b8; --shadow: 0 18px 50px rgba(0, 0, 0, .35);
+}
+:root[data-theme="light"] {
+  --bg: #f5f7fa; --panel: #ffffff; --panel-2: #eef2f7; --line: #d5dce6;
+  --text: #16202e; --muted: #56657a; --accent: #1668c7; --accent-2: #0d8a63;
+  --warn: #a8620a; --danger: #c2313f; --ok: #0d8a63; --shadow: 0 14px 40px rgba(20, 40, 80, .12);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-snap-type: y proximity; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+h1, h2, h3 { line-height: 1.15; margin: 0 0 .5em; letter-spacing: -.01em; }
+h1 { font-size: clamp(2.2rem, 6vw, 4.2rem); }
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); }
+h3 { font-size: 1.12rem; }
+p { margin: 0 0 1em; }
+.lead { font-size: clamp(1.05rem, 2vw, 1.3rem); color: var(--muted); max-width: 46rem; }
+.kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; color: var(--accent); font-weight: 700; margin-bottom: 1rem; }
+
+#bar { position: fixed; inset: 0 auto auto 0; height: 4px; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); z-index: 30; }
+nav.top {
+  position: fixed; top: 10px; right: 14px; z-index: 31; display: flex; gap: 8px; align-items: center;
+}
+nav.top button, .chip {
+  background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 999px;
+  padding: 7px 13px; font: inherit; font-size: .85rem; cursor: pointer;
+}
+nav.top button:hover { border-color: var(--accent); }
+#dots { position: fixed; right: 16px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 29; }
+#dots a { width: 10px; height: 10px; border-radius: 50%; background: var(--line); display: block; transition: transform .2s, background .2s; }
+#dots a.on { background: var(--accent); transform: scale(1.5); }
+
+section {
+  min-height: 100vh; padding: 5.5rem 1.25rem 4rem; display: flex; align-items: center; scroll-snap-align: start;
+  border-bottom: 1px solid var(--line);
+}
+.wrap { width: min(1080px, 100%); margin: 0 auto; }
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.in { opacity: 1; transform: none; }
+
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.g3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.2rem 1.25rem; box-shadow: var(--shadow);
+}
+.card p:last-child { margin-bottom: 0; }
+.card .ico { font-size: 1.7rem; margin-bottom: .4rem; }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+.note {
+  border-left: 4px solid var(--warn); background: var(--panel-2); padding: .9rem 1.1rem; border-radius: 0 12px 12px 0; margin-top: 1.2rem;
+}
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; border: 1px solid currentColor; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.no { color: var(--danger); } .pill.info { color: var(--accent); }
+
+/* cover */
+.cover { background: radial-gradient(1200px 600px at 15% 10%, rgba(94, 176, 255, .16), transparent 60%), radial-gradient(900px 500px at 90% 90%, rgba(126, 224, 184, .13), transparent 60%); }
+.cover .badge { display: inline-flex; gap: .5rem; align-items: center; margin-top: 1.5rem; }
+.hint { margin-top: 2.5rem; color: var(--muted); font-size: .9rem; }
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 7px; background: var(--panel); font: inherit; font-size: .85em; }
+
+/* two halves */
+.halves { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; }
+.halves .link { display: grid; place-items: center; font-size: 2rem; color: var(--accent); }
+@media (max-width: 820px) { .halves { grid-template-columns: 1fr; } .halves .link { transform: rotate(90deg); } #dots { display: none; } }
+
+/* stepper */
+.steps { display: flex; flex-wrap: wrap; gap: 8px; margin: 1.2rem 0; }
+.steps button {
+  flex: 1 1 130px; text-align: left; background: var(--panel); border: 1px solid var(--line); color: var(--text);
+  border-radius: 14px; padding: .8rem .9rem; font: inherit; cursor: pointer; transition: border-color .2s, transform .2s;
+}
+.steps button .n { display: block; font-size: .75rem; color: var(--muted); font-weight: 700; letter-spacing: .08em; }
+.steps button.on { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
+.stage { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 1.3rem 1.4rem; min-height: 11.5rem; }
+.stage h3 { color: var(--accent); }
+.stage .ex { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86rem; background: var(--panel-2); border-radius: 10px; padding: .7rem .85rem; margin-top: .6rem; overflow-x: auto; white-space: pre-wrap; }
+.play { margin-top: .9rem; }
+
+/* tiers */
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 1.1rem 0; }
+.tier { border-radius: 14px; padding: .9rem; border: 1px solid var(--line); background: var(--panel); cursor: pointer; font: inherit; color: var(--text); text-align: left; }
+.tier b { display: block; margin-bottom: .2rem; }
+.tier.on { outline: 2px solid var(--accent); }
+.tier .sw { height: 6px; border-radius: 4px; margin-bottom: .6rem; }
+
+/* timeline */
+.timeline { position: relative; margin: 1.6rem 0 .5rem; padding-top: 2.2rem; }
+.timeline .track { height: 6px; background: var(--line); border-radius: 4px; position: relative; }
+.timeline .fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius: 4px; width: 0; transition: width 1.4s ease; }
+.timeline .now { position: absolute; top: -1.9rem; transform: translateX(-50%); font-size: .78rem; font-weight: 700; color: var(--accent-2); white-space: nowrap; }
+.timeline .now::after { content: ""; display: block; width: 2px; height: 1.6rem; background: var(--accent-2); margin: 2px auto 0; }
+.marks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 1rem; }
+.marks div { font-size: .88rem; }
+.marks b { display: block; color: var(--text); }
+@media (max-width: 720px) { .marks { grid-template-columns: 1fr 1fr; } }
+
+/* findings */
+table.cmp { width: 100%; border-collapse: collapse; margin-top: .6rem; }
+table.cmp th, table.cmp td { text-align: left; padding: .6rem .7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.cmp th { color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
+
+/* progress */
+.phase { display: grid; grid-template-columns: 13.5rem 1fr 3.4rem; gap: 12px; align-items: center; margin: .55rem 0; }
+.phase .name { font-size: .95rem; }
+.phase .meter { height: 12px; background: var(--panel-2); border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.phase .meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 1.3s ease; }
+.phase .pc { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: .9rem; }
+@media (max-width: 640px) { .phase { grid-template-columns: 1fr 3.2rem; } .phase .meter { grid-column: 1 / -1; order: 3; } }
+.big { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 800; letter-spacing: -.02em; color: var(--accent); font-variant-numeric: tabular-nums; }
+.stat { text-align: center; }
+.stat .lab { color: var(--muted); font-size: .88rem; }
+footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); font-size: .88rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal { opacity: 1; transform: none; transition: none; } }
+@media print { nav.top, #dots, #bar, .hint { display: none; } section { min-height: auto; page-break-inside: avoid; } .reveal { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+<nav class="top" aria-label="Comandi">
+  <button id="theme" type="button" aria-label="Cambia tema chiaro o scuro">Tema</button>
+</nav>
+<div id="dots" aria-hidden="true"></div>
+
+<section class="cover" id="s1">
+  <div class="wrap reveal">
+    <div class="kicker">Arbiter · progetto open source</div>
+    <h1>Sapere quali sistemi di IA usi.<br>E poterlo mostrare.</h1>
+    <p class="lead">Arbiter collega due cose che di solito restano separate: ciò che un'organizzazione <strong>dichiara</strong> sui propri sistemi di intelligenza artificiale e ciò che il loro <strong>traffico reale</strong> mostra. Lo fa con l'AI Act europeo come riferimento.</p>
+    <div class="badge">
+      <span class="pill warn">Versione alpha</span>
+      <span class="pill info">Non ancora pubblicato</span>
+      <span class="pill ok">Licenza Apache 2.0</span>
+    </div>
+    <p class="hint">Scorri, oppure usa <kbd>↓</kbd> <kbd>↑</kbd> e <kbd>Spazio</kbd>. Molti riquadri si possono toccare.</p>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="wrap reveal">
+    <div class="kicker">Il problema</div>
+    <h2>L'IA entra in azienda più in fretta di quanto la si riesca a contare</h2>
+    <p class="lead">Un assistente per il servizio clienti, un modulo che ordina i curriculum, un collega che incolla dati in un chatbot. Ognuno è un sistema di IA, e la legge chiede di sapere quali sono, a cosa servono e quanto sono rischiosi.</p>
+    <div class="grid g3" style="margin-top:1.4rem">
+      <div class="card"><div class="ico">🗂️</div><h3>L'inventario invecchia</h3><p class="muted">Un elenco scritto a mano dice ciò che qualcuno ricordava quel giorno. Non dice ciò che succede oggi.</p></div>
+      <div class="card"><div class="ico">👻</div><h3>L'uso non dichiarato</h3><p class="muted">Quello che nessuno ha messo nell'elenco è proprio quello che nessuno sta controllando.</p></div>
+      <div class="card"><div class="ico">⚖️</div><h3>Le regole hanno date</h3><p class="muted">L'AI Act si applica per tappe. Sapere <em>cosa</em> vale <em>da quando</em> è metà del lavoro.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="wrap reveal">
+    <div class="kicker">L'idea</div>
+    <h2>Due metà che si parlano</h2>
+    <p class="lead">Ciascuna funziona anche da sola. Insieme fanno la cosa che conta: confrontare il dichiarato con l'osservato.</p>
+    <div class="halves" style="margin-top:1.4rem">
+      <div class="card">
+        <div class="ico">🚦</div><h3>Il gateway: un casello</h3>
+        <p class="muted">Tutte le richieste ai modelli di IA passano da qui. Arbiter controlla chi chiede, applica le regole, oscura i dati personali, sceglie dove mandare la richiesta, ne stima il costo e scrive cosa è successo.</p>
+        <p class="small muted">Produce le prove.</p>
+      </div>
+      <div class="link" aria-hidden="true">⇄</div>
+      <div class="card">
+        <div class="ico">📋</div><h3>Il toolkit: un registro che controlla</h3>
+        <p class="muted">Tiene l'inventario dei sistemi, propone per ognuno una classe di rischio secondo l'AI Act, confronta le dichiarazioni con il traffico e segnala ciò che non torna.</p>
+        <p class="small muted">Usa le prove.</p>
+      </div>
+    </div>
+    <div class="note"><strong>Il punto.</strong> I gateway per l'IA esistono già. Quello che manca è il collegamento tra il traffico e un inventario classificato secondo la legge: è lì che Arbiter lavora.</div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="wrap reveal">
+    <div class="kicker">Come funziona</div>
+    <h2>Il viaggio di una richiesta</h2>
+    <p class="lead">Tocca i passaggi, oppure lasciali scorrere.</p>
+    <div class="steps" id="steps" role="tablist"></div>
+    <div class="stage" id="stage" aria-live="polite"></div>
+    <button class="chip play" id="play" type="button">▶ Riproduci</button>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="wrap reveal">
+    <div class="kicker">Classificazione</div>
+    <h2>Una classe di rischio, sempre come proposta</h2>
+    <p class="lead">Si risponde a domande prese dal testo della legge. Le stesse risposte danno sempre lo stesso risultato: nessun modello di IA decide la classe.</p>
+    <div class="tiers" id="tiers"></div>
+    <div class="card" id="tierbox" aria-live="polite"></div>
+    <div class="grid g3" style="margin-top:1rem">
+      <div class="card"><h3>Una risposta mancante non è un "no"</h3><p class="muted">Finché resta aperta una domanda che potrebbe portare a una classe più severa, il risultato è <em>indeterminato</em>.</p></div>
+      <div class="card"><h3>Una persona conferma</h3><p class="muted">Ogni classificazione è <em>indicativa</em> finché qualcuno, con nome e motivazione, non la conferma o la cambia.</p></div>
+      <div class="card"><h3>Ogni esito cita la norma</h3><p class="muted">Articolo e data da cui si applica. Un obbligo futuro è mostrato come preparazione, non come mancanza.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="wrap reveal">
+    <div class="kicker">Il calendario dell'AI Act</div>
+    <h2>Cosa si applica, e da quando</h2>
+    <p class="lead">Le date sono quelle del Regolamento (UE) 2024/1689 come modificato nel 2026, lette sul testo della Gazzetta ufficiale.</p>
+    <div class="timeline">
+      <div class="track"><div class="fill" id="tfill"></div><div class="now" id="tnow" style="left:47%">oggi, ottobre 2026</div></div>
+      <div class="marks">
+        <div><b>2 febbraio 2025</b><span class="muted">Pratiche vietate, alfabetizzazione sull'IA</span></div>
+        <div><b>2 agosto 2026</b><span class="muted">Obblighi di trasparenza</span></div>
+        <div><b>2 dicembre 2027</b><span class="muted">Sistemi ad alto rischio (Allegato III)</span></div>
+        <div><b>2 agosto 2028</b><span class="muted">Alto rischio in prodotti regolati (Allegato I)</span></div>
+      </div>
+    </div>
+    <div class="note"><strong>Limite importante.</strong> Le regole di Arbiter riassumono la legge in domande. Nessuna persona con formazione giuridica le ha ancora riviste: per questo ogni risultato dice "indicativo", e la versione 0.1.0 aspetta quella revisione.</div>
+  </div>
+</section>
+
+<section id="s7">
+  <div class="wrap reveal">
+    <div class="kicker">Dichiarato contro osservato</div>
+    <h2>Quando i fatti contraddicono le carte</h2>
+    <p class="lead">Arbiter non legge il contenuto delle conversazioni: guarda solo i dati di contorno. Bastano per accorgersi di molto.</p>
+    <table class="cmp">
+      <thead><tr><th>Cosa è stato dichiarato</th><th>Cosa mostra il traffico</th><th>Cosa segnala Arbiter</th></tr></thead>
+      <tbody>
+        <tr><td>"Usiamo solo il modello A"</td><td>Richieste anche al modello B</td><td><span class="pill warn">Modello non dichiarato</span></td></tr>
+        <tr><td>"Non trattiamo dati personali"</td><td>Indirizzi email nei messaggi</td><td><span class="pill warn">Dati personali non dichiarati</span></td></tr>
+        <tr><td>"Quel sistema è dismesso"</td><td>Risponde ancora</td><td><span class="pill warn">Sistema dismesso in uso</span></td></tr>
+        <tr><td>Nulla</td><td>Un gruppo di lavoro fa centinaia di richieste</td><td><span class="pill no">Sistema candidato, mai dichiarato</span></td></tr>
+      </tbody>
+    </table>
+    <div class="grid g3" style="margin-top:1rem">
+      <div class="card"><h3>Rilievi, non sentenze</h3><p class="muted">Ogni rilievo si conferma, si respinge o si accetta come rischio con una scadenza. Sempre con una persona.</p></div>
+      <div class="card"><h3>Un riepilogo quotidiano</h3><p class="muted">In italiano e in inglese, anche via email. Più i report da consegnare a chi non usa lo strumento.</p></div>
+      <div class="card"><h3>Anche da altri gateway</h3><p class="muted">I registri di un altro sistema si importano senza il loro contenuto.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="s8">
+  <div class="wrap reveal">
+    <div class="kicker">Strumenti e agenti</div>
+    <h2>L'IA che usa strumenti e parla con altre IA</h2>
+    <p class="lead">I sistemi di oggi non si limitano a rispondere: leggono file, interrogano archivi, chiedono aiuto ad altri agenti. Arbiter si mette in mezzo anche lì.</p>
+    <div class="grid g2" style="margin-top:1.3rem">
+      <div class="card">
+        <div class="ico">🧰</div><h3>Strumenti (protocollo MCP)</h3>
+        <p class="muted">Un catalogo dei server di strumenti conosciuti. Nessuno può usarne uno finché un permesso non lo dice, anche strumento per strumento. Ogni chiamata è registrata: chi, quale strumento, come è finita. Mai cosa è stato chiesto o risposto.</p>
+      </div>
+      <div class="card">
+        <div class="ico">🤝</div><h3>Agenti (protocollo A2A)</h3>
+        <p class="muted">Un registro degli agenti esterni e del loro "biglietto da visita". La firma del biglietto vale solo se fatta con una chiave di cui l'organizzazione si fida già: un biglietto che porta con sé la propria chiave garantisce solo per se stesso.</p>
+      </div>
+    </div>
+    <div class="note"><strong>Stessa regola per tutto:</strong> prima si decide, poi si scrive la decisione nel registro, e solo dopo la richiesta parte. Se il registro non si può scrivere, la richiesta non parte.</div>
+  </div>
+</section>
+
+<section id="s9">
+  <div class="wrap reveal">
+    <div class="kicker">Di cosa ci si può fidare</div>
+    <h2>Come è costruito</h2>
+    <div class="grid g3" style="margin-top:1rem">
+      <div class="card"><div class="ico">🔗</div><h3>Un registro a catena</h3><p class="muted">Ogni voce contiene l'impronta della precedente. Cambiarne una rompe la catena, e si vede.</p></div>
+      <div class="card"><div class="ico">🙈</div><h3>Niente contenuti salvati</h3><p class="muted">Domande e risposte non vengono conservate. Un test cerca in tutto il database per dimostrarlo.</p></div>
+      <div class="card"><div class="ico">📐</div><h3>Regole come dati</h3><p class="muted">Le regole sono file leggibili, con versione. Si possono leggere, confrontare e sostituire senza toccare il programma.</p></div>
+      <div class="card"><div class="ico">🧑‍⚖️</div><h3>Decide una persona</h3><p class="muted">Classificazioni e rilievi sono proposte. La macchina non chiude mai una questione da sola.</p></div>
+      <div class="card"><div class="ico">🧾</div><h3>Decisioni scritte</h3><p class="muted">Ogni scelta di progetto è registrata con le alternative scartate e il perché.</p></div>
+      <div class="card"><div class="ico">💻</div><h3>Funziona anche offline</h3><p class="muted">Si prova su un portatile, senza cloud e senza un modello vero.</p></div>
+    </div>
+    <div class="grid g4" style="margin-top:1.2rem">
+      <div class="card stat"><div class="big" data-count="1100" data-prefix="oltre ">0</div><div class="lab">test automatici</div></div>
+      <div class="card stat"><div class="big" data-count="97" data-suffix="%">0</div><div class="lab">del codice coperto dai test</div></div>
+      <div class="card stat"><div class="big" data-count="54">0</div><div class="lab">decisioni di progetto registrate</div></div>
+      <div class="card stat"><div class="big" data-count="21">0</div><div class="lab">controlli sul traffico</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="s10">
+  <div class="wrap reveal">
+    <div class="kicker">Con onestà</div>
+    <h2>Cosa Arbiter non fa</h2>
+    <div class="grid g2" style="margin-top:1rem">
+      <div class="card"><h3><span class="pill no">No</span> Non è consulenza legale</h3><p class="muted">È uno strumento di supporto. Non dice mai che un sistema "è conforme": dice "indicativo" e "nessun rilievo".</p></div>
+      <div class="card"><h3><span class="pill no">No</span> Non verifica che le dichiarazioni siano vere</h3><p class="muted">Una classificazione vale quanto le risposte date. Il traffico ne smentisce alcune, non tutte.</p></div>
+      <div class="card"><h3><span class="pill warn">Limite</span> Dati personali riconosciuti per formato</h3><p class="muted">Trova email, telefoni, IBAN, codici fiscali. Non riconosce nomi, indirizzi o dati sanitari scritti a parole. È il prossimo punto da migliorare.</p></div>
+      <div class="card"><h3><span class="pill warn">Limite</span> Solo chi usa l'IA, non chi la produce</h3><p class="muted">Oggi valuta gli obblighi di chi impiega un sistema. Quelli di chi lo sviluppa arriveranno dopo.</p></div>
+      <div class="card"><h3><span class="pill warn">Limite</span> Registro che rivela, non che impedisce</h3><p class="muted">Una manomissione parziale si vede. Chi può riscrivere tutto il database può riscrivere tutta la catena: serve una copia esterna dell'ultima impronta.</p></div>
+      <div class="card"><h3><span class="pill info">Stato</span> Non ancora pubblicato</h3><p class="muted">Nessuna versione è stata rilasciata. Diverse parti sono state provate solo con controparti simulate.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="s11">
+  <div class="wrap reveal">
+    <div class="kicker">A che punto siamo</div>
+    <h2>Il percorso, fase per fase</h2>
+    <p class="lead">Stima al 5 ottobre 2026. Le percentuali misurano il lavoro di costruzione, non il valore legale delle regole.</p>
+    <div id="phases" style="margin-top:1.2rem"></div>
+    <div class="grid g3" style="margin-top:1.3rem">
+      <div class="card stat"><div class="big" data-count="77" data-suffix="%">0</div><div class="lab">del percorso complessivo</div></div>
+      <div class="card"><h3>Prima della versione 0.1.0</h3><p class="muted">Una revisione delle regole da parte di una persona con formazione giuridica, e un confronto degli articoli citati con la fonte ufficiale.</p></div>
+      <div class="card"><h3>Dopo</h3><p class="muted">Una dimostrazione guidata, l'installazione su cloud (Azure) e la documentazione per chi lo adotta.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="s12">
+  <div class="wrap reveal">
+    <div class="kicker">In sintesi</div>
+    <h2>Cosa ottieni</h2>
+    <div class="grid g2" style="margin-top:1rem">
+      <div class="card"><h3>Un inventario che resta vero</h3><p class="muted">Perché viene confrontato ogni giorno con ciò che accade, e non solo con ciò che si ricorda.</p></div>
+      <div class="card"><h3>Una risposta a "da dove viene questo risultato?"</h3><p class="muted">Ogni esito porta con sé la regola, l'articolo, la data e chi lo ha confermato.</p></div>
+      <div class="card"><h3>Meno sorprese</h3><p class="muted">L'uso non dichiarato emerge da solo, come proposta da valutare, prima che lo trovi qualcun altro.</p></div>
+      <div class="card"><h3>Prove che reggono</h3><p class="muted">Un registro verificabile di cosa è stato deciso e quando, senza conservare il contenuto delle conversazioni.</p></div>
+    </div>
+    <div class="note">Arbiter è uno strumento di supporto. Non fornisce consulenza legale.</div>
+  </div>
+</section>
+
+<footer>
+  Arbiter · <a href="https://github.com/ViciusLio/ai-arbiter">github.com/ViciusLio/ai-arbiter</a> · Apache 2.0 · Presentazione aggiornata al 5 ottobre 2026.<br>
+  Arbiter è uno strumento di supporto. Non fornisce consulenza legale.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Theme: follows the system until the button is used.
+  var stored = null;
+  try { stored = localStorage.getItem("arbiter-theme"); } catch (e) { stored = null; }
+  if (stored) { root.setAttribute("data-theme", stored); }
+  else if (window.matchMedia("(prefers-color-scheme: light)").matches) { root.setAttribute("data-theme", "light"); }
+  document.getElementById("theme").addEventListener("click", function () {
+    var next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("arbiter-theme", next); } catch (e) { /* private window */ }
+  });
+
+  // The journey of a request.
+  var STEPS = [
+    { t: "Chi chiede", d: "Ogni applicazione ha una chiave. Arbiter la riconosce e sa a quale gruppo, progetto e sistema di IA appartiene. Una chiave revocata smette di funzionare alla richiesta successiva.", ex: "chiave  →  progetto “Risorse umane”, sistema “Selezione CV”" },
+    { t: "Le regole", d: "Regole scritte come dati decidono se la richiesta può proseguire: modello ammesso, limiti di spesa, sistema non classificato come pratica vietata. Un rifiuto spiega sempre quale regola l'ha causato.", ex: "sistema classificato “pratica vietata”  →  richiesta negata, art. 5" },
+    { t: "Dati personali", d: "Prima che il messaggio lasci l'organizzazione, email, telefoni, IBAN e codici fiscali vengono sostituiti da segnaposto.", ex: "“Scrivi a mario.rossi@example.com”  →  “Scrivi a [EMAIL]”" },
+    { t: "Dove va", d: "La richiesta è inviata al fornitore giusto, per priorità o per costo, e solo dove la classe di rischio del sistema lo consente. Se un fornitore non risponde, si prova il successivo.", ex: "alto rischio  →  solo regioni europee" },
+    { t: "Quanto costa", d: "Si contano le unità consumate e si stima il costo, attribuito a gruppo, progetto e sistema. Un limite di spesa può avvisare oppure bloccare.", ex: "progetto “Risorse umane”: 12,40 su 50,00 questo mese" },
+    { t: "Cosa resta scritto", d: "La decisione entra in un registro a catena. Resta chi ha chiesto, cosa è stato deciso e perché. Non resta il testo della conversazione.", ex: "voce 1.284  →  impronta legata alla voce 1.283" }
+  ];
+  var stepsEl = document.getElementById("steps");
+  var stage = document.getElementById("stage");
+  var current = 0, timer = null;
+  function show(i) {
+    current = i;
+    Array.prototype.forEach.call(stepsEl.children, function (b, k) {
+      b.classList.toggle("on", k === i);
+      b.setAttribute("aria-selected", k === i ? "true" : "false");
+    });
+    var s = STEPS[i];
+    stage.innerHTML = "";
+    var h = document.createElement("h3"); h.textContent = (i + 1) + ". " + s.t;
+    var p = document.createElement("p"); p.textContent = s.d;
+    var ex = document.createElement("div"); ex.className = "ex"; ex.textContent = s.ex;
+    stage.appendChild(h); stage.appendChild(p); stage.appendChild(ex);
+  }
+  STEPS.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.setAttribute("role", "tab");
+    var n = document.createElement("span"); n.className = "n"; n.textContent = "PASSO " + (i + 1);
+    b.appendChild(n); b.appendChild(document.createTextNode(s.t));
+    b.addEventListener("click", function () { stop(); show(i); });
+    stepsEl.appendChild(b);
+  });
+  var playBtn = document.getElementById("play");
+  function stop() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶ Riproduci"; } }
+  playBtn.addEventListener("click", function () {
+    if (timer) { stop(); return; }
+    playBtn.textContent = "⏸ Pausa";
+    timer = setInterval(function () { show((current + 1) % STEPS.length); }, 3200);
+  });
+  show(0);
+
+  // Risk tiers.
+  var TIERS = [
+    { n: "Fuori ambito", c: "#8894a6", d: "La legge non si applica: per esempio un sistema ancora in sviluppo e mai messo in servizio, o usato solo per ricerca scientifica.", e: "Un prototipo del gruppo dati, mai usato in produzione." },
+    { n: "Pratica vietata", c: "#ff7a85", d: "Usi che la legge proibisce. Arbiter li segnala con la massima gravità e il gateway non concede loro alcun modello.", e: "Dedurre le emozioni dei dipendenti dalla voce durante le chiamate." },
+    { n: "Alto rischio", c: "#ffb454", d: "Sistemi che incidono su persone in ambiti delicati: lavoro, credito, istruzione, servizi essenziali. Comportano obblighi precisi per chi li usa.", e: "Un modulo che ordina le candidature per i selezionatori." },
+    { n: "Trasparenza", c: "#5eb0ff", d: "Sistemi che parlano con le persone o producono contenuti: chi li incontra deve sapere che ha a che fare con un'IA.", e: "L'assistente che risponde ai clienti sul sito." },
+    { n: "Rischio minimo", c: "#7ee0b8", d: "Tutto il resto. Nessun obbligo specifico oltre a quelli generali.", e: "Un sistema che legge fatture e precompila la contabilità." },
+    { n: "Indeterminato", c: "#b39ddb", d: "Mancano risposte che potrebbero portare a una classe più severa. Arbiter elenca le domande ancora aperte invece di tirare a indovinare.", e: "Un generatore di testi di cui si conosce solo l'ambito d'uso." }
+  ];
+  var tiersEl = document.getElementById("tiers");
+  var tierbox = document.getElementById("tierbox");
+  function tier(i) {
+    Array.prototype.forEach.call(tiersEl.children, function (b, k) { b.classList.toggle("on", k === i); });
+    var t = TIERS[i];
+    tierbox.innerHTML = "";
+    var h = document.createElement("h3"); h.textContent = t.n; h.style.color = t.c;
+    var p = document.createElement("p"); p.textContent = t.d;
+    var e = document.createElement("p"); e.className = "muted small"; e.textContent = "Esempio inventato: " + t.e;
+    tierbox.appendChild(h); tierbox.appendChild(p); tierbox.appendChild(e);
+  }
+  TIERS.forEach(function (t, i) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "tier";
+    var sw = document.createElement("div"); sw.className = "sw"; sw.style.background = t.c;
+    var name = document.createElement("b"); name.textContent = t.n;
+    b.appendChild(sw); b.appendChild(name);
+    b.addEventListener("click", function () { tier(i); });
+    tiersEl.appendChild(b);
+  });
+  tier(2);
+
+  // Phases. The numbers are an estimate of the construction work, stated on the page.
+  var PHASES = [
+    ["Analisi e architettura", 100], ["Fondamenta del progetto", 100], ["Gateway", 100],
+    ["Toolkit di conformità", 100], ["Importazione, report, scoperta", 100],
+    ["Strumenti e agenti (MCP, A2A)", 80], ["Installazione su cloud", 0], ["Documentazione e rilascio", 0]
+  ];
+  var phasesEl = document.getElementById("phases");
+  PHASES.forEach(function (ph) {
+    var row = document.createElement("div"); row.className = "phase";
+    var name = document.createElement("div"); name.className = "name"; name.textContent = ph[0];
+    var meter = document.createElement("div"); meter.className = "meter";
+    var fill = document.createElement("i"); fill.dataset.w = ph[1]; meter.appendChild(fill);
+    var pc = document.createElement("div"); pc.className = "pc"; pc.textContent = ph[1] + "%";
+    row.appendChild(name); row.appendChild(meter); row.appendChild(pc);
+    phasesEl.appendChild(row);
+  });
+
+  // Counters.
+  function count(el) {
+    var target = Number(el.dataset.count), prefix = el.dataset.prefix || "", suffix = el.dataset.suffix || "";
+    var fmt = function (v) { return prefix + Math.round(v).toLocaleString("it-IT") + suffix; };
+    if (reduced) { el.textContent = fmt(target); return; }
+    var start = null;
+    function frame(ts) {
+      if (start === null) { start = ts; }
+      var k = Math.min(1, (ts - start) / 1300);
+      el.textContent = fmt(target * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // Reveal on scroll, dots, progress bar.
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section"));
+  var dots = document.getElementById("dots");
+  sections.forEach(function (s) {
+    var a = document.createElement("a"); a.href = "#" + s.id; dots.appendChild(a);
+  });
+  function activate(s) {
+    var w = s.querySelector(".reveal"); if (w) { w.classList.add("in"); }
+    if (s.dataset.done) { return; }
+    s.dataset.done = "1";
+    Array.prototype.forEach.call(s.querySelectorAll("[data-count]"), count);
+    Array.prototype.forEach.call(s.querySelectorAll(".meter i"), function (i) { i.style.width = i.dataset.w + "%"; });
+    var fill = s.querySelector("#tfill"); if (fill) { fill.style.width = "47%"; }
+  }
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) { return; }
+        activate(en.target);
+        var idx = sections.indexOf(en.target);
+        Array.prototype.forEach.call(dots.children, function (d, k) { d.classList.toggle("on", k === idx); });
+      });
+    }, { threshold: 0.35 });
+    sections.forEach(function (s) { io.observe(s); });
+  } else {
+    sections.forEach(activate);
+  }
+  var bar = document.getElementById("bar");
+  window.addEventListener("scroll", function () {
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+  }, { passive: true });
+
+  // Keyboard: arrows, page keys and space move by section.
+  document.addEventListener("keydown", function (ev) {
+    if (ev.target && /^(BUTTON|A|INPUT|TEXTAREA)$/.test(ev.target.tagName) && ev.key === " ") { return; }
+    var dir = 0;
+    if (ev.key === "ArrowDown" || ev.key === "PageDown" || ev.key === " ") { dir = 1; }
+    if (ev.key === "ArrowUp" || ev.key === "PageUp") { dir = -1; }
+    if (!dir) { return; }
+    var mid = window.scrollY + window.innerHeight / 2, idx = 0;
+    sections.forEach(function (s, k) { if (s.offsetTop <= mid) { idx = k; } });
+    var next = sections[Math.max(0, Math.min(sections.length - 1, idx + dir))];
+    ev.preventDefault();
+    next.scrollIntoView({ behavior: reduced ? "auto" : "smooth" });
+  });
+})();
+</script>
+</body>
+</html>

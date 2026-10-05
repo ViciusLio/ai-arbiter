@@ -18,11 +18,15 @@ from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.domain.risk import ActorRole
 from ai_arbiter.core.domain.time import Clock, SystemClock
 from ai_arbiter.core.interaction import PII_CATEGORIES_AS_TEXT, Interaction, read_categories
-from ai_arbiter.core.ports import AuditLog
+from ai_arbiter.core.invocation import Invocation
+from ai_arbiter.core.ports import AuditLog, NoTargetDirectory, TargetDirectory
 from ai_arbiter.core.rules import Facts, FactType, RuleKind, RuleMatch, RulePack, evaluate
 
 TRAFFIC_WINDOW_DAYS = 30
 CANDIDATE_FACT = "candidate.requests_30d"
+TARGET_FACT = "target.protocol"
+# The rules of the proxies that deny a call for want of a grant.
+NOT_GRANTED_RULES = ("MCP-CALL-NOT-GRANTED", "A2A-CALL-NOT-GRANTED")
 # Declared facts the scan rules read as they are from the declaration.
 _DECLARED_PREFIXES = ("controls.", "data.")
 
@@ -41,8 +45,10 @@ class ScannerService:
         findings: FindingService,
         audit: AuditLog,
         clock: Clock | None = None,
+        targets: TargetDirectory | None = None,
     ) -> None:
         self.pack = pack
+        self._targets: TargetDirectory = targets if targets is not None else NoTargetDirectory()
         self._classifier = classifier
         self._findings = findings
         self._audit = audit
@@ -179,6 +185,66 @@ class ScannerService:
             )
         return candidates
 
+    async def _scan_targets(
+        self, session: AsyncSession, tenant_id: UUID, since: datetime, now: datetime
+    ) -> tuple[int, list[FindingCandidate]]:
+        """The MCP servers and A2A agents of the catalogues, and the calls made to them.
+
+        A finding about a server or an agent is attached to the AI system it belongs to,
+        when it belongs to one.
+        """
+        in_window = (Invocation.tenant_id == tenant_id, Invocation.started_at >= since)
+        refused: dict[tuple[str, str], int] = {
+            (str(protocol), str(target)): int(count)
+            for protocol, target, count in await session.execute(
+                select(Invocation.protocol, Invocation.target, func.count())
+                .where(
+                    *in_window,
+                    Invocation.target_known.is_(True),
+                    Invocation.reason.in_(NOT_GRANTED_RULES),
+                )
+                .group_by(Invocation.protocol, Invocation.target)
+            )
+        }
+        candidates: list[FindingCandidate] = []
+        targets = await self._targets.targets(session, tenant_id)
+        for target in targets:
+            reference = f"{target.protocol}:{target.key}"
+            not_granted = refused.get((target.protocol, target.key), 0)
+            candidates += self._candidates(
+                {
+                    TARGET_FACT: target.protocol,
+                    "target.governability": target.governability,
+                    "target.verification": target.verification,
+                    "target.has_system": target.ai_system_id is not None,
+                    "target.calls_not_granted_30d": not_granted,
+                },
+                {
+                    "target": reference,
+                    "window_days": TRAFFIC_WINDOW_DAYS,
+                    "calls_not_granted": not_granted,
+                },
+                target.ai_system_id,
+                now.date(),
+                distinguishing=reference,
+            )
+        unknown = await session.execute(
+            select(Invocation.protocol, Invocation.target, func.count())
+            .where(*in_window, Invocation.target_known.is_(False))
+            .group_by(Invocation.protocol, Invocation.target)
+            .order_by(Invocation.protocol, Invocation.target)
+        )
+        for protocol, name, count in unknown:
+            reference = f"{protocol}:{name}"
+            candidates += self._candidates(
+                {"unknown_target.calls_30d": int(count)},
+                {"target": reference, "window_days": TRAFFIC_WINDOW_DAYS, "calls": int(count)},
+                None,
+                now.date(),
+                distinguishing=reference,
+            )
+        return len(targets), candidates
+
     async def run(
         self, session: AsyncSession, tenant_id: UUID, *, actor_id: UUID | None = None
     ) -> ScanRun:
@@ -232,9 +298,15 @@ class ScannerService:
             now.date(),
         )
 
+        governed = 0
+        if TARGET_FACT in self.pack.facts:
+            governed, found_candidates = await self._scan_targets(session, tenant_id, since, now)
+            candidates += found_candidates
+
         stats = {
             "systems": len(systems),
             "candidates": len(discovered),
+            "targets": governed,
             "detections": len(candidates),
         }
         for candidate in candidates:

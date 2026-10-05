@@ -78,6 +78,13 @@ Entries link to the decision record that motivated them, where one exists.
     push notification configuration is not created through the proxy. Each call is in
     the table `invocation` and in the audit log, without what was said. New server
     role, `a2a`.
+  - Seven scan rules about tools and agents (scan pack `2026.10.2`): a legacy-only MCP
+    server, an agent that cannot be governed, a card that is invalid or not verified, a
+    server or an agent that belongs to no declared system, calls that no grant allowed,
+    and calls to what no catalogue holds. The scanner reads the catalogues through a
+    new port, `TargetDirectory`.
+  - A presentation for people who are not developers, in Italian:
+    `docs/presentation/arbiter.it.html`.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

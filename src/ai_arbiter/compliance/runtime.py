@@ -8,7 +8,7 @@ from ai_arbiter.compliance.inventory.service import InventoryService
 from ai_arbiter.compliance.scanner.service import ScannerService
 from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.domain.time import Clock, SystemClock
-from ai_arbiter.core.ports import AuditLog, EventBus
+from ai_arbiter.core.ports import AuditLog, EventBus, TargetDirectory
 from ai_arbiter.core.rules import RulePack, load_packaged_pack, load_rule_pack
 
 AI_ACT_PACK = "ai-act"
@@ -31,7 +31,12 @@ class ComplianceRuntime:
 
 
 def build_compliance(
-    settings: Settings, *, audit: AuditLog, bus: EventBus, clock: Clock | None = None
+    settings: Settings,
+    *,
+    audit: AuditLog,
+    bus: EventBus,
+    clock: Clock | None = None,
+    targets: TargetDirectory | None = None,
 ) -> ComplianceRuntime:
     """Load the rule packs and wire the services. Raises ``RulePackError``."""
     clock = clock if clock is not None else SystemClock()
@@ -48,7 +53,7 @@ def build_compliance(
     )
     classifier = ClassifierService(ai_act, audit, bus, clock)
     findings = FindingService(audit, clock)
-    scanner = ScannerService(scan, classifier, findings, audit, clock)
+    scanner = ScannerService(scan, classifier, findings, audit, clock, targets)
     known_facts = {name: spec.type for name, spec in ai_act.facts.items()}
     known_facts.update(scanner.declared_facts())
     return ComplianceRuntime(

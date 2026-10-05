@@ -235,7 +235,7 @@ async def test_a_scan_pack_from_before_discovery_reports_all_such_traffic_as_one
 
     stats = await scan(compliance, database, tenant_id)
 
-    assert packaged_versions("scan") == ["2026.10.0", "2026.10.1"]
+    assert packaged_versions("scan")[:2] == ["2026.10.0", "2026.10.1"]
     assert stats["candidates"] == 0
     assert await candidate_findings(database, tenant_id) == []
     async with database.session() as session:

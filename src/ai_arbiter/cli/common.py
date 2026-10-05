@@ -31,6 +31,7 @@ from ai_arbiter.core.plugins.registry import (
 )
 from ai_arbiter.core.ports import Notifier
 from ai_arbiter.gateway.identity.model import Principal, PrincipalKind
+from ai_arbiter.gateway.targets import CatalogueTargetDirectory
 
 DISCLAIMER = "Arbiter is a support tool. It does not provide legal advice."
 
@@ -93,7 +94,13 @@ async def tenant_for(database: Database, slug: str = LOCAL_TENANT_SLUG) -> Tenan
 def compliance_for(settings: Settings) -> ComplianceRuntime:
     """The compliance services as the command line uses them."""
     bus = PluginRegistry().load(EVENT_BUSES, settings.plugins.event_bus)()
-    return build_compliance(settings, audit=DatabaseAuditLog(), bus=bus)
+    # The scanner reads the MCP and A2A catalogues of the gateway through a port.
+    return build_compliance(
+        settings,
+        audit=DatabaseAuditLog(),
+        bus=bus,
+        targets=CatalogueTargetDirectory(settings),
+    )
 
 
 def short_id(identifier: UUID) -> str:

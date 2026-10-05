@@ -17,6 +17,10 @@ without the other.
 
 > Arbiter is a support tool. It does not provide legal advice.
 
+**New here, and not a developer?** Open the presentation:
+[`docs/presentation/arbiter.it.html`](docs/presentation/arbiter.it.html) (in Italian; an
+English one will follow). One self-contained file: download it and open it in a browser.
+
 ## Where the project is
 
 Updated at every commit. Last update: 2026-10-05.
@@ -42,8 +46,9 @@ Phase 5, step by step:
 | MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Done: `POST /mcp/{server}`; decide, record, then forward. Tested with the client and a server of the official SDK, in process |
 | A2A registry: agent cards fetched, stored and verified against configured keys | Done: `arbiter a2a agents` and `a2a grants`, `/api/v1/a2a`; a card is verified only against `a2a.trusted_keys`, and an interface counts only on the host of the card. Tested with cards signed by the official SDK, not with a real agent on the network |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Done: `POST /a2a/{agent}` and `/a2a/{agent}/rest/...`; decide, record, then forward. Tested against a stand-in agent, not with the SDK's client or a real agent |
-| Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
+| Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Done: seven rules in the scan pack `2026.10.2`, read through a port from the catalogues and from the recorded calls |
 | Demo with mock agents and a mock MCP server | Not started |
+| A presentation for people who are not developers, in Italian | Done: `docs/presentation/arbiter.it.html`. Not viewed in a browser by its author; the English one is not written yet |
 | Phase summary and the full check, containers included | Not started |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
@@ -153,7 +158,7 @@ How to configure and use each of them: [the gateway](docs/gateway.md) and
 | Inventory | AI systems declared in YAML, through the API or the CLI, with their AI Act roles |
 | Classifier | Deterministic rules as data, written from the Official Journal text: out of scope, prohibited, high-risk, transparency, minimal. Each outcome cites its provision and the date it applies from |
 | Review | A classification is indicative until a named person confirms or overrides it |
-| Scanner | Fourteen rules compare what was declared with the classification and with the traffic, and name the projects whose requests no declared system accounts for |
+| Scanner | Twenty-one rules compare what was declared with the classification and with the traffic, name the projects whose requests no declared system accounts for, and report MCP servers and A2A agents that cannot be governed, cards that are not verified and calls that no grant or no catalogue covers |
 | Findings | Deduplicated, reviewed, accepted with an expiry or suppressed with a reason; all audited |
 | Discovery | Requests that belong to no declared system are grouped by project and proposed as candidate systems, with a draft declaration for a person to complete |
 | Importers | Records of another gateway (LiteLLM, or Arbiter's own JSON lines) are imported without their content and scanned like the gateway's own |

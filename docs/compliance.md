@@ -163,6 +163,18 @@ completion text: none is stored.
 | `SCAN-ROLE-NOT-COVERED` | A role whose obligations this version does not evaluate |
 | `SCAN-UNDECLARED-SYSTEM-CANDIDATE` | A project, or a group of an imported source, makes requests that no declared system accounts for. One finding per candidate (see below) |
 | `SCAN-UNATTRIBUTED-TRAFFIC` | Requests tied to no declared system that nothing groups into a candidate |
+| `SCAN-MCP-SERVER-LEGACY-ONLY` | An MCP server of the catalogue offers no protocol revision the proxy speaks |
+| `SCAN-AGENT-NOT-GOVERNABLE` | An A2A agent offers no binding the proxy speaks on the host of its card |
+| `SCAN-AGENT-CARD-INVALID` | The card of an agent names a trusted key and its signature does not verify |
+| `SCAN-AGENT-CARD-NOT-VERIFIED` | The card of an agent is unsigned, or signed with a key that is not trusted |
+| `SCAN-TARGET-WITHOUT-SYSTEM` | An MCP server or an agent belongs to no declared AI system |
+| `SCAN-CALLS-NOT-GRANTED` | Callers tried to use a server or an agent that no grant allows them |
+| `SCAN-UNKNOWN-TARGET-IN-TRAFFIC` | Calls named a server or an agent that no catalogue holds. One finding per name |
+
+The last seven are about tools and agents (Phase 5): they read the MCP catalogue and the
+A2A registry of the gateway, and the calls recorded by the two proxies, never their
+content. A finding about a server or an agent is attached to the AI system it belongs
+to. See [the gateway](gateway.md) for the catalogues and the proxies.
 
 Controls the organisation attests in a declaration, read by these rules:
 `controls.transparency_notice`, `controls.human_oversight_assigned`,
@@ -445,7 +457,7 @@ cut-off dates (ADR-0038).
   text, and the pack's review against EUR-Lex is pending.
 - Deployer obligations only. A provider gets a tier and no list of its obligations
   beyond Article 50.
-- Fourteen scan rules. The local agent is planned for v0.1.x (ADR-0009).
+- Twenty-one scan rules. The local agent is planned for v0.1.x (ADR-0009).
 - A discovered candidate is as fine as its project: a project that runs several systems
   shows as one. A candidate from imported records stays until those records leave the
   30-day window, because imported records are attributed at import and not afterwards.

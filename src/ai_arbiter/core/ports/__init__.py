@@ -25,6 +25,7 @@ from ai_arbiter.core.ports.llm import LLMProvider
 from ai_arbiter.core.redaction.model import PIIDetector
 from ai_arbiter.core.rules.decision import Decision
 from ai_arbiter.core.rules.engine import Facts
+from ai_arbiter.core.targets import NoTargetDirectory, TargetDirectory
 
 E = TypeVar("E", bound=Event)
 Handler = Callable[[E], Awaitable[None]]
@@ -101,10 +102,12 @@ __all__ = [
     "Handler",
     "LLMProvider",
     "NoSystemDirectory",
+    "NoTargetDirectory",
     "Notifier",
     "PIIDetector",
     "PolicyEngine",
     "SecretStore",
     "SystemDirectory",
+    "TargetDirectory",
     "TelemetrySource",
 ]

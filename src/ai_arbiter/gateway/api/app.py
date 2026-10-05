@@ -15,6 +15,7 @@ from ai_arbiter.core.ports import AuditLog, EventBus, SystemDirectory
 from ai_arbiter.core.telemetry import configure_logging, setup_telemetry
 from ai_arbiter.gateway.api import a2a, admin, chat, compliance, errors, health, mcp
 from ai_arbiter.gateway.runtime import build_runtime
+from ai_arbiter.gateway.targets import CatalogueTargetDirectory
 
 DESCRIPTION = """
 Arbiter is an AI governance gateway and EU AI Act compliance toolkit.
@@ -83,7 +84,15 @@ def create_app(
         def systems(audit: AuditLog, bus: EventBus, used_clock: Clock) -> SystemDirectory:
             # The compliance toolkit shares the audit log and the event bus of the
             # gateway, and gives it the directory of classified systems.
-            toolkit.append(build_compliance(resolved, audit=audit, bus=bus, clock=used_clock))
+            toolkit.append(
+                build_compliance(
+                    resolved,
+                    audit=audit,
+                    bus=bus,
+                    clock=used_clock,
+                    targets=CatalogueTargetDirectory(resolved),
+                )
+            )
             return toolkit[0].directory
 
         try:
