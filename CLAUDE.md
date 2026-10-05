@@ -15,6 +15,25 @@ and compliance first (ADR-0054: no cache of key lookups). The version is `0.1.0a
 published (ADR-0032). `0.1.0` waits for a legal review of the AI Act rule pack
 (ADR-0041).
 
+**Session closed by the owner on 2026-10-05.** After Phase 5 the owner asked for the
+open improvements and for a demonstration; row 8 of the table below lists what was done
+(I-45, the filter of `tools/list`, I-33, PDF reports, the decisions on network logs, the
+consulting demonstration told as a story and published on the site). The owner tried the
+demonstration, saw its page and approved it.
+
+On "riprendi":
+
+1. Check the CI run of the last commit (`gh run list --workflow ci.yml --limit 1`). The
+   closing push started it and nobody read its result. The last run read to the end and
+   green was on `ff4ac46`; the later ones were cancelled by the pushes that followed, and
+   every job that finished in them had passed. The full suite last passed locally after
+   I-33 (`e302c03`: 1177 passed, 5 skipped, 96% coverage); after the demonstration was
+   rebuilt only the unit, demo and report tests were run locally.
+2. Ask the owner which improvement to start with. Waiting, needing no decision: I-14,
+   I-15, I-31, I-32, I-42, I-46, I-11, one at a time. Then Phase 6 (Azure), which needs a
+   subscription and a budget.
+3. Not seen by anyone: the English page of the demonstration in a browser.
+
 Read first: `docs/phases/phase-4b-deferrable-items.md` (what was built, verified and not
 verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
 
