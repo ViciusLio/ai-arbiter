@@ -64,6 +64,7 @@ supersedes the old one.
 | [0052](0052-a2a-official-sdk-behind-a-port.md) | A2A through the official SDK, as an extra, behind a port | Accepted | 5 |
 | [0053](0053-a2a-card-signatures-against-configured-keys.md) | Card signatures verified only against keys the operator configured | Accepted | 5 |
 | [0054](0054-no-cache-of-key-lookups.md) | API keys and roles are read on every request, not cached | Accepted | 5 |
+| [0055](0055-semantic-pii-detection-as-an-optional-plugin.md) | Personal data written in words is detected by an optional local plugin (Presidio), with measured precision and recall | Accepted | 5 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -193,6 +194,11 @@ two checks the preparation left open were made the same day on the installed pac
 `mcp-types` 2.2.0 stands on its own, and `a2a-sdk[signing]` 1.2.1 verifies a card
 against a key provider. ADR-0054 (no cache of key lookups) was left to the implementer
 by the owner, with security and compliance as the first criteria.
+
+Decided by the owner on 2026-10-05, while Phase 5 was being built: ADR-0055 (semantic
+detection of personal data as an optional plugin). The owner also asked for a guided
+demonstration and for a presentation of the project for people who are not developers,
+in Italian and in English.
 
 ## Open questions
 

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Arbiter in breve</title>
-<meta name="description" content="Che cosa fa Arbiter, come funziona e a che punto è, spiegato a chi non è tecnico.">
+<title>Arbiter in brief</title>
+<meta name="description" content="What Arbiter does, how it works and where it stands, for people who are not developers.">
 <style>
 /* Layout: one column of wide sections, each a step of the story; cards only where items are peers. */
 :root {
@@ -155,212 +155,212 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 </head>
 <body>
 <div id="bar"></div>
-<nav class="top" aria-label="Comandi">
-  <button id="theme" type="button" aria-label="Cambia tema chiaro o scuro">Tema</button>
+<nav class="top" aria-label="Controls">
+  <button id="theme" type="button" aria-label="Switch between the light and the dark theme">Theme</button>
 </nav>
 <div id="dots" aria-hidden="true"></div>
 
 <section class="cover" id="s1">
   <div class="wrap reveal">
-    <div class="kicker">Arbiter · progetto open source</div>
-    <h1>Sapere quali sistemi di IA usi.<br>E poterlo mostrare.</h1>
-    <p class="lead">Arbiter collega due cose che di solito restano separate: ciò che un'organizzazione <strong>dichiara</strong> sui propri sistemi di intelligenza artificiale e ciò che il loro <strong>traffico reale</strong> mostra. Lo fa con l'AI Act europeo come riferimento.</p>
+    <div class="kicker">Arbiter · open source project</div>
+    <h1>Know which AI systems you run.<br>And be able to show it.</h1>
+    <p class="lead">Arbiter links two things that usually stay apart: what an organisation <strong>declares</strong> about its artificial intelligence systems and what their <strong>real traffic</strong> shows. Its reference is the European AI Act.</p>
     <div class="badge">
-      <span class="pill warn">Versione alpha</span>
-      <span class="pill info">Non ancora pubblicato</span>
-      <span class="pill ok">Licenza Apache 2.0</span>
+      <span class="pill warn">Alpha version</span>
+      <span class="pill info">Not published yet</span>
+      <span class="pill ok">Apache 2.0 licence</span>
     </div>
-    <p class="hint">Scorri, oppure usa <kbd>↓</kbd> e <kbd>↑</kbd> per passare da una sezione all'altra. Molti riquadri si possono toccare.</p>
+    <p class="hint">Scroll, or use <kbd>↓</kbd> and <kbd>↑</kbd> to move from one section to the next. Many boxes can be tapped.</p>
   </div>
 </section>
 
 <section id="s2">
   <div class="wrap reveal">
-    <div class="kicker">Il problema</div>
-    <h2>L'IA entra in azienda più in fretta di quanto la si riesca a contare</h2>
-    <p class="lead">Un assistente per il servizio clienti, un modulo che ordina i curriculum, un collega che incolla dati in un chatbot. Ognuno è un sistema di IA, e la legge chiede di sapere quali sono, a cosa servono e quanto sono rischiosi.</p>
+    <div class="kicker">The problem</div>
+    <h2>AI enters an organisation faster than anyone can count it</h2>
+    <p class="lead">An assistant for customer service, a module that ranks job applications, a colleague who pastes data into a chatbot. Each is an AI system, and the law asks you to know which they are, what they are for and how risky they are.</p>
     <div class="grid g3" style="margin-top:1.4rem">
-      <div class="card"><div class="mark"></div><h3>L'inventario invecchia</h3><p class="muted">Un elenco scritto a mano dice ciò che qualcuno ricordava quel giorno. Non dice ciò che succede oggi.</p></div>
-      <div class="card"><div class="mark"></div><h3>L'uso non dichiarato</h3><p class="muted">Quello che nessuno ha messo nell'elenco è proprio quello che nessuno sta controllando.</p></div>
-      <div class="card"><div class="mark"></div><h3>Le regole hanno date</h3><p class="muted">L'AI Act si applica per tappe. Sapere <em>cosa</em> vale <em>da quando</em> è metà del lavoro.</p></div>
+      <div class="card"><div class="mark"></div><h3>The inventory goes stale</h3><p class="muted">A list written by hand says what someone remembered that day. It does not say what happens today.</p></div>
+      <div class="card"><div class="mark"></div><h3>Undeclared use</h3><p class="muted">What nobody put on the list is exactly what nobody is watching.</p></div>
+      <div class="card"><div class="mark"></div><h3>The rules have dates</h3><p class="muted">The AI Act applies in stages. Knowing <em>what</em> applies <em>from when</em> is half of the work.</p></div>
     </div>
   </div>
 </section>
 
 <section id="s3">
   <div class="wrap reveal">
-    <div class="kicker">L'idea</div>
-    <h2>Due metà che si parlano</h2>
-    <p class="lead">Ciascuna funziona anche da sola. Insieme fanno la cosa che conta: confrontare il dichiarato con l'osservato.</p>
+    <div class="kicker">The idea</div>
+    <h2>Two halves that talk to each other</h2>
+    <p class="lead">Each works on its own. Together they do the thing that matters: compare what was declared with what is observed.</p>
     <div class="halves" style="margin-top:1.4rem">
       <div class="card">
-        <div class="mark"></div><h3>Il gateway: un casello</h3>
-        <p class="muted">Tutte le richieste ai modelli di IA passano da qui. Arbiter controlla chi chiede, applica le regole, oscura i dati personali, sceglie dove mandare la richiesta, ne stima il costo e scrive cosa è successo.</p>
-        <p class="small muted">Produce le prove.</p>
+        <div class="mark"></div><h3>The gateway: a toll booth</h3>
+        <p class="muted">Every request to an AI model goes through here. Arbiter checks who is asking, applies the rules, masks personal data, chooses where to send the request, estimates its cost and writes down what happened.</p>
+        <p class="small muted">It produces the evidence.</p>
       </div>
       <div class="link" aria-hidden="true">⇄</div>
       <div class="card">
-        <div class="mark"></div><h3>Il toolkit: un registro che controlla</h3>
-        <p class="muted">Tiene l'inventario dei sistemi, propone per ognuno una classe di rischio secondo l'AI Act, confronta le dichiarazioni con il traffico e segnala ciò che non torna.</p>
-        <p class="small muted">Usa le prove.</p>
+        <div class="mark"></div><h3>The toolkit: a register that checks</h3>
+        <p class="muted">It keeps the inventory of systems, proposes a risk class for each under the AI Act, compares the declarations with the traffic and reports what does not add up.</p>
+        <p class="small muted">It uses the evidence.</p>
       </div>
     </div>
-    <div class="note"><strong>Il punto.</strong> I gateway per l'IA esistono già. Quello che manca è il collegamento tra il traffico e un inventario classificato secondo la legge: è lì che Arbiter lavora.</div>
+    <div class="note"><strong>The point.</strong> Gateways for AI already exist. What is missing is the link between the traffic and an inventory classified under the law: that is where Arbiter works.</div>
   </div>
 </section>
 
 <section id="s4">
   <div class="wrap reveal">
-    <div class="kicker">Come funziona</div>
-    <h2>Il viaggio di una richiesta</h2>
-    <p class="lead">Tocca i passaggi, oppure lasciali scorrere.</p>
+    <div class="kicker">How it works</div>
+    <h2>The journey of a request</h2>
+    <p class="lead">Tap the steps, or let them play.</p>
     <div class="steps" id="steps" role="tablist"></div>
     <div class="stage" id="stage" aria-live="polite"></div>
-    <button class="chip play" id="play" type="button">▶ Riproduci</button>
+    <button class="chip play" id="play" type="button">▶ Play</button>
   </div>
 </section>
 
 <section id="s5">
   <div class="wrap reveal">
-    <div class="kicker">Classificazione</div>
-    <h2>Una classe di rischio, sempre come proposta</h2>
-    <p class="lead">Si risponde a domande prese dal testo della legge. Le stesse risposte danno sempre lo stesso risultato: nessun modello di IA decide la classe.</p>
+    <div class="kicker">Classification</div>
+    <h2>A risk class, always as a proposal</h2>
+    <p class="lead">You answer questions taken from the text of the law. The same answers always give the same result: no AI model decides the class.</p>
     <div class="tiers" id="tiers"></div>
     <div class="card" id="tierbox" aria-live="polite"></div>
     <div class="grid g3" style="margin-top:1rem">
-      <div class="card"><h3>Una risposta mancante non è un "no"</h3><p class="muted">Finché resta aperta una domanda che potrebbe portare a una classe più severa, il risultato è <em>indeterminato</em>.</p></div>
-      <div class="card"><h3>Una persona conferma</h3><p class="muted">Ogni classificazione è <em>indicativa</em> finché qualcuno, con nome e motivazione, non la conferma o la cambia.</p></div>
-      <div class="card"><h3>Ogni esito cita la norma</h3><p class="muted">Articolo e data da cui si applica. Un obbligo futuro è mostrato come preparazione, non come mancanza.</p></div>
+      <div class="card"><h3>A missing answer is not a "no"</h3><p class="muted">While a question is open that could lead to a more severe class, the result is <em>undetermined</em>.</p></div>
+      <div class="card"><h3>A person confirms</h3><p class="muted">Every classification is <em>indicative</em> until someone, by name and with a reason, confirms it or changes it.</p></div>
+      <div class="card"><h3>Every outcome cites the provision</h3><p class="muted">The article and the date it applies from. An obligation of the future is shown as preparation, not as a failing.</p></div>
     </div>
   </div>
 </section>
 
 <section id="s6">
   <div class="wrap reveal">
-    <div class="kicker">Il calendario dell'AI Act</div>
-    <h2>Cosa si applica, e da quando</h2>
-    <p class="lead">Le date sono quelle del Regolamento (UE) 2024/1689 come modificato nel 2026, lette sul testo della Gazzetta ufficiale.</p>
+    <div class="kicker">The calendar of the AI Act</div>
+    <h2>What applies, and from when</h2>
+    <p class="lead">The dates are those of Regulation (EU) 2024/1689 as amended in 2026, read on the text of the Official Journal.</p>
     <div class="timeline">
-      <div class="track"><div class="fill" id="tfill"></div><div class="now" id="tnow" style="left:47%">oggi, ottobre 2026</div></div>
+      <div class="track"><div class="fill" id="tfill"></div><div class="now" id="tnow" style="left:47%">today, October 2026</div></div>
       <div class="marks">
-        <div><b>2 febbraio 2025</b><span class="muted">Pratiche vietate, alfabetizzazione sull'IA</span></div>
-        <div><b>2 agosto 2026</b><span class="muted">Obblighi di trasparenza</span></div>
-        <div><b>2 dicembre 2027</b><span class="muted">Sistemi ad alto rischio (Allegato III)</span></div>
-        <div><b>2 agosto 2028</b><span class="muted">Alto rischio in prodotti regolati (Allegato I)</span></div>
+        <div><b>2 February 2025</b><span class="muted">Prohibited practices, AI literacy</span></div>
+        <div><b>2 August 2026</b><span class="muted">Transparency obligations</span></div>
+        <div><b>2 December 2027</b><span class="muted">High-risk systems (Annex III)</span></div>
+        <div><b>2 August 2028</b><span class="muted">High risk in regulated products (Annex I)</span></div>
       </div>
     </div>
-    <div class="note"><strong>Limite importante.</strong> Le regole di Arbiter riassumono la legge in domande. Nessuna persona con formazione giuridica le ha ancora riviste: per questo ogni risultato dice "indicativo", e la versione 0.1.0 aspetta quella revisione.</div>
+    <div class="note"><strong>An important limit.</strong> The rules of Arbiter summarise the law as questions. No person with legal training has reviewed them yet: that is why every result says "indicative", and version 0.1.0 waits for that review.</div>
   </div>
 </section>
 
 <section id="s7">
   <div class="wrap reveal">
-    <div class="kicker">Dichiarato contro osservato</div>
-    <h2>Quando i fatti contraddicono le carte</h2>
-    <p class="lead">Arbiter non legge il contenuto delle conversazioni: guarda solo i dati di contorno. Bastano per accorgersi di molto.</p>
+    <div class="kicker">Declared against observed</div>
+    <h2>When the facts contradict the paperwork</h2>
+    <p class="lead">Arbiter does not read the content of conversations: it looks only at the data around them. That is enough to notice a great deal.</p>
     <div class="scroll"><table class="cmp">
-      <thead><tr><th>Cosa è stato dichiarato</th><th>Cosa mostra il traffico</th><th>Cosa segnala Arbiter</th></tr></thead>
+      <thead><tr><th>What was declared</th><th>What the traffic shows</th><th>What Arbiter reports</th></tr></thead>
       <tbody>
-        <tr><td>"Usiamo solo il modello A"</td><td>Richieste anche al modello B</td><td><span class="pill warn">Modello non dichiarato</span></td></tr>
-        <tr><td>"Non trattiamo dati personali"</td><td>Indirizzi email nei messaggi</td><td><span class="pill warn">Dati personali non dichiarati</span></td></tr>
-        <tr><td>"Quel sistema è dismesso"</td><td>Risponde ancora</td><td><span class="pill warn">Sistema dismesso in uso</span></td></tr>
-        <tr><td>Nulla</td><td>Un gruppo di lavoro fa centinaia di richieste</td><td><span class="pill no">Sistema candidato, mai dichiarato</span></td></tr>
+        <tr><td>"We only use model A"</td><td>Requests to model B as well</td><td><span class="pill warn">Undeclared model</span></td></tr>
+        <tr><td>"We process no personal data"</td><td>E-mail addresses in the messages</td><td><span class="pill warn">Undeclared personal data</span></td></tr>
+        <tr><td>"That system is retired"</td><td>It still answers</td><td><span class="pill warn">Retired system in use</span></td></tr>
+        <tr><td>Nothing</td><td>A team makes hundreds of requests</td><td><span class="pill no">Candidate system, never declared</span></td></tr>
       </tbody>
     </table></div>
     <div class="grid g3" style="margin-top:1rem">
-      <div class="card"><h3>Rilievi, non sentenze</h3><p class="muted">Ogni rilievo si conferma, si respinge o si accetta come rischio con una scadenza. Sempre con una persona.</p></div>
-      <div class="card"><h3>Un riepilogo quotidiano</h3><p class="muted">In italiano e in inglese, anche via email. Più i report da consegnare a chi non usa lo strumento.</p></div>
-      <div class="card"><h3>Anche da altri gateway</h3><p class="muted">I registri di un altro sistema si importano senza il loro contenuto.</p></div>
+      <div class="card"><h3>Findings, not verdicts</h3><p class="muted">Every finding is confirmed, rejected, or accepted as a risk with an expiry date. Always by a person.</p></div>
+      <div class="card"><h3>A daily digest</h3><p class="muted">In English and in Italian, by e-mail too. Plus reports to hand to people who do not use the tool.</p></div>
+      <div class="card"><h3>From other gateways too</h3><p class="muted">The records of another system are imported without their content.</p></div>
     </div>
   </div>
 </section>
 
 <section id="s8">
   <div class="wrap reveal">
-    <div class="kicker">Strumenti e agenti</div>
-    <h2>L'IA che usa strumenti e parla con altre IA</h2>
-    <p class="lead">I sistemi di oggi non si limitano a rispondere: leggono file, interrogano archivi, chiedono aiuto ad altri agenti. Arbiter si mette in mezzo anche lì.</p>
+    <div class="kicker">Tools and agents</div>
+    <h2>AI that uses tools and talks to other AI</h2>
+    <p class="lead">Today's systems do more than answer: they read files, query archives, ask other agents for help. Arbiter stands in between there too.</p>
     <div class="grid g2" style="margin-top:1.3rem">
       <div class="card">
-        <div class="mark"></div><h3>Strumenti (protocollo MCP)</h3>
-        <p class="muted">Un catalogo dei server di strumenti conosciuti. Nessuno può usarne uno finché un permesso non lo dice, anche strumento per strumento. Ogni chiamata è registrata: chi, quale strumento, come è finita. Mai cosa è stato chiesto o risposto.</p>
+        <div class="mark"></div><h3>Tools (the MCP protocol)</h3>
+        <p class="muted">A catalogue of the tool servers that are known. Nobody may use one until a grant says so, tool by tool if needed. Every call is recorded: who, which tool, how it ended. Never what was asked or answered.</p>
       </div>
       <div class="card">
-        <div class="mark"></div><h3>Agenti (protocollo A2A)</h3>
-        <p class="muted">Un registro degli agenti esterni e del loro "biglietto da visita". La firma del biglietto vale solo se fatta con una chiave di cui l'organizzazione si fida già: un biglietto che porta con sé la propria chiave garantisce solo per se stesso.</p>
+        <div class="mark"></div><h3>Agents (the A2A protocol)</h3>
+        <p class="muted">A registry of external agents and of their "business card". The signature on the card counts only if made with a key the organisation already trusts: a card that brings its own key vouches only for itself.</p>
       </div>
     </div>
-    <div class="note"><strong>Stessa regola per tutto:</strong> prima si decide, poi si scrive la decisione nel registro, e solo dopo la richiesta parte. Se il registro non si può scrivere, la richiesta non parte.</div>
+    <div class="note"><strong>One rule for everything:</strong> first decide, then write the decision in the log, and only then let the request go. If the log cannot be written, the request does not go.</div>
   </div>
 </section>
 
 <section id="s9">
   <div class="wrap reveal">
-    <div class="kicker">Di cosa ci si può fidare</div>
-    <h2>Come è costruito</h2>
+    <div class="kicker">What you can rely on</div>
+    <h2>How it is built</h2>
     <div class="grid g3" style="margin-top:1rem">
-      <div class="card"><div class="mark"></div><h3>Un registro a catena</h3><p class="muted">Ogni voce contiene l'impronta della precedente. Cambiarne una rompe la catena, e si vede.</p></div>
-      <div class="card"><div class="mark"></div><h3>Niente contenuti salvati</h3><p class="muted">Domande e risposte non vengono conservate. Un test cerca in tutto il database per dimostrarlo.</p></div>
-      <div class="card"><div class="mark"></div><h3>Regole come dati</h3><p class="muted">Le regole sono file leggibili, con versione. Si possono leggere, confrontare e sostituire senza toccare il programma.</p></div>
-      <div class="card"><div class="mark"></div><h3>Decide una persona</h3><p class="muted">Classificazioni e rilievi sono proposte. La macchina non chiude mai una questione da sola.</p></div>
-      <div class="card"><div class="mark"></div><h3>Decisioni scritte</h3><p class="muted">Ogni scelta di progetto è registrata con le alternative scartate e il perché.</p></div>
-      <div class="card"><div class="mark"></div><h3>Funziona anche offline</h3><p class="muted">Si prova su un portatile, senza cloud e senza un modello vero.</p></div>
+      <div class="card"><div class="mark"></div><h3>A chained log</h3><p class="muted">Each entry holds the fingerprint of the one before. Changing one breaks the chain, and it shows.</p></div>
+      <div class="card"><div class="mark"></div><h3>No content is kept</h3><p class="muted">Questions and answers are not stored. A test searches the whole database to prove it.</p></div>
+      <div class="card"><div class="mark"></div><h3>Rules as data</h3><p class="muted">The rules are readable files, with a version. They can be read, compared and replaced without touching the program.</p></div>
+      <div class="card"><div class="mark"></div><h3>A person decides</h3><p class="muted">Classifications and findings are proposals. The machine never settles a matter on its own.</p></div>
+      <div class="card"><div class="mark"></div><h3>Decisions on record</h3><p class="muted">Every design choice is recorded with the alternatives set aside and the reason.</p></div>
+      <div class="card"><div class="mark"></div><h3>It works offline too</h3><p class="muted">You can try it on a laptop, with no cloud and no real model.</p></div>
     </div>
     <div class="grid g4" style="margin-top:1.2rem">
-      <div class="card stat"><div class="big" data-count="1100" data-prefix="oltre ">oltre 1.100</div><div class="lab">test automatici</div></div>
-      <div class="card stat"><div class="big" data-count="97" data-suffix="%">97%</div><div class="lab">del codice coperto dai test</div></div>
-      <div class="card stat"><div class="big" data-count="55">55</div><div class="lab">decisioni di progetto registrate</div></div>
-      <div class="card stat"><div class="big" data-count="21">21</div><div class="lab">controlli sul traffico</div></div>
+      <div class="card stat"><div class="big" data-count="1100" data-prefix="over ">over 1,100</div><div class="lab">automated tests</div></div>
+      <div class="card stat"><div class="big" data-count="97" data-suffix="%">97%</div><div class="lab">of the code covered by tests</div></div>
+      <div class="card stat"><div class="big" data-count="55">55</div><div class="lab">design decisions on record</div></div>
+      <div class="card stat"><div class="big" data-count="21">21</div><div class="lab">checks on the traffic</div></div>
     </div>
   </div>
 </section>
 
 <section id="s10">
   <div class="wrap reveal">
-    <div class="kicker">Con onestà</div>
-    <h2>Cosa Arbiter non fa</h2>
+    <div class="kicker">In all honesty</div>
+    <h2>What Arbiter does not do</h2>
     <div class="grid g2" style="margin-top:1rem">
-      <div class="card"><h3><span class="pill no">No</span> Non è consulenza legale</h3><p class="muted">È uno strumento di supporto. Non dice mai che un sistema "è conforme": dice "indicativo" e "nessun rilievo".</p></div>
-      <div class="card"><h3><span class="pill no">No</span> Non verifica che le dichiarazioni siano vere</h3><p class="muted">Una classificazione vale quanto le risposte date. Il traffico ne smentisce alcune, non tutte.</p></div>
-      <div class="card"><h3><span class="pill warn">Limite</span> Dati personali riconosciuti per formato</h3><p class="muted">Trova email, telefoni, IBAN, codici fiscali. Non riconosce nomi, indirizzi o dati sanitari scritti a parole. È il prossimo punto da migliorare.</p></div>
-      <div class="card"><h3><span class="pill warn">Limite</span> Solo chi usa l'IA, non chi la produce</h3><p class="muted">Oggi valuta gli obblighi di chi impiega un sistema. Quelli di chi lo sviluppa arriveranno dopo.</p></div>
-      <div class="card"><h3><span class="pill warn">Limite</span> Registro che rivela, non che impedisce</h3><p class="muted">Una manomissione parziale si vede. Chi può riscrivere tutto il database può riscrivere tutta la catena: serve una copia esterna dell'ultima impronta.</p></div>
-      <div class="card"><h3><span class="pill info">Stato</span> Non ancora pubblicato</h3><p class="muted">Nessuna versione è stata rilasciata. Diverse parti sono state provate solo con controparti simulate.</p></div>
+      <div class="card"><h3><span class="pill no">No</span> It is not legal advice</h3><p class="muted">It is a support tool. It never says a system "is compliant": it says "indicative" and "no findings".</p></div>
+      <div class="card"><h3><span class="pill no">No</span> It does not check that declarations are true</h3><p class="muted">A classification is as good as the answers given. The traffic contradicts some of them, not all.</p></div>
+      <div class="card"><h3><span class="pill warn">Limit</span> Personal data recognised by format</h3><p class="muted">It finds e-mail addresses, phone numbers, IBANs, tax codes. It does not recognise names, addresses or health data written in words. That is the next thing to improve.</p></div>
+      <div class="card"><h3><span class="pill warn">Limit</span> Only those who use AI, not those who make it</h3><p class="muted">Today it evaluates the obligations of those who deploy a system. Those of whoever develops it will come later.</p></div>
+      <div class="card"><h3><span class="pill warn">Limit</span> A log that reveals, not one that prevents</h3><p class="muted">A partial tampering shows. Whoever can rewrite the whole database can rewrite the whole chain: a copy of the last fingerprint has to be kept elsewhere.</p></div>
+      <div class="card"><h3><span class="pill info">Status</span> Not published yet</h3><p class="muted">No version has been released. Several parts were tested only against simulated counterparts.</p></div>
     </div>
   </div>
 </section>
 
 <section id="s11">
   <div class="wrap reveal">
-    <div class="kicker">A che punto siamo</div>
-    <h2>Il percorso, fase per fase</h2>
-    <p class="lead">Stima al 5 ottobre 2026. Le percentuali misurano il lavoro di costruzione, non il valore legale delle regole.</p>
+    <div class="kicker">Where we are</div>
+    <h2>The road, phase by phase</h2>
+    <p class="lead">An estimate on 5 October 2026. The percentages measure the work of building, not the legal value of the rules.</p>
     <div id="phases" style="margin-top:1.2rem"></div>
     <div class="grid g3" style="margin-top:1.3rem">
-      <div class="card stat"><div class="big" data-count="77" data-suffix="%">77%</div><div class="lab">del percorso complessivo</div></div>
-      <div class="card"><h3>Prima della versione 0.1.0</h3><p class="muted">Una revisione delle regole da parte di una persona con formazione giuridica, e un confronto degli articoli citati con la fonte ufficiale.</p></div>
-      <div class="card"><h3>Dopo</h3><p class="muted">Una dimostrazione guidata, l'installazione su cloud (Azure) e la documentazione per chi lo adotta.</p></div>
+      <div class="card stat"><div class="big" data-count="77" data-suffix="%">77%</div><div class="lab">of the whole road</div></div>
+      <div class="card"><h3>Before version 0.1.0</h3><p class="muted">A review of the rules by a person with legal training, and a comparison of the quoted articles with the official source.</p></div>
+      <div class="card"><h3>After that</h3><p class="muted">A guided demonstration, the installation on a cloud (Azure) and the documentation for those who adopt it.</p></div>
     </div>
   </div>
 </section>
 
 <section id="s12">
   <div class="wrap reveal">
-    <div class="kicker">In sintesi</div>
-    <h2>Cosa ottieni</h2>
+    <div class="kicker">In short</div>
+    <h2>What you get</h2>
     <div class="grid g2" style="margin-top:1rem">
-      <div class="card"><h3>Un inventario che resta vero</h3><p class="muted">Perché viene confrontato ogni giorno con ciò che accade, e non solo con ciò che si ricorda.</p></div>
-      <div class="card"><h3>Una risposta a "da dove viene questo risultato?"</h3><p class="muted">Ogni esito porta con sé la regola, l'articolo, la data e chi lo ha confermato.</p></div>
-      <div class="card"><h3>Meno sorprese</h3><p class="muted">L'uso non dichiarato emerge da solo, come proposta da valutare, prima che lo trovi qualcun altro.</p></div>
-      <div class="card"><h3>Prove che reggono</h3><p class="muted">Un registro verificabile di cosa è stato deciso e quando, senza conservare il contenuto delle conversazioni.</p></div>
+      <div class="card"><h3>An inventory that stays true</h3><p class="muted">Because it is compared every day with what happens, and not only with what is remembered.</p></div>
+      <div class="card"><h3>An answer to "where does this result come from?"</h3><p class="muted">Every outcome carries the rule, the article, the date and who confirmed it.</p></div>
+      <div class="card"><h3>Fewer surprises</h3><p class="muted">Undeclared use surfaces by itself, as a proposal to assess, before someone else finds it.</p></div>
+      <div class="card"><h3>Evidence that holds</h3><p class="muted">A verifiable log of what was decided and when, without keeping the content of conversations.</p></div>
     </div>
-    <div class="note">Arbiter è uno strumento di supporto. Non fornisce consulenza legale.</div>
+    <div class="note">Arbiter is a support tool. It does not provide legal advice.</div>
   </div>
 </section>
 
 <footer>
-  Arbiter · <a href="https://github.com/ViciusLio/ai-arbiter">github.com/ViciusLio/ai-arbiter</a> · Apache 2.0 · Presentazione aggiornata al 5 ottobre 2026.<br>
-  Arbiter è uno strumento di supporto. Non fornisce consulenza legale.
+  Arbiter · <a href="https://github.com/ViciusLio/ai-arbiter">github.com/ViciusLio/ai-arbiter</a> · Apache 2.0 · Presentation updated on 5 October 2026.<br>
+  Arbiter is a support tool. It does not provide legal advice.
 </footer>
 
 <script>
@@ -383,12 +383,12 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 
   // The journey of a request.
   var STEPS = [
-    { t: "Chi chiede", d: "Ogni applicazione ha una chiave. Arbiter la riconosce e sa a quale gruppo, progetto e sistema di IA appartiene. Una chiave revocata smette di funzionare alla richiesta successiva.", ex: "chiave  →  progetto “Risorse umane”, sistema “Selezione CV”" },
-    { t: "Le regole", d: "Regole scritte come dati decidono se la richiesta può proseguire: modello ammesso, limiti di spesa, sistema non classificato come pratica vietata. Un rifiuto spiega sempre quale regola l'ha causato.", ex: "sistema classificato “pratica vietata”  →  richiesta negata, art. 5" },
-    { t: "Dati personali", d: "Prima che il messaggio lasci l'organizzazione, email, telefoni, IBAN e codici fiscali vengono sostituiti da segnaposto.", ex: "“Scrivi a mario.rossi@example.com”  →  “Scrivi a [EMAIL]”" },
-    { t: "Dove va", d: "La richiesta è inviata al fornitore giusto, per priorità o per costo, e solo dove la classe di rischio del sistema lo consente. Se un fornitore non risponde, si prova il successivo.", ex: "alto rischio  →  solo regioni europee" },
-    { t: "Quanto costa", d: "Si contano le unità consumate e si stima il costo, attribuito a gruppo, progetto e sistema. Un limite di spesa può avvisare oppure bloccare.", ex: "progetto “Risorse umane”: 12,40 su 50,00 questo mese" },
-    { t: "Cosa resta scritto", d: "La decisione entra in un registro a catena. Resta chi ha chiesto, cosa è stato deciso e perché. Non resta il testo della conversazione.", ex: "voce 1.284  →  impronta legata alla voce 1.283" }
+    { t: "Who is asking", d: "Every application has a key. Arbiter recognises it and knows which team, project and AI system it belongs to. A revoked key stops working at the next request.", ex: "key  →  project “Human resources”, system “CV screening”" },
+    { t: "The rules", d: "Rules written as data decide whether the request may go on: an allowed model, spending limits, a system not classified as a prohibited practice. A refusal always says which rule caused it.", ex: "system classified “prohibited practice”  →  request denied, Art. 5" },
+    { t: "Personal data", d: "Before the message leaves the organisation, e-mail addresses, phone numbers, IBANs and tax codes are replaced by placeholders.", ex: "“Write to mario.rossi@example.com”  →  “Write to [EMAIL]”" },
+    { t: "Where it goes", d: "The request is sent to the right provider, by priority or by cost, and only where the risk class of the system allows. If a provider does not answer, the next one is tried.", ex: "high risk  →  European regions only" },
+    { t: "What it costs", d: "The units consumed are counted and the cost is estimated, attributed to team, project and system. A spending limit can warn or block.", ex: "project “Human resources”: 12.40 of 50.00 this month" },
+    { t: "What stays on record", d: "The decision goes into a chained log. What stays is who asked, what was decided and why. The text of the conversation does not.", ex: "entry 1,284  →  fingerprint tied to entry 1,283" }
   ];
   var stepsEl = document.getElementById("steps");
   var stage = document.getElementById("stage");
@@ -409,28 +409,28 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
   STEPS.forEach(function (s, i) {
     var b = document.createElement("button");
     b.type = "button"; b.setAttribute("role", "tab");
-    var n = document.createElement("span"); n.className = "n"; n.textContent = "PASSO " + (i + 1);
+    var n = document.createElement("span"); n.className = "n"; n.textContent = "STEP " + (i + 1);
     b.appendChild(n); b.appendChild(document.createTextNode(s.t));
     b.addEventListener("click", function () { stop(); show(i); });
     stepsEl.appendChild(b);
   });
   var playBtn = document.getElementById("play");
-  function stop() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶ Riproduci"; } }
+  function stop() { if (timer) { clearInterval(timer); timer = null; playBtn.textContent = "▶ Play"; } }
   playBtn.addEventListener("click", function () {
     if (timer) { stop(); return; }
-    playBtn.textContent = "⏸ Pausa";
+    playBtn.textContent = "⏸ Pause";
     timer = setInterval(function () { show((current + 1) % STEPS.length); }, 3200);
   });
   show(0);
 
   // Risk tiers.
   var TIERS = [
-    { n: "Fuori ambito", c: "var(--grey)", d: "La legge non si applica: per esempio un sistema ancora in sviluppo e mai messo in servizio, o usato solo per ricerca scientifica.", e: "Un prototipo del gruppo dati, mai usato in produzione." },
-    { n: "Pratica vietata", c: "var(--danger)", d: "Usi che la legge proibisce. Arbiter li segnala con la massima gravità e il gateway non concede loro alcun modello.", e: "Dedurre le emozioni dei dipendenti dalla voce durante le chiamate." },
-    { n: "Alto rischio", c: "var(--warn)", d: "Sistemi che incidono su persone in ambiti delicati: lavoro, credito, istruzione, servizi essenziali. Comportano obblighi precisi per chi li usa.", e: "Un modulo che ordina le candidature per i selezionatori." },
-    { n: "Trasparenza", c: "var(--accent)", d: "Sistemi che parlano con le persone o producono contenuti: chi li incontra deve sapere che ha a che fare con un'IA.", e: "L'assistente che risponde ai clienti sul sito." },
-    { n: "Rischio minimo", c: "var(--ok)", d: "Tutto il resto. Nessun obbligo specifico oltre a quelli generali.", e: "Un sistema che legge fatture e precompila la contabilità." },
-    { n: "Indeterminato", c: "var(--violet)", d: "Mancano risposte che potrebbero portare a una classe più severa. Arbiter elenca le domande ancora aperte invece di tirare a indovinare.", e: "Un generatore di testi di cui si conosce solo l'ambito d'uso." }
+    { n: "Out of scope", c: "var(--grey)", d: "The law does not apply: for example a system still in development and never put into service, or used only for scientific research.", e: "A prototype of the data team, never used in production." },
+    { n: "Prohibited practice", c: "var(--danger)", d: "Uses the law forbids. Arbiter reports them with the highest severity and the gateway gives them no model.", e: "Inferring the emotions of employees from their voice during calls." },
+    { n: "High risk", c: "var(--warn)", d: "Systems that affect people in sensitive areas: work, credit, education, essential services. They bring precise obligations for those who use them.", e: "A module that ranks job applications for recruiters." },
+    { n: "Transparency", c: "var(--accent)", d: "Systems that talk to people or produce content: whoever meets them must know they are dealing with an AI.", e: "The assistant that answers customers on the website." },
+    { n: "Minimal risk", c: "var(--ok)", d: "Everything else. No specific obligation beyond the general ones.", e: "A system that reads invoices and pre-fills the accounts." },
+    { n: "Undetermined", c: "var(--violet)", d: "Answers are missing that could lead to a more severe class. Arbiter lists the questions still open instead of guessing.", e: "A text generator of which only the scope is known." }
   ];
   var tiersEl = document.getElementById("tiers");
   var tierbox = document.getElementById("tierbox");
@@ -440,7 +440,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
     tierbox.innerHTML = "";
     var h = document.createElement("h3"); h.textContent = t.n; h.style.color = t.c;
     var p = document.createElement("p"); p.textContent = t.d;
-    var e = document.createElement("p"); e.className = "muted small"; e.textContent = "Esempio inventato: " + t.e;
+    var e = document.createElement("p"); e.className = "muted small"; e.textContent = "An invented example: " + t.e;
     tierbox.appendChild(h); tierbox.appendChild(p); tierbox.appendChild(e);
   }
   TIERS.forEach(function (t, i) {
@@ -455,9 +455,9 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
 
   // Phases. The numbers are an estimate of the construction work, stated on the page.
   var PHASES = [
-    ["Analisi e architettura", 100], ["Fondamenta del progetto", 100], ["Gateway", 100],
-    ["Toolkit di conformità", 100], ["Importazione, report, scoperta", 100],
-    ["Strumenti e agenti (MCP, A2A)", 80], ["Installazione su cloud", 0], ["Documentazione e rilascio", 0]
+    ["Analysis and architecture", 100], ["Foundations of the project", 100], ["Gateway", 100],
+    ["Compliance toolkit", 100], ["Import, reports, discovery", 100],
+    ["Tools and agents (MCP, A2A)", 80], ["Installation on a cloud", 0], ["Documentation and release", 0]
   ];
   var phasesEl = document.getElementById("phases");
   PHASES.forEach(function (ph) {
@@ -473,7 +473,7 @@ footer { padding: 2rem 1.25rem 3rem; text-align: center; color: var(--muted); fo
   // Counters.
   function count(el) {
     var target = Number(el.dataset.count), prefix = el.dataset.prefix || "", suffix = el.dataset.suffix || "";
-    var fmt = function (v) { return prefix + Math.round(v).toLocaleString("it-IT") + suffix; };
+    var fmt = function (v) { return prefix + Math.round(v).toLocaleString("en-GB") + suffix; };
     if (reduced) { el.textContent = fmt(target); return; }
     var start = null;
     function frame(ts) {

@@ -83,8 +83,8 @@ Entries link to the decision record that motivated them, where one exists.
     server or an agent that belongs to no declared system, calls that no grant allowed,
     and calls to what no catalogue holds. The scanner reads the catalogues through a
     new port, `TargetDirectory`.
-  - A presentation for people who are not developers, in Italian:
-    `docs/presentation/arbiter.it.html`.
+  - A presentation for people who are not developers, in Italian and in English:
+    `docs/presentation/`.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

@@ -17,9 +17,10 @@ without the other.
 
 > Arbiter is a support tool. It does not provide legal advice.
 
-**New here, and not a developer?** Open the presentation:
-[`docs/presentation/arbiter.it.html`](docs/presentation/arbiter.it.html) (in Italian; an
-English one will follow). One self-contained file: download it and open it in a browser.
+**New here, and not a developer?** Open the presentation, in
+[English](docs/presentation/arbiter.en.html) or in
+[Italian](docs/presentation/arbiter.it.html). Each is one self-contained file: download
+it and open it in a browser.
 
 ## Where the project is
 
@@ -47,8 +48,9 @@ Phase 5, step by step:
 | A2A registry: agent cards fetched, stored and verified against configured keys | Done: `arbiter a2a agents` and `a2a grants`, `/api/v1/a2a`; a card is verified only against `a2a.trusted_keys`, and an interface counts only on the host of the card. Tested with cards signed by the official SDK, not with a real agent on the network |
 | A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Done: `POST /a2a/{agent}` and `/a2a/{agent}/rest/...`; decide, record, then forward. Tested against a stand-in agent, not with the SDK's client or a real agent |
 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Done: seven rules in the scan pack `2026.10.2`, read through a port from the catalogues and from the recorded calls |
-| Demo with mock agents and a mock MCP server | Not started |
-| A presentation for people who are not developers, in Italian | Done: `docs/presentation/arbiter.it.html`. Not viewed in a browser by its author; the English one is not written yet |
+| A presentation for people who are not developers, in Italian and in English | Done: `docs/presentation/`. The English page is built from the Italian one by `scripts/build_presentation_en.py`. Not viewed in a browser by its author |
+| Semantic detection of personal data: an optional plugin on Presidio, with measured precision and recall (ADR-0055) | Not started |
+| A guided demonstration of five minutes: gateway, toolkit, a mock MCP server and a mock agent | Not started |
 | Phase summary and the full check, containers included | Not started |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
