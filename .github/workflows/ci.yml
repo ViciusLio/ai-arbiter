@@ -226,6 +226,9 @@ jobs:
         run: scripts/smoke-mail.sh
       - name: Run every simulation scenario in the container
         run: docker compose -f deploy/compose/compose.yaml exec -T arbiter arbiter demo run --all
+      # Gateway, MCP proxy, A2A proxy, scan and audit, with stand-ins, inside the image.
+      - name: Run the guided demonstration in the container
+        run: docker compose -f deploy/compose/compose.yaml exec -T arbiter arbiter demo tour
       - name: Show logs on failure
         if: failure()
         run: docker compose -f deploy/compose/compose.yaml logs

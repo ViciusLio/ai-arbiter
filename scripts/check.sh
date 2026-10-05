@@ -73,6 +73,9 @@ if [[ "${1:-}" == "--containers" ]]; then
 
     step "Run every simulation scenario in the container"
     docker compose -f "${compose}" exec -T arbiter arbiter demo run --all
+
+    step "Run the guided demonstration in the container"
+    docker compose -f "${compose}" exec -T arbiter arbiter demo tour
 fi
 
 step "All checks passed"
