@@ -72,16 +72,27 @@ class RulePolicyEngine:
         self.pack = pack
 
     async def evaluate(self, stage: str, facts: Facts) -> Decision:
-        matches = evaluate(self.pack, RuleKind.POLICY, facts) if stage == "pre_call" else []
-        outcomes = {match.outcome for match in matches}
-        outcome = next(
-            (candidate for candidate in _STRENGTH if candidate in outcomes),
-            PolicyOutcome.ALLOW.value,
-        )
-        return Decision(
-            kind=DecisionKind.POLICY,
-            outcome=outcome,
-            matches=tuple(matches),
-            input_digest=facts_digest(facts),
-            details={"stage": stage, "pack": self.pack.pack, "pack_version": self.pack.version},
-        )
+        if stage != "pre_call":
+            return decide(self.pack, stage, {}, apply=False)
+        return decide(self.pack, stage, facts)
+
+
+def decide(pack: RulePack, stage: str, facts: Facts, *, apply: bool = True) -> Decision:
+    """The decision of a policy pack on some facts: the strongest outcome of its matches.
+
+    Every match stays in the decision. With ``apply`` false no rule is evaluated and the
+    outcome is ``allow``: a stage the pack has no rules for.
+    """
+    matches = evaluate(pack, RuleKind.POLICY, facts) if apply else []
+    outcomes = {match.outcome for match in matches}
+    outcome = next(
+        (candidate for candidate in _STRENGTH if candidate in outcomes),
+        PolicyOutcome.ALLOW.value,
+    )
+    return Decision(
+        kind=DecisionKind.POLICY,
+        outcome=outcome,
+        matches=tuple(matches),
+        input_digest=facts_digest(facts),
+        details={"stage": stage, "pack": pack.pack, "pack_version": pack.version},
+    )

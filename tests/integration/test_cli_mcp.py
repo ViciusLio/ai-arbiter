@@ -2,6 +2,8 @@
 
 import re
 
+import pytest
+
 from tests.integration.test_cli_compliance import arbiter, workspace
 
 URL = "https://tools.example.org/mcp"
@@ -82,11 +84,8 @@ def test_what_the_catalogue_cannot_accept_is_refused_with_a_reason() -> None:
 
 
 def test_plain_http_is_accepted_only_for_the_hosts_the_configuration_lists(
-    monkeypatch: object,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import pytest
-
-    assert isinstance(monkeypatch, pytest.MonkeyPatch)
     arbiter("init")
     monkeypatch.setenv("ARBITER_MCP__ALLOW_HTTP_HOSTS", '["mock-mcp"]')
 
@@ -107,3 +106,30 @@ def test_plain_http_is_accepted_only_for_the_hosts_the_configuration_lists(
 
     assert "Registered 'mock'" in added
     assert "Error: the URL of a server must use https" in refused
+
+
+def test_refresh_asks_the_server_and_stores_what_it_says(monkeypatch: pytest.MonkeyPatch) -> None:
+    pytest.importorskip("httpx", reason="needs the gateway extra")
+    pytest.importorskip("mcp_types", reason="needs the mcp extra")
+    from functools import partial
+
+    from ai_arbiter.cli import mcp as mcp_cli
+    from ai_arbiter.gateway.mcp.proxy import McpProxy
+    from tests.mcp_support import FakeMcpServer
+
+    server = FakeMcpServer(tools=("search", "read"))
+    monkeypatch.setattr(mcp_cli, "McpProxy", partial(McpProxy, transport=server.transport))
+    arbiter("init")
+    arbiter("mcp", "servers", "add", "files", "--name", "File tools", "--url", URL)
+    arbiter("mcp", "servers", "add", "local-git", "--name", "Git", "--stdio")
+
+    refreshed = arbiter("mcp", "servers", "refresh", "files")
+    listed = arbiter("mcp", "servers", "list")
+
+    assert "'files' is governable. Revisions: 2026-07-28." in refreshed
+    assert "Tools: read, search" in refreshed
+    assert re.search(r"files\s+governable\s+streamable_http\s+2 tools", listed)
+    assert "Error: the server 'local-git' is not_proxied" in arbiter(
+        "mcp", "servers", "refresh", "local-git", ok=False
+    )
+    assert "| `mcp_server.discovered` |" in arbiter("report", "audit")

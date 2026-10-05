@@ -58,11 +58,13 @@ def create_app(
     *,
     provider_options: dict[str, dict[str, Any]] | None = None,
     clock: Clock | None = None,
+    mcp_transport: Any = None,
 ) -> FastAPI:
     """Build the application.
 
-    ``provider_options`` and ``clock`` exist for tests: extra constructor arguments per
-    provider plugin, and the clock every service reads.
+    ``provider_options``, ``clock`` and ``mcp_transport`` exist for tests: extra
+    constructor arguments per provider plugin, the clock every service reads, and the
+    HTTP transport the MCP proxy forwards through.
     """
     resolved = settings if settings is not None else load_settings()
 
@@ -81,7 +83,12 @@ def create_app(
 
         try:
             runtime = await build_runtime(
-                resolved, database, provider_options=provider_options, clock=clock, systems=systems
+                resolved,
+                database,
+                provider_options=provider_options,
+                clock=clock,
+                systems=systems,
+                mcp_transport=mcp_transport,
             )
         except BaseException:
             await database.dispose()
@@ -112,6 +119,8 @@ def create_app(
     # A process serves only the parts its roles name (ADR-0020).
     if Role.GATEWAY in resolved.server.roles:
         app.include_router(chat.router)
+    if Role.MCP in resolved.server.roles:
+        app.include_router(mcp.proxy_router)
     if Role.ADMIN in resolved.server.roles:
         app.include_router(admin.router)
         app.include_router(compliance.router)

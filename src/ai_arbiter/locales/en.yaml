@@ -6,6 +6,9 @@ policy.model_not_allowed: "The requested model is not on the allowlist of this d
 policy.budget_exceeded: "A hard budget that covers this request is used up."
 policy.pii_redacted: "Personal data or credentials found in the prompt were redacted before it left the gateway."
 policy.system_prohibited: "The AI system this key belongs to is classified as a prohibited practice under the AI Act. The classification is indicative and can be reviewed."
+mcp.server_unknown: "No MCP server with this name is in the catalogue."
+mcp.server_not_governable: "This MCP server cannot be reached through the proxy: it is disabled, it was only declared, or it offers no protocol revision the proxy speaks."
+mcp.call_not_granted: "No grant allows this caller to make this call on this MCP server."
 policy.allowed: "No policy rule stopped the request."
 
 usage.title: "Usage report"

@@ -29,7 +29,7 @@ def serve(
     port: Annotated[int | None, typer.Option(help="Port to bind.")] = None,
     roles: Annotated[
         str | None,
-        typer.Option(help="Comma-separated roles of this process: gateway, admin, worker."),
+        typer.Option(help="Comma-separated roles of this process: gateway, admin, worker, mcp."),
     ] = None,
 ) -> None:
     """Start the HTTP application (needs the 'gateway' extra)."""

@@ -23,6 +23,7 @@ from ai_arbiter.core.ports import (
     AuditLog,
     EventBus,
     LLMProvider,
+    NoSystemDirectory,
     PIIDetector,
     SecretStore,
     SystemDirectory,
@@ -35,6 +36,7 @@ from ai_arbiter.gateway.identity.service import IdentityService, PepperRing
 from ai_arbiter.gateway.llm_router.deployments import build_targets
 from ai_arbiter.gateway.llm_router.router import Router
 from ai_arbiter.gateway.mcp.catalogue import McpCatalogue
+from ai_arbiter.gateway.mcp.proxy import McpProxy, load_mcp_pack
 from ai_arbiter.gateway.policy.engine import RulePolicyEngine, load_policy_pack
 
 SystemDirectoryFactory = Callable[[AuditLog, EventBus, Clock], SystemDirectory]
@@ -52,6 +54,7 @@ class GatewayRuntime:
     router: Router
     catalogue: PriceCatalogue
     mcp: McpCatalogue
+    mcp_proxy: McpProxy
     meter: UsageMeter
     budgets: BudgetService
     detector: PIIDetector
@@ -64,6 +67,7 @@ class GatewayRuntime:
         await self.chat.drain()
         for provider in self.providers.values():
             await provider.aclose()
+        await self.mcp_proxy.aclose()
 
 
 async def build_runtime(
@@ -74,6 +78,7 @@ async def build_runtime(
     provider_options: dict[str, dict[str, Any]] | None = None,
     clock: Clock | None = None,
     systems: SystemDirectoryFactory | None = None,
+    mcp_transport: Any = None,
 ) -> GatewayRuntime:
     """Validate the configuration against the installed plugins and build the services.
 
@@ -120,6 +125,7 @@ async def build_runtime(
         clock=clock,
         systems=directory,
     )
+    mcp_catalogue = McpCatalogue(allow_http_hosts=settings.mcp.allow_http_hosts, clock=clock)
     return GatewayRuntime(
         settings=settings,
         database=database,
@@ -135,7 +141,18 @@ async def build_runtime(
         detector=detector,
         policy=policy,
         chat=chat,
-        mcp=McpCatalogue(allow_http_hosts=settings.mcp.allow_http_hosts, clock=clock),
+        mcp=mcp_catalogue,
+        mcp_proxy=McpProxy(
+            database=database,
+            catalogue=mcp_catalogue,
+            pack=load_mcp_pack(settings.mcp),
+            audit=audit,
+            secrets=secrets,
+            settings=settings.mcp,
+            systems=directory if directory is not None else NoSystemDirectory(),
+            clock=clock,
+            transport=mcp_transport,
+        ),
         providers=providers,
     )
 

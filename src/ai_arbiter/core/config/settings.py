@@ -48,6 +48,8 @@ class Role(StrEnum):
     GATEWAY = "gateway"
     ADMIN = "admin"
     WORKER = "worker"
+    # The MCP proxy: the data plane for calls to MCP servers (ADR-0047).
+    MCP = "mcp"
 
 
 class _Section(BaseModel):
@@ -317,6 +319,15 @@ class McpSettings(_Section):
     timeout_seconds: int = Field(default=30, ge=1)
     # Larger request bodies are refused before they are read into memory.
     max_request_bytes: int = Field(default=1_048_576, ge=1024)
+    # A response that is not a stream is refused beyond this size.
+    max_response_bytes: int = Field(default=10_485_760, ge=1024)
+    # How long a response stream may stay silent before the proxy gives up on it.
+    stream_idle_seconds: int = Field(default=300, ge=1)
+    # Browser origins allowed to call the proxy. A request with any other Origin header
+    # is refused; a request without one, as programs send, is not affected.
+    allowed_origins: tuple[str, ...] = ()
+    # A rule pack file to use instead of the one shipped with the package.
+    pack: Path | None = None
 
 
 class TelemetrySettings(_Section):

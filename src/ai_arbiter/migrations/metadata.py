@@ -17,6 +17,7 @@ from ai_arbiter.compliance.inventory.model import AISystem, AISystemRole
 from ai_arbiter.core.audit.model import AuditChainHead, AuditEntry
 from ai_arbiter.core.events.model import OutboxEvent
 from ai_arbiter.core.interaction import Interaction
+from ai_arbiter.core.invocation import Invocation
 from ai_arbiter.core.persistence.base import Base
 from ai_arbiter.core.persistence.tenant import Tenant
 from ai_arbiter.gateway.finops.model import Budget, UsageRollup
@@ -39,6 +40,7 @@ __all__ = [
     "FindingEvidence",
     "FindingReview",
     "Interaction",
+    "Invocation",
     "McpGrant",
     "McpServer",
     "McpTool",

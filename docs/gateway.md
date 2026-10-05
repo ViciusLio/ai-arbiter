@@ -273,16 +273,20 @@ scanned: post-call evaluation is planned for v0.1.x.
 
 See [the audit log](audit.md) for the chain, its verification and `audit.fail_mode`.
 
-## MCP servers: the catalogue
+## MCP servers: the catalogue and the proxy
 
-Phase 5, in progress. What exists today is the catalogue: the list of the MCP servers an
-organisation knows, and of who may call them. The proxy that enforces it is being built
-and nothing forwards a call yet.
+Arbiter stands between MCP clients and MCP servers: a catalogue says which servers
+exist and who may call which tool, and a proxy forwards a call only when the catalogue
+allows it, writing every call to the audit log. It needs the `mcp` extra (from a clone,
+`uv sync --all-extras` includes it).
+
+### The catalogue
 
 ```bash
 arbiter mcp servers add files --name "File tools" --url https://tools.example.org/mcp \
     --system cv-screening --credential secret://files-token
 arbiter mcp servers add local-git --name "Git" --stdio     # declared only
+arbiter mcp servers refresh files      # ask the server its revisions and its tools
 arbiter mcp servers list
 arbiter mcp grants add files                                # the whole tenant, every tool
 arbiter mcp grants add files --system cv-screening --tool read
@@ -306,9 +310,84 @@ arbiter mcp grants remove 1a2b3c4d                          # the short id shown
 - Every change is an audit entry: `mcp_server.registered`, `mcp_server.removed`,
   `mcp_grant.created`, `mcp_grant.revoked`.
 
-Over HTTP, under `/api/v1/mcp`: `servers` (list, register, read, remove) and `grants`
-(list, create under a server, withdraw). Reading needs the auditor or the admin role,
-changing needs the admin role.
+Over HTTP, under `/api/v1/mcp`: `servers` (list, register, read, remove, and
+`servers/{key}/discovery` to ask a server what it speaks and offers) and `grants` (list,
+create under a server, withdraw). Reading needs the auditor or the admin role, changing
+needs the admin role.
+
+### The proxy
+
+A client points at `https://<arbiter>/mcp/<server key>` instead of the address of the
+server, and authenticates with its Arbiter API key. The endpoint is the MCP endpoint of
+the Streamable HTTP transport, revision `2026-07-28` (ADR-0046 to ADR-0050).
+
+What happens to a call:
+
+1. **Protocol.** The request must be one JSON-RPC request whose headers
+   (`MCP-Protocol-Version`, `Mcp-Method`, `Mcp-Name`) match its body, as the revision
+   requires of whoever reads the body. A mismatch is answered with `400` and the
+   JSON-RPC error `-32020`; an earlier revision with `400`, `-32022` and the revisions
+   the proxy speaks. Nothing is decided or recorded for such a request.
+2. **Decision.** The catalogue, the allowlist and the inventory give the facts; a rule
+   pack decides (`rulepacks/mcp/<version>/pack.yaml`).
+3. **Record.** The decision and a row for the call are written in one transaction,
+   before anything is forwarded. If that fails, the call fails: no call leaves without
+   its audit entry.
+4. **Forward.** With no transaction open, the body is sent on as received. The server
+   gets the credential of the catalogue as a bearer token, never the caller's key, and
+   only the MCP headers of the request. A redirect is not followed.
+5. **Completion.** The row gets the status, the sizes and the duration. A response
+   that is an event stream is relayed as it arrives.
+
+| Rule | Denies when |
+|---|---|
+| `MCP-SERVER-UNKNOWN` | The server asked for is not in the catalogue (`404`) |
+| `MCP-SERVER-NOT-GOVERNABLE` | The server is disabled, only declared, or legacy only |
+| `MCP-CALL-NOT-GRANTED` | No grant covers the caller for this call |
+| `MCP-SYSTEM-PROHIBITED` | The system behind the key is classified as a prohibited practice |
+
+A denial is `403` (or `404`) with the JSON-RPC error `-32010`, the rules that matched and
+the id of the decision. A server that cannot be reached is `502` with `-32011`.
+
+What a grant covers:
+
+| Call | Needs |
+|---|---|
+| `server/discover`, `tools/list`, `prompts/list`, `resources/list`, `resources/templates/list` | Any grant on the server |
+| `tools/call` | A grant for that tool, or for every tool |
+| Anything else (`resources/read`, `prompts/get`, `subscriptions/listen`, ...) | A grant for every tool: a grant for one tool says nothing about resources and prompts |
+
+What is stored of a call, in the table `invocation` and in the audit entry `mcp.call`:
+who called (project, principal, AI system, by identifier), the server, the method, the
+name of the tool or of the prompt, the outcome, the HTTP status, sizes and duration.
+**Never the arguments, never the result, and never the address of a resource**, which
+can hold personal data.
+
+```yaml
+mcp:
+  allow_http_hosts: []        # hosts a server may be registered for with plain http
+  allowed_origins: []         # browser origins allowed; any other Origin header is refused
+  timeout_seconds: 30
+  stream_idle_seconds: 300
+  max_request_bytes: 1048576
+  max_response_bytes: 10485760
+  # pack: /etc/arbiter/mcp-policy.yaml
+server:
+  roles: [gateway, admin, mcp]   # the proxy is served by processes with the role mcp
+```
+
+Limits of the proxy in this release:
+
+- Only revision `2026-07-28`. A legacy server is recorded as such and cannot be called;
+  a legacy client is answered with the revisions the proxy speaks.
+- Only Streamable HTTP. Notifications from a client are not forwarded: the revision
+  defines none on this transport.
+- The content of a call is not inspected: no detection or redaction of personal data
+  in arguments and results (a deferrable item of ADR-0049). `tools/list` shows every
+  tool of the server, also the ones the caller may not call.
+- The allowlist is about tools. Resources and prompts are all or nothing.
+- The proxy was tested against a stand-in server written from the specification, not
+  against a real MCP server or a real MCP client.
 
 ## Roles
 

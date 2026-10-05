@@ -219,7 +219,7 @@ def test_serve_rejects_unknown_roles() -> None:
     result = runner.invoke(app, ["serve", "--roles", "gateway,janitor"])
 
     assert result.exit_code != 0
-    assert "valid roles are: admin, gateway, worker" in result.output
+    assert "valid roles are: admin, gateway, mcp, worker" in result.output
 
 
 def test_parse_roles_normalises_and_validates() -> None:

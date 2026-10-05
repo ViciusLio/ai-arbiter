@@ -1,20 +1,31 @@
 """Control plane of the MCP catalogue: servers, what they offer, and the allowlist."""
 
+from collections.abc import AsyncIterator, Mapping
 from datetime import datetime
-from typing import Literal
+from typing import Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Request, Response, status
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ai_arbiter.core.audit import AuditRecord
+from ai_arbiter.core.i18n import Translator, negotiate
 from ai_arbiter.gateway.api.compliance import Compliance
-from ai_arbiter.gateway.api.deps import Admin, Reader, Runtime
+from ai_arbiter.gateway.api.deps import Admin, Caller, Reader, Runtime
 from ai_arbiter.gateway.identity.model import ScopeType
 from ai_arbiter.gateway.identity.service import AuthenticatedKey
 from ai_arbiter.gateway.mcp.catalogue import governability
 from ai_arbiter.gateway.mcp.model import ANY_TOOL, McpGrant, McpServer, McpTransport
+from ai_arbiter.gateway.mcp.protocol import (
+    DENIED,
+    UPSTREAM_FAILED,
+    ProtocolError,
+    error_body,
+    parse_request,
+)
+from ai_arbiter.gateway.mcp.proxy import UpstreamUnavailableError
 from ai_arbiter.gateway.runtime import GatewayRuntime
 
 admin_router = APIRouter(prefix="/api/v1/mcp", tags=["mcp"])
@@ -202,3 +213,158 @@ async def revoke_grant(grant_id: UUID, runtime: Runtime, caller: Admin) -> Respo
         grant = await runtime.mcp.revoke(session, caller.context.tenant_id, grant_id)
         await _audit(runtime, session, caller, "mcp_grant.revoked", "mcp_grant", grant.id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@admin_router.post(
+    "/servers/{key}/discovery",
+    summary="Ask a server which revisions it speaks and which tools it lists",
+    description="The proxy calls `server/discover` and `tools/list` on the server and stores "
+    "the revisions and the names of the tools. A server that does not answer as revision "
+    "`2026-07-28` does is recorded as legacy and cannot be governed.",
+)
+async def discover_server(key: str, runtime: Runtime, caller: Admin) -> ServerOut:
+    server = await runtime.mcp_proxy.discover(
+        caller.context.tenant_id, key, actor_id=caller.context.principal_id
+    )
+    async with runtime.database.session() as session:
+        return await _server(runtime, session, server)
+
+
+# --- data plane --------------------------------------------------------------------------
+
+proxy_router = APIRouter(tags=["mcp"])
+
+
+def _rpc_error(
+    status_code: int,
+    code: int,
+    message: str,
+    *,
+    request_id: int | str | None = None,
+    data: Mapping[str, Any] | None = None,
+) -> JSONResponse:
+    return JSONResponse(
+        error_body(code, message, request_id=request_id, data=data), status_code=status_code
+    )
+
+
+@proxy_router.post(
+    "/mcp/{server_key}",
+    summary="Call an MCP server of the catalogue through the proxy",
+    description="The MCP endpoint of a server, as the Streamable HTTP transport of revision "
+    "`2026-07-28` defines it. Authenticate with an Arbiter API key; the server receives the "
+    "credential of the catalogue, never the caller's. A call is forwarded only if a grant "
+    "allows it, and every call is written to the audit log without its arguments.",
+    response_model=None,
+)
+async def call_mcp_server(
+    server_key: str, request: Request, runtime: Runtime, caller: Caller
+) -> Response:
+    settings = runtime.settings.mcp
+    proxy = runtime.mcp_proxy
+    # A browser page on another origin must not drive the proxy with a user's key.
+    origin = request.headers.get("origin")
+    if origin is not None and origin not in settings.allowed_origins:
+        return _rpc_error(status.HTTP_403_FORBIDDEN, DENIED, "this origin is not allowed")
+    declared = request.headers.get("content-length")
+    if declared is not None and declared.isdigit() and int(declared) > settings.max_request_bytes:
+        return _rpc_error(status.HTTP_413_CONTENT_TOO_LARGE, DENIED, "the request is too large")
+    body = b""
+    async for chunk in request.stream():
+        body += chunk
+        if len(body) > settings.max_request_bytes:
+            return _rpc_error(status.HTTP_413_CONTENT_TOO_LARGE, DENIED, "the request is too large")
+    headers = {name.lower(): value for name, value in request.headers.items()}
+    try:
+        parsed = parse_request(body, headers)
+    except ProtocolError as error:
+        return _rpc_error(
+            error.status, error.code, str(error), request_id=error.request_id, data=error.data
+        )
+
+    prepared = await proxy.authorize(caller, server_key, parsed, len(body))
+    if not prepared.allowed:
+        rules = [match.rule_id for match in prepared.decision.matches]
+        unknown = "MCP-SERVER-UNKNOWN" in rules
+        translator = Translator(negotiate(request.headers.get("accept-language")))
+        return _rpc_error(
+            status.HTTP_404_NOT_FOUND if unknown else status.HTTP_403_FORBIDDEN,
+            DENIED,
+            translator.text(prepared.decision.matches[0].message_key),
+            request_id=parsed.request_id,
+            data={"rules": rules, "decision_id": str(prepared.decision.id)},
+        )
+
+    try:
+        upstream = await proxy.forward(prepared, body, headers)
+    except UpstreamUnavailableError as error:
+        await proxy.complete(
+            prepared, status_code=None, response_bytes=None, streamed=False, reason=error.reason
+        )
+        return _rpc_error(
+            status.HTTP_502_BAD_GATEWAY, UPSTREAM_FAILED, str(error), request_id=parsed.request_id
+        )
+
+    # The body is relayed decoded: the proxy does not pass on how the server compressed it.
+    content_type = upstream.headers.get("content-type", "application/json")
+    if content_type.startswith("text/event-stream"):
+
+        async def relay() -> AsyncIterator[bytes]:
+            sent = 0
+            reason: str | None = None
+            try:
+                async for chunk in upstream.aiter_bytes():
+                    sent += len(chunk)
+                    yield chunk
+            except Exception as error:
+                reason = type(error).__name__
+                raise
+            finally:
+                await upstream.aclose()
+                await proxy.complete(
+                    prepared,
+                    status_code=upstream.status_code,
+                    response_bytes=sent,
+                    streamed=True,
+                    reason=reason,
+                )
+
+        return StreamingResponse(
+            relay(),
+            status_code=upstream.status_code,
+            media_type=content_type,
+            headers={"X-Accel-Buffering": "no", "Cache-Control": "no-store"},
+        )
+
+    received = b""
+    reason: str | None = None
+    try:
+        async for chunk in upstream.aiter_bytes():
+            received += chunk
+            if len(received) > settings.max_response_bytes:
+                reason = "ResponseTooLarge"
+                break
+    except Exception as error:  # the connection broke while the answer was being read
+        reason = type(error).__name__
+    finally:
+        await upstream.aclose()
+    await proxy.complete(
+        prepared,
+        status_code=upstream.status_code,
+        response_bytes=len(received),
+        streamed=False,
+        reason=reason,
+    )
+    if reason is not None:
+        return _rpc_error(
+            status.HTTP_502_BAD_GATEWAY,
+            UPSTREAM_FAILED,
+            "the answer of the MCP server could not be relayed",
+            request_id=parsed.request_id,
+        )
+    return Response(
+        content=received,
+        status_code=upstream.status_code,
+        media_type=content_type,
+        headers={"Cache-Control": "no-store"},
+    )

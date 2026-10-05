@@ -263,12 +263,20 @@ class McpCatalogue:
         return grant
 
     async def allows(
-        self, session: AsyncSession, server: McpServer, caller: Caller, tool: str | None
+        self,
+        session: AsyncSession,
+        server: McpServer,
+        caller: Caller,
+        tool: str | None,
+        *,
+        whole_server: bool = False,
     ) -> bool:
         """Whether the caller may use the server, and ``tool`` when one is named.
 
-        Nothing is allowed until a grant says so. A request that names no tool (listing
-        what the server offers, for example) needs any grant on the server.
+        Nothing is allowed until a grant says so. A request that only asks what the
+        server offers needs any grant on it. With ``whole_server``, only a grant for
+        every tool counts: that is what anything other than listing and calling a tool
+        needs, because a grant for one tool says nothing about resources and prompts.
         """
         scopes = [
             (McpGrant.scope_type == ScopeType.TENANT.value)
@@ -287,6 +295,8 @@ class McpCatalogue:
         query = select(McpGrant.id).where(
             McpGrant.tenant_id == caller.tenant_id, McpGrant.server_id == server.id, or_(*scopes)
         )
-        if tool is not None:
+        if whole_server:
+            query = query.where(McpGrant.tool == ANY_TOOL)
+        elif tool is not None:
             query = query.where(McpGrant.tool.in_((tool, ANY_TOOL)))
         return await session.scalar(query.limit(1)) is not None

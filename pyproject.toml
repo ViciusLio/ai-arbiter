@@ -56,7 +56,11 @@ otel = [
     "opentelemetry-exporter-otlp-proto-http>=1.28",
     "opentelemetry-sdk>=1.28",
 ]
-all = ["ai-arbiter[gateway,otel]"]
+# The messages and constants of the Model Context Protocol, for the MCP proxy (ADR-0050).
+mcp = [
+    "mcp-types>=2.2,<3",
+]
+all = ["ai-arbiter[gateway,mcp,otel]"]
 
 [project.scripts]
 arbiter = "ai_arbiter.cli.main:app"

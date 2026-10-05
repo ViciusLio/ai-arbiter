@@ -21,9 +21,12 @@ from ai_arbiter.core.audit import AuditRecord, DatabaseAuditLog
 from ai_arbiter.core.config.settings import Settings
 from ai_arbiter.core.domain.tenancy import LOCAL_TENANT_SLUG
 from ai_arbiter.core.errors import ArbiterError, NotFoundError
+from ai_arbiter.core.plugins.registry import SECRET_STORES, PluginRegistry
+from ai_arbiter.core.ports import NoSystemDirectory
 from ai_arbiter.gateway.identity.model import ScopeType
 from ai_arbiter.gateway.mcp.catalogue import McpCatalogue, governability
 from ai_arbiter.gateway.mcp.model import ANY_TOOL, McpTransport
+from ai_arbiter.gateway.mcp.proxy import McpProxy, load_mcp_pack
 
 app = typer.Typer(help="MCP servers: the catalogue and the allowlist.", no_args_is_help=True)
 servers_app = typer.Typer(help="Register and list MCP servers.", no_args_is_help=True)
@@ -135,6 +138,44 @@ def list_servers(ctx: typer.Context, tenant: TenantSlug = LOCAL_TENANT_SLUG) -> 
         return
     for line in lines:
         typer.echo(line)
+
+
+async def _refresh(settings: Settings, tenant: str, key: str) -> tuple[str, list[str], list[str]]:
+    registry = PluginRegistry()
+    catalogue = _catalogue(settings)
+    async with open_database(settings) as database:
+        tenant_id = await tenant_id_for(database, tenant)
+        proxy = McpProxy(
+            database=database,
+            catalogue=catalogue,
+            pack=load_mcp_pack(settings.mcp),
+            audit=DatabaseAuditLog(),
+            secrets=registry.load(SECRET_STORES, settings.plugins.secret_store)(),
+            settings=settings.mcp,
+            systems=NoSystemDirectory(),
+        )
+        try:
+            server = await proxy.discover(tenant_id, key)
+            async with database.session() as session:
+                tools = list(await catalogue.tools(session, server))
+        finally:
+            await proxy.aclose()
+    return governability(server), [str(v) for v in server.protocol_versions], tools
+
+
+@servers_app.command("refresh")
+def refresh_server(
+    ctx: typer.Context,
+    key: Annotated[str, typer.Argument(help="Key of the server.")],
+    tenant: TenantSlug = LOCAL_TENANT_SLUG,
+) -> None:
+    """Ask a server which protocol revisions it speaks and which tools it lists.
+
+    This makes requests to the URL of the server, with its credential if it has one.
+    """
+    state, versions, tools = run(_refresh(settings_from(ctx), tenant, key))
+    typer.echo(f"'{key}' is {state}. Revisions: {', '.join(versions) or '-'}.")
+    typer.echo(f"Tools: {', '.join(tools) or '-'}")
 
 
 async def _remove(settings: Settings, tenant: str, key: str) -> None:

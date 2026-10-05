@@ -50,6 +50,14 @@ Entries link to the decision record that motivated them, where one exists.
   - MCP catalogue: servers, the names of the tools they list, and grants to the
     tenant, a project or an AI system, for one tool or for all. Nothing is allowed
     without a grant. `arbiter mcp servers`, `arbiter mcp grants`, `/api/v1/mcp`.
+  - MCP proxy: `POST /mcp/{server}` is the MCP endpoint of a server of the catalogue,
+    for revision `2026-07-28` over Streamable HTTP. A call is checked against its
+    headers as the revision requires, decided by a rule pack (`rulepacks/mcp`), written
+    to the audit log and to the new table `invocation` before it is forwarded, and
+    forwarded with the credential of the catalogue. Arguments and results are never
+    stored. A new server role, `mcp`, and a new optional extra, `mcp`.
+  - `arbiter mcp servers refresh` and `POST /api/v1/mcp/servers/{key}/discovery` ask a
+    server which revisions it speaks and which tools it lists.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

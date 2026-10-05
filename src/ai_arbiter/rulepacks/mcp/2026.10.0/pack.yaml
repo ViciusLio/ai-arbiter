@@ -1,0 +1,70 @@
+# Policy of the MCP proxy, evaluated before a request is forwarded to an MCP server.
+#
+# The facts are computed by the proxy (ai_arbiter.gateway.mcp) from the catalogue, the
+# allowlist and the inventory. A rule can only compare them with values written here:
+# there is no expression language (ADR-0012). Any rule that denies stops the request:
+# nothing is forwarded, and the decision is written to the audit log.
+#
+# No rule sees the arguments of a call: the proxy does not inspect them (ADR-0049).
+#
+# To change the policy, copy this file, edit it and point `mcp.pack` at the copy.
+
+pack: mcp
+version: "2026.10.0"
+description: >-
+  A call reaches an MCP server only if the catalogue knows the server, the proxy can
+  govern it, a grant allows the caller, and the system behind the call is not classified
+  as a prohibited practice.
+
+facts:
+  server.known: boolean
+  # governable, not_asked, legacy_only, not_proxied or disabled.
+  server.governability: string
+  call.method: string
+  # Whether a grant covers this caller for this method and, for tools/call, this tool.
+  call.granted: boolean
+  system.declared: boolean
+  # From the inventory, when the API key is tied to a declared system (ADR-0037).
+  system.tier: string
+  system.reviewed: boolean
+
+rules:
+  - id: MCP-SERVER-UNKNOWN
+    kind: policy
+    description: The server asked for is not in the catalogue.
+    when: { fact: server.known, eq: false }
+    then:
+      outcome: deny
+      message_key: mcp.server_unknown
+
+  - id: MCP-SERVER-NOT-GOVERNABLE
+    kind: policy
+    description: >-
+      The proxy cannot stand in front of this server: it is disabled, it is a stdio
+      server that was only declared, or it offers no protocol revision the proxy speaks.
+    when: { fact: server.governability, in: [disabled, not_proxied, legacy_only] }
+    then:
+      outcome: deny
+      message_key: mcp.server_not_governable
+
+  - id: MCP-CALL-NOT-GRANTED
+    kind: policy
+    description: No grant allows this caller to make this call.
+    when:
+      all:
+        - { fact: server.known, eq: true }
+        - { fact: call.granted, eq: false }
+    then:
+      outcome: deny
+      message_key: mcp.call_not_granted
+
+  - id: MCP-SYSTEM-PROHIBITED
+    kind: policy
+    description: The system behind the call is classified as a prohibited practice.
+    when: { fact: system.tier, eq: prohibited }
+    then:
+      outcome: deny
+      legal_refs:
+        - { regulation: EU-AI-ACT, article: "5" }
+      applies_from: 2025-02-02
+      message_key: policy.system_prohibited
