@@ -1,7 +1,10 @@
 # Phase 5: preparation (A2A and MCP, v0.2)
 
-- **Status**: prepared on 2026-10-02; waits for the project owner's decisions P5-1 to
-  P5-8. No code has been written
+- **Status**: prepared on 2026-10-02. The owner decided P5-1 to P5-8 on 2026-10-05,
+  each with the recommended option: ADR-0046 to ADR-0053. The two checks listed below as
+  not verified were made that day: `mcp-types` 2.2.0 depends only on Pydantic and
+  `typing-extensions` and holds both eras of the protocol; `a2a-sdk[signing]` 1.2.1
+  provides a card verifier that takes a key provider and a list of algorithms
 - **Date**: 2026-10-02
 - **Inputs**: the brief; [Phase 0](phase-0-analysis.en.md), whose view of the two
   protocols came from secondary sources; the gateway and the toolkit of Phases 3 to 4b

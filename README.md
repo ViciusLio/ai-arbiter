@@ -19,27 +19,32 @@ without the other.
 
 ## Where the project is
 
-Updated at every commit. Last update: 2026-10-02.
+Updated at every commit. Last update: 2026-10-05.
 
 | Phase | State |
 |---|---|
 | 0 Analysis, 1 Architecture, 2 Scaffolding | Done |
 | 3 Gateway MVP | Done |
 | 4 Compliance MVP | Done |
-| 4b Deferrable items of v0.1 | Done, approved on 2026-10-02: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
-| Improvements after Phase 4b | Done for what needed no decision: seven rows of the tracking table closed, in whole or in part |
-| 5 A2A and MCP (v0.2) | **Opening**: protocols checked on their sources; eight decisions wait for the owner |
+| 4b Deferrable items of v0.1 | Done: importers, reports, digest by e-mail, discovery, scenarios ([summary](docs/phases/phase-4b-deferrable-items.md)) |
+| Improvements after Phase 4b | Done for what needed no decision: see the [tracking table](#release-improvement-tracking) |
+| 5 A2A and MCP (v0.2) | **In progress**: decisions taken, implementation starting |
 | 6 Azure (v0.3) | Not started |
 | 7 Documentation and packaging (v1.0) | Not started |
 
-What is being done now, step by step:
+Phase 5, step by step:
 
 | Step | State |
 |---|---|
-| Record the approval of Phase 4b; bring this whole README up to date | Done |
-| Improvements that need no decision, each declared in the [tracking table](#release-improvement-tracking) | Done: I-02, I-30, I-34, I-37, I-38 closed; I-20 and I-29 closed in part. Left open because they need a decision, a real endpoint or real effort: see the table |
-| Phase 5: check the current state of A2A and MCP on their official sources | Done: [preparation](docs/phases/phase-5-preparation.md), with what was read and where |
-| Phase 5: decisions for the owner, as numbered option tables | Done: eight decisions, P5-1 to P5-8, wait for the owner's answer. No code yet |
+| Check A2A and MCP on their official sources ([preparation](docs/phases/phase-5-preparation.md)) | Done |
+| Decisions P5-1 to P5-8, and the one on key lookups | Done: ADR-0046 to ADR-0054 |
+| MCP catalogue: servers and their tools, tied to declared AI systems | Not started |
+| MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Not started |
+| A2A registry: agent cards fetched, stored and verified against configured keys | Not started |
+| A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Not started |
+| Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
+| Demo with mock agents and a mock MCP server | Not started |
+| Phase summary and the full check, containers included | Not started |
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
@@ -227,7 +232,7 @@ A container image and a Compose file are in `deploy/`.
 | Version | Content |
 |---|---|
 | 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI), with importers, discovery, reports, e-mail delivery and scenarios: **built, not released**. `0.1.0` waits for a legal review of the rule pack |
-| 0.2 | A2A and MCP: agent registry, governed MCP catalogue and proxy, multi-agent demo: **opening**, decisions first |
+| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo: **in progress**, nothing of it works yet |
 | 0.3 | Azure: Bicep, Container Apps, Entra ID, observability, hardening |
 | 1.0 | Documentation, quickstart, demo scenarios |
 
@@ -276,7 +281,7 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-17 | 3 | Routing constraints by risk class | The link between classification and routing; first deferrable item of ADR-0009 | 0.1.x, after Phase 4 | Done in Phase 4: `router.constraints`, and no model for a system classified as prohibited |
 | I-18 | 3 | Post-call policy: detection on completions | Completions are not scanned | 0.1.x | Open |
 | I-19 | 3 | Run the outbox dispatcher (`arbiter worker`) | Events are written and nothing consumes them yet | Phase 4 | Done |
-| I-20 | 3 | Budgets from the command line; a cache of key lookups with a short lifetime | Budgets need the HTTP API; every request reads the key | 0.1.x | Partly done after Phase 4b: `arbiter budgets create`, `list` and `delete`, audited, with tests. Open: the cache of key lookups, which delays the effect of revoking a key and so needs a decision |
+| I-20 | 3 | Budgets from the command line; a cache of key lookups with a short lifetime | Budgets need the HTTP API; every request reads the key | 0.1.x | Done: `arbiter budgets create`, `list` and `delete`, audited, with tests. The cache of key lookups was decided against (ADR-0054): keys and roles are read on every request, so that a revocation takes effect at once |
 | I-21 | 3 | Measure latency with a real network hop and several processes | The measurement is in process, on one core | 0.3 | Open |
 | I-22 | 4 | Have the AI Act rule pack reviewed by a person with legal training | The rules summarise provisions; nobody qualified has checked them | Before 1.0 | Open |
 | I-23 | 4 | Spot check of the quoted articles on EUR-Lex by the owner, then `review: confirmed` | ADR-0034; until then outputs say the review is pending | Before 0.1.0 | Open: with the owner |

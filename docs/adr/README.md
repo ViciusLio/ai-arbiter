@@ -55,6 +55,15 @@ supersedes the old one.
 | [0043](0043-simulation-scenarios-as-data.md) | Simulation scenarios are YAML files loaded into a tenant of their own, checked by tests | Accepted | 4b |
 | [0044](0044-reports-without-pdf.md) | Reports in Markdown and HTML; PDF by printing the HTML | Accepted | 4b |
 | [0045](0045-smtp-checked-against-the-compose-mail-catcher.md) | The SMTP notifier is checked against Mailpit in the Compose check | Accepted | 4b |
+| [0046](0046-mcp-proxy-speaks-the-modern-revision.md) | The MCP proxy speaks revision `2026-07-28` only | Accepted | 5 |
+| [0047](0047-mcp-proxy-as-a-gateway-module.md) | The MCP proxy is a module of the gateway application, switched on by a role | Accepted | 5 |
+| [0048](0048-mcp-streamable-http-only.md) | The MCP proxy serves Streamable HTTP only and never starts a process | Accepted | 5 |
+| [0049](0049-mcp-allowlist-and-audit-per-call.md) | An allowlist of MCP servers and tools, and an audit entry per call without its arguments | Accepted | 5 |
+| [0050](0050-mcp-official-types-own-forwarding.md) | MCP messages from the official types package; Arbiter's own forwarding | Accepted | 5 |
+| [0051](0051-a2a-registry-then-proxy.md) | A2A: a registry with verified cards, then a proxy for JSON-RPC and HTTP+JSON | Accepted | 5 |
+| [0052](0052-a2a-official-sdk-behind-a-port.md) | A2A through the official SDK, as an extra, behind a port | Accepted | 5 |
+| [0053](0053-a2a-card-signatures-against-configured-keys.md) | Card signatures verified only against keys the operator configured | Accepted | 5 |
+| [0054](0054-no-cache-of-key-lookups.md) | API keys and roles are read on every request, not cached | Accepted | 5 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
@@ -175,6 +184,15 @@ ADR-0045 (the SMTP notifier checked against Mailpit in the Compose check).
 
 The owner approved Phase 4b on 2026-10-02 and asked for Phase 5 to open with its
 decisions, and for improvements and optimisations to be made and declared along the way.
+
+## Phase 5: decisions at the start
+
+Brought to the project owner in the [Phase 5 preparation](../phases/phase-5-preparation.md)
+and decided on 2026-10-05, each with the recommended option: ADR-0046 to ADR-0053. The
+two checks the preparation left open were made the same day on the installed packages:
+`mcp-types` 2.2.0 stands on its own, and `a2a-sdk[signing]` 1.2.1 verifies a card
+against a key provider. ADR-0054 (no cache of key lookups) was left to the implementer
+by the owner, with security and compliance as the first criteria.
 
 ## Open questions
 

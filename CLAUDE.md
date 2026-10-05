@@ -8,18 +8,12 @@ memory of earlier ones: everything needed to resume is here or linked from here.
 
 ## Resume here
 
-**State on 2026-10-02, session closed by the owner.** Phases 0 to 4b are done and
-approved. The improvements that needed no decision are made and declared in the README.
-**Phase 5 (A2A and MCP) is open and waits for the owner's answers** to the decisions
-P5-1 to P5-8 in `docs/phases/phase-5-preparation.md`, and to one question on I-20
-(whether to cache key lookups, which delays the effect of revoking a key). No code of
-Phase 5 exists. The version is `0.1.0a1`, not published (ADR-0032). `0.1.0` waits for a
-legal review of the AI Act rule pack (ADR-0041).
-
-Last verified: CI green on every job at `9bfbf03`; `scripts/check.sh --containers`
-passed at `cdf71ff`; the full suite passed locally at `25aa5a0` (943 tests, 98%
-coverage). On "riprendi": if the owner has not answered yet, ask for the answers to
-P5-1 to P5-8 with the template of the preparation, and write no code for the phase.
+**State on 2026-10-05.** Phases 0 to 4b are done and approved. **Phase 5 (A2A and MCP)
+is in progress**: the owner decided P5-1 to P5-8 on 2026-10-05, all as recommended
+(ADR-0046 to ADR-0053), and left the question of I-20 to the implementer, with security
+and compliance first (ADR-0054: no cache of key lookups). The version is `0.1.0a1`, not
+published (ADR-0032). `0.1.0` waits for a legal review of the AI Act rule pack
+(ADR-0041).
 
 Read first: `docs/phases/phase-4b-deferrable-items.md` (what was built, verified and not
 verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
@@ -32,16 +26,27 @@ verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
 Never run a script of your own against the database of `ARBITER_TEST_DATABASE_URL` while
 the test suite is running: the tests migrate and drop its tables.
 
-### Step 2: what is in progress
+### Step 2: Phase 5, where it stands
 
 Update this list at every commit.
 
 | # | Item | State |
 |---|---|---|
-| 1 | Record the approval of Phase 4b; bring the whole README up to date | Done |
-| 2 | Improvements that need no decision, each declared in the README table "Release improvement tracking" | Done: I-02, I-30, I-34, I-37, I-38; in part I-20 (budgets CLI; the key cache needs a decision) and I-29 (checksum script; corrigenda still by hand). Left open: I-15, I-31, I-32, I-33, I-35 and everything that needs the owner, Azure or a decision |
-| 3 | Phase 5: check the current state of A2A and MCP on their official sources | Done: `docs/phases/phase-5-preparation.md`. MCP current revision `2026-07-28` (stateless), A2A `1.0.0`; SDKs `mcp` 2.2.0 and `a2a-sdk` 1.2.1. Not verified: which revisions `mcp` 2.2.0 implements, what `mcp-types` and `a2a-sdk[signing]` contain |
-| 4 | Phase 5: decisions for the owner as numbered option tables, then wait | Waiting for the owner's answers to P5-1 to P5-8. When they arrive: one ADR each (0046 onwards), then implement in this order: MCP catalogue, MCP proxy, A2A registry with card verification, A2A proxy, findings, demo |
+| 1 | Decisions recorded | Done: ADR-0046 to ADR-0054 |
+| 2 | MCP catalogue: servers and tools, tied to declared AI systems (`gateway/mcp`) | Not started |
+| 3 | MCP proxy: Streamable HTTP, revision `2026-07-28` only, allowlist, an audit entry per call without arguments; `mcp-types` as an optional extra | Not started |
+| 4 | A2A registry: cards fetched, stored, verified against configured keys (`a2a-sdk[signing]` behind a port, in `adapters`) | Not started |
+| 5 | A2A proxy for JSON-RPC and HTTP+JSON, with authorization and audit; gRPC not proxied | Not started |
+| 6 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
+| 7 | Demo with mock agents and a mock MCP server (no real model) | Not started |
+| 8 | Phase summary, README tracking, changelog, `scripts/check.sh --containers` (dependencies change) | Not started |
+
+Checked on the installed packages on 2026-10-05: `mcp-types` 2.2.0 depends only on
+Pydantic and `typing-extensions`; modules `jsonrpc`, `methods`, `version`; constants
+`LATEST_PROTOCOL_VERSION` (`2026-07-28`), `MODERN_PROTOCOL_VERSIONS`,
+`PROTOCOL_VERSION_META_KEY`, error code `-32022`. `a2a-sdk[signing]` 1.2.1:
+`a2a.utils.signing.create_signature_verifier(key_provider, algorithms)`, where
+`key_provider(kid, jku)` returns the key; the extra adds PyJWT.
 
 Phase 4b delivered: importers (`compliance/ingest`, `arbiter ingest`), reports
 (`compliance/reports`, `arbiter report`), digest by e-mail (`core/notification.py`,
@@ -74,10 +79,8 @@ every open improvement.
 
 ### Step 5: Phase 5 (A2A and MCP, v0.2)
 
-The protocols were checked on their official sources and the decisions P5-1 to P5-8
-were brought to the owner on 2026-10-02: `docs/phases/phase-5-preparation.md`. Write no
-code for the phase before the answers. Before building on `mcp`, `mcp-types` or
-`a2a-sdk`, check on the installed package what the preparation lists as not verified.
+The decisions are taken (ADR-0046 to ADR-0054) and the order of work is in Step 2. The
+facts read on the official sources are in `docs/phases/phase-5-preparation.md`.
 
 ## Names (ADR-0005)
 
