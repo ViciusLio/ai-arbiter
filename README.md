@@ -41,7 +41,7 @@ Phase 5, step by step:
 | MCP catalogue: servers and their tools, tied to declared AI systems | Done: `arbiter mcp servers` and `mcp grants`, `/api/v1/mcp`, an allowlist that allows nothing by default. Nothing forwards a call yet |
 | MCP proxy: Streamable HTTP, revision `2026-07-28`, allowlist of servers and tools, an audit entry per call | Done: `POST /mcp/{server}`; decide, record, then forward. Tested with the client and a server of the official SDK, in process |
 | A2A registry: agent cards fetched, stored and verified against configured keys | Done: `arbiter a2a agents` and `a2a grants`, `/api/v1/a2a`; a card is verified only against `a2a.trusted_keys`, and an interface counts only on the host of the card. Tested with cards signed by the official SDK, not with a real agent on the network |
-| A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Not started |
+| A2A proxy for the JSON-RPC and HTTP+JSON bindings, with authorization and audit | Done: `POST /a2a/{agent}` and `/a2a/{agent}/rest/...`; decide, record, then forward. Tested against a stand-in agent, not with the SDK's client or a real agent |
 | Findings: undeclared servers and agents, tools outside the allowlist, unverified cards, legacy-only servers | Not started |
 | Demo with mock agents and a mock MCP server | Not started |
 | Phase summary and the full check, containers included | Not started |
@@ -141,7 +141,7 @@ The command is `arbiter`; `ai-arbiter` is an alias for it.
 | Audit | One hash chain per tenant, verifiable and exportable; no content, no names |
 | Providers | OpenAI-compatible endpoints, Azure OpenAI, and a mock |
 | MCP catalogue and proxy (Phase 5, in progress) | The MCP servers an organisation knows and who may call which tool; a proxy that forwards a call only when a grant allows it and records every call without its arguments |
-| A2A registry (Phase 5, in progress) | The agents an organisation calls: what their Agent Card says, whether a key the operator trusts signed it, who may call them. The proxy for agent calls is not built yet |
+| A2A registry and proxy (Phase 5, in progress) | The agents an organisation calls: what their Agent Card says, whether a key the operator trusts signed it, who may call them; a proxy for the JSON-RPC and HTTP+JSON bindings that forwards a call only when a grant allows it and records every call without what was said |
 
 How to configure and use each of them: [the gateway](docs/gateway.md) and
 [the audit log](docs/audit.md).
@@ -195,9 +195,10 @@ How it works and what it does not cover: [the compliance toolkit](docs/complianc
   inspect the content of a call. It was tested with the client and a server of the
   official Python SDK, joined in process; no server or client of another vendor, and
   nothing over a real network, has gone through it yet.
-- **A2A.** Only the registry exists: cards are read and verified, calls to agents are
-  not proxied yet. A signature counts only against keys you configured; signing is
-  optional in A2A, so many cards will be `unsigned`.
+- **A2A.** A signature counts only against keys you configured; signing is optional in
+  A2A, so many cards will be `unsigned`, and by default that does not stop a call. gRPC
+  is not proxied. The proxy was tested against a stand-in agent written from the
+  specification: no real agent and no client of the SDK has gone through it yet.
 
 ## Configuration
 
@@ -318,6 +319,8 @@ written. The last column says what has changed since, as of 2026-10-02.
 | I-42 | 5 | Grants for resources and prompts, not only for tools | Anything other than listing and calling a tool needs a grant for the whole server | 0.2.x | Open |
 | I-43 | 5 | Read the card of a real A2A agent over the network; read cards on a schedule and report a card that changed | The reader was tested with cards signed in the test suite; cards are read only on request | Before 0.2.0 | Open |
 | I-44 | 5 | Follow the key set a card names (`jku`) for domains on an allowlist | ADR-0053 chose configured keys only; keys are rotated by hand | 0.2.x | Open |
+| I-45 | 5 | Join the client and a server of the official A2A SDK through the proxy, as was done for MCP | The A2A proxy was tested against a stand-in agent written from the specification | Before 0.2.0 | Open |
+| I-46 | 5 | Serve a card at the proxy for each agent, with the proxy's own address in it | Clients are configured with the address of the proxy by hand | 0.2.x | Open |
 
 ## Licence
 

@@ -50,6 +50,8 @@ class Role(StrEnum):
     WORKER = "worker"
     # The MCP proxy: the data plane for calls to MCP servers (ADR-0047).
     MCP = "mcp"
+    # The A2A proxy: the data plane for calls to agents (ADR-0051).
+    A2A = "a2a"
 
 
 class _Section(BaseModel):
@@ -358,6 +360,15 @@ class A2aSettings(_Section):
     max_card_bytes: int = Field(default=262_144, ge=1024)
     # Keys a card signature is verified against. A key a card names for itself is
     # never fetched.
+    # How long a response stream may stay silent before the proxy gives up on it.
+    stream_idle_seconds: int = Field(default=300, ge=1)
+    max_request_bytes: int = Field(default=1_048_576, ge=1024)
+    # A response that is not a stream is refused beyond this size.
+    max_response_bytes: int = Field(default=10_485_760, ge=1024)
+    # Browser origins allowed to call the proxy; any other Origin header is refused.
+    allowed_origins: tuple[str, ...] = ()
+    # A rule pack file to use instead of the one shipped with the package.
+    pack: Path | None = None
     trusted_keys: tuple[TrustedKey, ...] = ()
     # Signature algorithms accepted. Only asymmetric ones: with a symmetric algorithm
     # a public key would be enough to forge a signature.

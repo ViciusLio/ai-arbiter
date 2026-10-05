@@ -29,6 +29,7 @@ from ai_arbiter.core.ports import (
     SecretStore,
     SystemDirectory,
 )
+from ai_arbiter.gateway.a2a.proxy import A2aProxy, load_a2a_pack
 from ai_arbiter.gateway.a2a.registry import A2aRegistry
 from ai_arbiter.gateway.chat import ChatService
 from ai_arbiter.gateway.finops.budgets import BudgetService
@@ -58,6 +59,7 @@ class GatewayRuntime:
     mcp: McpCatalogue
     mcp_proxy: McpProxy
     a2a: A2aRegistry
+    a2a_proxy: A2aProxy
     meter: UsageMeter
     budgets: BudgetService
     detector: PIIDetector
@@ -72,6 +74,7 @@ class GatewayRuntime:
             await provider.aclose()
         await self.mcp_proxy.aclose()
         await self.a2a.aclose()
+        await self.a2a_proxy.aclose()
 
 
 async def build_runtime(
@@ -131,6 +134,12 @@ async def build_runtime(
         systems=directory,
     )
     mcp_catalogue = McpCatalogue(allow_http_hosts=settings.mcp.allow_http_hosts, clock=clock)
+    a2a_registry = A2aRegistry(
+        reader=registry.load(AGENT_CARD_READERS, settings.plugins.agent_card_reader)(),
+        settings=settings.a2a,
+        clock=clock,
+        transport=a2a_transport,
+    )
     return GatewayRuntime(
         settings=settings,
         database=database,
@@ -146,9 +155,15 @@ async def build_runtime(
         detector=detector,
         policy=policy,
         chat=chat,
-        a2a=A2aRegistry(
-            reader=registry.load(AGENT_CARD_READERS, settings.plugins.agent_card_reader)(),
+        a2a=a2a_registry,
+        a2a_proxy=A2aProxy(
+            database=database,
+            registry=a2a_registry,
+            pack=load_a2a_pack(settings.a2a),
+            audit=audit,
+            secrets=secrets,
             settings=settings.a2a,
+            systems=directory if directory is not None else NoSystemDirectory(),
             clock=clock,
             transport=a2a_transport,
         ),

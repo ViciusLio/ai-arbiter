@@ -1,12 +1,13 @@
 """Control plane of the MCP catalogue: servers, what they offer, and the allowlist."""
 
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import Mapping
 from datetime import datetime
+from functools import partial
 from typing import Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Request, Response, status
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +15,7 @@ from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.i18n import Translator, negotiate
 from ai_arbiter.gateway.api.compliance import Compliance
 from ai_arbiter.gateway.api.deps import Admin, Caller, Reader, Runtime
+from ai_arbiter.gateway.api.relay import relay
 from ai_arbiter.gateway.identity.model import ScopeType
 from ai_arbiter.gateway.identity.service import AuthenticatedKey
 from ai_arbiter.gateway.mcp.catalogue import governability
@@ -305,66 +307,14 @@ async def call_mcp_server(
             status.HTTP_502_BAD_GATEWAY, UPSTREAM_FAILED, str(error), request_id=parsed.request_id
         )
 
-    # The body is relayed decoded: the proxy does not pass on how the server compressed it.
-    content_type = upstream.headers.get("content-type", "application/json")
-    if content_type.startswith("text/event-stream"):
-
-        async def relay() -> AsyncIterator[bytes]:
-            sent = 0
-            reason: str | None = None
-            try:
-                async for chunk in upstream.aiter_bytes():
-                    sent += len(chunk)
-                    yield chunk
-            except Exception as error:
-                reason = type(error).__name__
-                raise
-            finally:
-                await upstream.aclose()
-                await proxy.complete(
-                    prepared,
-                    status_code=upstream.status_code,
-                    response_bytes=sent,
-                    streamed=True,
-                    reason=reason,
-                )
-
-        return StreamingResponse(
-            relay(),
-            status_code=upstream.status_code,
-            media_type=content_type,
-            headers={"X-Accel-Buffering": "no", "Cache-Control": "no-store"},
-        )
-
-    received = b""
-    reason: str | None = None
-    try:
-        async for chunk in upstream.aiter_bytes():
-            received += chunk
-            if len(received) > settings.max_response_bytes:
-                reason = "ResponseTooLarge"
-                break
-    except Exception as error:  # the connection broke while the answer was being read
-        reason = type(error).__name__
-    finally:
-        await upstream.aclose()
-    await proxy.complete(
-        prepared,
-        status_code=upstream.status_code,
-        response_bytes=len(received),
-        streamed=False,
-        reason=reason,
-    )
-    if reason is not None:
-        return _rpc_error(
+    return await relay(
+        upstream,
+        max_bytes=settings.max_response_bytes,
+        complete=partial(proxy.complete, prepared),
+        failure=lambda: _rpc_error(
             status.HTTP_502_BAD_GATEWAY,
             UPSTREAM_FAILED,
             "the answer of the MCP server could not be relayed",
             request_id=parsed.request_id,
-        )
-    return Response(
-        content=received,
-        status_code=upstream.status_code,
-        media_type=content_type,
-        headers={"Cache-Control": "no-store"},
+        ),
     )

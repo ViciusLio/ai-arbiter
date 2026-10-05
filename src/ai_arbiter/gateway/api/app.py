@@ -127,6 +127,8 @@ def create_app(
         app.include_router(chat.router)
     if Role.MCP in resolved.server.roles:
         app.include_router(mcp.proxy_router)
+    if Role.A2A in resolved.server.roles:
+        app.include_router(a2a.proxy_router)
     if Role.ADMIN in resolved.server.roles:
         app.include_router(admin.router)
         app.include_router(compliance.router)

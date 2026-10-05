@@ -114,7 +114,7 @@ def test_redacted_output_masks_database_credentials() -> None:
 
     assert "s3cret" not in str(shown)
     assert shown["database"]["url"] == "postgresql+asyncpg://arbiter:***@db.example:5432/arbiter"
-    assert shown["server"]["roles"] == ["admin", "gateway", "mcp", "worker"]
+    assert shown["server"]["roles"] == ["a2a", "admin", "gateway", "mcp", "worker"]
 
 
 def test_redacted_output_survives_an_unparseable_url() -> None:

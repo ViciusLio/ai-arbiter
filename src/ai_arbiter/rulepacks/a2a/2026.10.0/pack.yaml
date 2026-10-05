@@ -1,0 +1,101 @@
+# Policy of the A2A proxy, evaluated before a request is forwarded to an agent.
+#
+# The facts are computed by the proxy (ai_arbiter.gateway.a2a) from the registry, the
+# allowlist and the inventory. A rule can only compare them with values written here:
+# there is no expression language (ADR-0012). Any rule that denies stops the request:
+# nothing is forwarded, and the decision is written to the audit log.
+#
+# No rule sees what is said to an agent or what it answers: the proxy does not read it.
+#
+# To change the policy, copy this file, edit it and point `a2a.pack` at the copy. To
+# call only agents whose card a trusted key signed, change A2A-CARD-NOT-TRUSTED to
+# `{ fact: agent.verification, ne: verified }`.
+
+pack: a2a
+version: "2026.10.0"
+description: >-
+  A call reaches an agent only if the registry knows it, a proxy can govern it, its card
+  was not found to be forged or altered, a grant allows the caller, the operation does
+  not open a channel around the proxy, and the system behind the call is not classified
+  as a prohibited practice.
+
+facts:
+  agent.known: boolean
+  # governable, not_fetched, no_proxied_binding or disabled.
+  agent.governability: string
+  # verified, unsigned, unknown_key, invalid or not_fetched (ADR-0053).
+  agent.verification: string
+  # Whether the agent's card lists the binding the request came in on.
+  agent.binding_offered: boolean
+  call.operation: string
+  call.granted: boolean
+  system.declared: boolean
+  system.tier: string
+  system.reviewed: boolean
+
+rules:
+  - id: A2A-AGENT-UNKNOWN
+    kind: policy
+    description: The agent asked for is not in the registry.
+    when: { fact: agent.known, eq: false }
+    then:
+      outcome: deny
+      message_key: a2a.agent_unknown
+
+  - id: A2A-AGENT-NOT-GOVERNABLE
+    kind: policy
+    description: >-
+      The proxy cannot stand in front of this agent: it is disabled, its card was never
+      read, or it offers no binding the proxy speaks on the host of its card.
+    when:
+      any:
+        - { fact: agent.governability, in: [disabled, not_fetched, no_proxied_binding] }
+        - all:
+            - { fact: agent.known, eq: true }
+            - { fact: agent.binding_offered, eq: false }
+    then:
+      outcome: deny
+      message_key: a2a.agent_not_governable
+
+  - id: A2A-CARD-NOT-TRUSTED
+    kind: policy
+    description: >-
+      The card names a key the operator trusts and its signature does not verify: it was
+      changed after it was signed, or someone else signed it.
+    when: { fact: agent.verification, eq: invalid }
+    then:
+      outcome: deny
+      message_key: a2a.card_not_trusted
+
+  - id: A2A-CALL-NOT-GRANTED
+    kind: policy
+    description: No grant allows this caller to call this agent.
+    when:
+      all:
+        - { fact: agent.known, eq: true }
+        - { fact: call.granted, eq: false }
+    then:
+      outcome: deny
+      message_key: a2a.call_not_granted
+
+  - id: A2A-PUSH-NOT-ALLOWED
+    kind: policy
+    description: >-
+      A push notification configuration tells the agent to send task updates to an
+      address of the caller's choosing, around the proxy: those updates would be
+      neither authorized nor recorded.
+    when: { fact: call.operation, eq: push_config_create }
+    then:
+      outcome: deny
+      message_key: a2a.push_not_allowed
+
+  - id: A2A-SYSTEM-PROHIBITED
+    kind: policy
+    description: The system behind the call is classified as a prohibited practice.
+    when: { fact: system.tier, eq: prohibited }
+    then:
+      outcome: deny
+      legal_refs:
+        - { regulation: EU-AI-ACT, article: "5" }
+      applies_from: 2025-02-02
+      message_key: policy.system_prohibited

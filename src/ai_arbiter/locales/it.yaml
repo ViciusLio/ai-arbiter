@@ -9,6 +9,11 @@ policy.system_prohibited: "Il sistema di IA a cui appartiene questa chiave è cl
 mcp.server_unknown: "Nessun server MCP con questo nome è nel catalogo."
 mcp.server_not_governable: "Questo server MCP non è raggiungibile tramite il proxy: è disabilitato, è solo dichiarato, oppure non offre alcuna revisione del protocollo che il proxy parla."
 mcp.call_not_granted: "Nessuna autorizzazione consente a questo chiamante di fare questa chiamata su questo server MCP."
+a2a.agent_unknown: "Nessun agente con questo nome è nel registro."
+a2a.agent_not_governable: "Questo agente non è raggiungibile tramite il proxy: è disabilitato, la sua card non è mai stata letta, oppure non offre questo binding sull'host della sua card."
+a2a.card_not_trusted: "La card di questo agente indica una chiave fidata e la sua firma non si verifica."
+a2a.call_not_granted: "Nessuna autorizzazione consente a questo chiamante di chiamare questo agente."
+a2a.push_not_allowed: "Le configurazioni di notifica push non si creano tramite il proxy: l'agente invierebbe aggiornamenti a un indirizzo che lo aggira."
 policy.allowed: "Nessuna regola di policy ha fermato la richiesta."
 
 usage.title: "Report dei consumi"

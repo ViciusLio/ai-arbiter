@@ -71,6 +71,13 @@ Entries link to the decision record that motivated them, where one exists.
     Grants to the tenant, a project or an AI system. `arbiter a2a agents`,
     `arbiter a2a grants`, `/api/v1/a2a`
     ([ADR-0051](docs/adr/0051-a2a-registry-then-proxy.md)).
+  - A2A proxy: `POST /a2a/{agent}` for the JSON-RPC binding and `/a2a/{agent}/rest/...`
+    for the HTTP+JSON binding. Only the operations A2A 1.0 defines are forwarded, to the
+    interface the card lists, with the credential of the registry. A rule pack
+    (`rulepacks/a2a`) decides: an agent whose card was altered is not called, and a
+    push notification configuration is not created through the proxy. Each call is in
+    the table `invocation` and in the audit log, without what was said. New server
+    role, `a2a`.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

@@ -373,7 +373,7 @@ mcp:
   max_response_bytes: 10485760
   # pack: /etc/arbiter/mcp-policy.yaml
 server:
-  roles: [gateway, admin, mcp]   # the proxy is served by processes with the role mcp
+  roles: [gateway, admin, mcp, a2a]   # each proxy is served by processes with its role
 ```
 
 Limits of the proxy in this release:
@@ -391,13 +391,14 @@ Limits of the proxy in this release:
   it in process. It has not met a server or a client of another vendor, nor a real
   network.
 
-## A2A agents: the registry
+## A2A agents: the registry and the proxy
 
 Arbiter keeps a registry of the Agent2Agent (A2A) agents an organisation calls: what
-their Agent Card says, whether a trusted key signed it, and who may call them. It needs
-the `a2a` extra (from a clone, `uv sync --all-extras` includes it). The proxy that will
-stand in front of the agents is not built yet: today the registry informs and nothing
-forwards a call.
+their Agent Card says, whether a trusted key signed it, and who may call them. A proxy
+stands in front of the agents and forwards a call only when the registry allows it. It
+needs the `a2a` extra (from a clone, `uv sync --all-extras` includes it).
+
+### The registry
 
 ```bash
 arbiter a2a agents add routes --name "Route planner" \
@@ -450,10 +451,55 @@ Over HTTP, under `/api/v1/a2a`: `agents` (list, register, read, remove), `agents
 (read the card again), and `grants`. Reading needs the auditor or the admin role,
 changing needs the admin role.
 
-Limits in this release: no proxy yet, so calls to agents are neither authorized nor
-recorded; the extended card, which needs authentication, is not read; cards are read on
-request, not on a schedule. The reader was tested with cards signed by the official SDK
-in the test suite, not with the card of a real agent on the network.
+### The proxy
+
+A client is configured with the address of the proxy instead of the address in the
+agent's card, and authenticates with its Arbiter API key:
+
+| Binding of A2A 1.0 | Address at the proxy |
+|---|---|
+| JSON-RPC | `POST https://<arbiter>/a2a/<agent key>` |
+| HTTP+JSON | `https://<arbiter>/a2a/<agent key>/rest/<path>`, for example `.../rest/message:send` |
+
+The steps are the ones of the MCP proxy: the request is recognised as one of the
+operations A2A defines, a rule pack decides (`rulepacks/a2a/<version>/pack.yaml`), the
+decision and a row for the call are written in one transaction before anything is sent,
+the request goes to the interface the card lists for that binding with the credential of
+the registry and never the caller's key, and the row is completed with how it ended. A
+redirect is not followed. A stream is relayed as it arrives.
+
+| Rule | Denies when |
+|---|---|
+| `A2A-AGENT-UNKNOWN` | The agent asked for is not in the registry (`404`) |
+| `A2A-AGENT-NOT-GOVERNABLE` | The agent is disabled, its card was never read, or it does not offer this binding on the host of its card |
+| `A2A-CARD-NOT-TRUSTED` | The card names a trusted key and its signature does not verify |
+| `A2A-CALL-NOT-GRANTED` | No grant covers the caller |
+| `A2A-PUSH-NOT-ALLOWED` | The call creates a push notification configuration |
+| `A2A-SYSTEM-PROHIBITED` | The system behind the key is classified as a prohibited practice |
+
+- **An unsigned card, or one signed with a key nobody configured, does not stop a
+  call** by default: A2A makes signing optional, and the scan reports such agents. To
+  call only agents with a verified card, copy the rule pack, change
+  `A2A-CARD-NOT-TRUSTED` to `{ fact: agent.verification, ne: verified }` and point
+  `a2a.pack` at the copy.
+- **Push notification configurations are not created through the proxy.** They tell the
+  agent to send task updates to an address the caller chooses, around the proxy, where
+  nothing is authorized or recorded. Reading and deleting them is allowed.
+- **Only the operations A2A 1.0 defines are forwarded.** A JSON-RPC method or a path
+  that is none of them is answered with `404` and goes nowhere, so a path cannot walk
+  out of the agent's interface.
+- A denial is `403` (or `404`): on the JSON-RPC binding a JSON-RPC error with the code
+  `-32000`, the rules that matched and the id of the decision; on the HTTP+JSON binding
+  a problem document with the same.
+- Of a call, the table `invocation` and the audit entry `a2a.call` hold who called, the
+  agent, the operation, the outcome, the HTTP status, sizes and duration. **Never what
+  was said to the agent or what it answered.**
+
+Limits in this release: gRPC is not proxied; the extended card is passed through, not
+stored; cards are read on request, not on a schedule; the proxy does not serve a card
+of its own, so clients are configured with its address directly. The registry and the
+proxy were tested with cards signed by the official SDK and against a stand-in agent
+written from the specification, not with a real agent or the SDK's own client.
 
 ## Roles
 

@@ -9,6 +9,11 @@ policy.system_prohibited: "The AI system this key belongs to is classified as a 
 mcp.server_unknown: "No MCP server with this name is in the catalogue."
 mcp.server_not_governable: "This MCP server cannot be reached through the proxy: it is disabled, it was only declared, or it offers no protocol revision the proxy speaks."
 mcp.call_not_granted: "No grant allows this caller to make this call on this MCP server."
+a2a.agent_unknown: "No agent with this name is in the registry."
+a2a.agent_not_governable: "This agent cannot be reached through the proxy: it is disabled, its card was never read, or it does not offer this binding on the host of its card."
+a2a.card_not_trusted: "The card of this agent names a trusted key and its signature does not verify."
+a2a.call_not_granted: "No grant allows this caller to call this agent."
+a2a.push_not_allowed: "Push notification configurations are not created through the proxy: the agent would send updates to an address around it."
 policy.allowed: "No policy rule stopped the request."
 
 usage.title: "Usage report"
