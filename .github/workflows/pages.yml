@@ -1,10 +1,14 @@
 name: Pages
 
 # Publishes the presentations, and nothing else of the repository, to GitHub Pages.
-# It needs the Pages source of the repository set to "GitHub Actions", which only the
-# owner can do. Until then it is started by hand only, and Pages still serves the branch.
+# The Pages source of the repository is "GitHub Actions" (set by the owner).
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - docs/presentation/**
+      - .github/workflows/pages.yml
   workflow_dispatch:
 
 permissions:

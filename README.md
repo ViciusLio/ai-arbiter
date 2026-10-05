@@ -19,12 +19,11 @@ without the other.
 
 **New here, and not a developer?** Open the presentation:
 
-- in English: <https://viciuslio.github.io/ai-arbiter/docs/presentation/arbiter.en.html>
-- in Italian: <https://viciuslio.github.io/ai-arbiter/docs/presentation/arbiter.it.html>
+- in English: <https://viciuslio.github.io/ai-arbiter/arbiter.en.html>
+- in Italian: <https://viciuslio.github.io/ai-arbiter/arbiter.it.html>
 
-Each is one self-contained file, also in [`docs/presentation/`](docs/presentation/). The site still serves
-the whole repository; a workflow that publishes only the presentations is ready and waits
-for a setting of the repository.
+Each is one self-contained file, also in [`docs/presentation/`](docs/presentation/). The site
+holds the presentations and nothing else of the repository.
 
 ## Where the project is
 
