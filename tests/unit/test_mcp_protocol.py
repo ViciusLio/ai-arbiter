@@ -16,7 +16,7 @@ from ai_arbiter.gateway.mcp.protocol import (
     parse_request,
     read_response,
 )
-from tests.mcp_support import META_VERSION, REVISION, mcp_request
+from tests.mcp_requests import META_VERSION, REVISION, mcp_request
 
 HEADER_MISMATCH = -32020
 UNSUPPORTED_VERSION = -32022

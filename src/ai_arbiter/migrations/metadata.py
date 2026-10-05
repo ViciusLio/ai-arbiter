@@ -20,6 +20,7 @@ from ai_arbiter.core.interaction import Interaction
 from ai_arbiter.core.invocation import Invocation
 from ai_arbiter.core.persistence.base import Base
 from ai_arbiter.core.persistence.tenant import Tenant
+from ai_arbiter.gateway.a2a.model import A2aAgent, A2aGrant
 from ai_arbiter.gateway.finops.model import Budget, UsageRollup
 from ai_arbiter.gateway.identity.model import ApiKey, Principal, Project, RoleBinding, Team
 from ai_arbiter.gateway.mcp.model import McpGrant, McpServer, McpTool
@@ -27,6 +28,8 @@ from ai_arbiter.gateway.mcp.model import McpGrant, McpServer, McpTool
 target_metadata = Base.metadata
 
 __all__ = [
+    "A2aAgent",
+    "A2aGrant",
     "AISystem",
     "AISystemRole",
     "ApiKey",

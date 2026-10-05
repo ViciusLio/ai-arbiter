@@ -332,6 +332,55 @@ class McpSettings(_Section):
     pack: Path | None = None
 
 
+class TrustedKey(_Section):
+    """A public key the operator trusts to sign Agent Cards (ADR-0053)."""
+
+    kid: str = Field(min_length=1, max_length=200)
+    # The public key as a JSON Web Key. A public key is not a secret.
+    jwk: dict[str, Any]
+
+    @field_validator("jwk")
+    @classmethod
+    def _public(cls, value: dict[str, Any]) -> dict[str, Any]:
+        if not value.get("kty"):
+            raise ValueError("a JWK needs its key type (kty)")
+        if value.get("kty") == "oct" or any(name in value for name in ("d", "p", "q", "k")):
+            raise ValueError("only a public key belongs here: this JWK holds private material")
+        return value
+
+
+class A2aSettings(_Section):
+    """The A2A registry (ADR-0051 to ADR-0053)."""
+
+    # Hosts an Agent Card may be read from, and an agent called at, with plain http.
+    allow_http_hosts: tuple[str, ...] = ()
+    timeout_seconds: int = Field(default=30, ge=1)
+    max_card_bytes: int = Field(default=262_144, ge=1024)
+    # Keys a card signature is verified against. A key a card names for itself is
+    # never fetched.
+    trusted_keys: tuple[TrustedKey, ...] = ()
+    # Signature algorithms accepted. Only asymmetric ones: with a symmetric algorithm
+    # a public key would be enough to forge a signature.
+    algorithms: tuple[str, ...] = ("ES256", "ES384", "EdDSA", "RS256", "PS256")
+
+    @field_validator("algorithms")
+    @classmethod
+    def _asymmetric(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        refused = [
+            name for name in value if name.lower() == "none" or name.upper().startswith("HS")
+        ]
+        if refused or not value:
+            raise ValueError("list asymmetric signature algorithms only, and at least one")
+        return value
+
+    @model_validator(mode="after")
+    def _unique_key_ids(self) -> "A2aSettings":
+        kids = [key.kid for key in self.trusted_keys]
+        if len(kids) != len(set(kids)):
+            raise ValueError("trusted_keys: a key id appears twice")
+        return self
+
+
 class TelemetrySettings(_Section):
     enabled: bool = False
     service_name: str = "arbiter"
@@ -365,6 +414,7 @@ class Settings(BaseSettings):
     retention: RetentionSettings = RetentionSettings()
     notifications: NotificationSettings = NotificationSettings()
     mcp: McpSettings = McpSettings()
+    a2a: A2aSettings = A2aSettings()
     telemetry: TelemetrySettings = TelemetrySettings()
     logging: LoggingSettings = LoggingSettings()
 

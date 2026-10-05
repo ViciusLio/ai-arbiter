@@ -3,7 +3,6 @@
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
-from urllib.parse import urlsplit
 from uuid import UUID
 
 from sqlalchemy import delete, or_, select
@@ -14,6 +13,7 @@ from ai_arbiter.core.domain.time import Clock, SystemClock
 from ai_arbiter.core.errors import ConflictError, NotFoundError
 from ai_arbiter.gateway.identity.model import ScopeType
 from ai_arbiter.gateway.mcp.model import ANY_TOOL, McpGrant, McpServer, McpTool, McpTransport
+from ai_arbiter.gateway.urls import checked_url
 
 # The revision the proxy speaks (ADR-0046). Earlier revisions open with a handshake.
 MODERN_REVISION = "2026-07-28"
@@ -58,18 +58,11 @@ class McpCatalogue:
         self._clock = clock if clock is not None else SystemClock()
 
     def _checked_url(self, url: str) -> str:
-        """An address the proxy may forward to. Raises ``ConflictError``."""
-        parts = urlsplit(url)
-        host = (parts.hostname or "").lower()
-        if not host or parts.username or parts.password:
-            raise ConflictError("the URL of a server needs a host and must hold no credentials")
-        if parts.fragment:
-            raise ConflictError("the URL of a server must have no fragment")
-        if parts.scheme == "https" or (parts.scheme == "http" and host in self._allow_http_hosts):
-            return url
-        raise ConflictError(
-            "the URL of a server must use https; plain http is accepted only for the "
-            "hosts listed in mcp.allow_http_hosts"
+        return checked_url(
+            url,
+            what="a server",
+            allow_http_hosts=self._allow_http_hosts,
+            setting="mcp.allow_http_hosts",
         )
 
     # Servers
