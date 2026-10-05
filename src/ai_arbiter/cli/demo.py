@@ -1,6 +1,7 @@
 """``arbiter demo``: load a simulation scenario and show what the toolkit makes of it."""
 
 import json
+import logging
 from importlib import resources
 from typing import Annotated
 
@@ -349,6 +350,9 @@ def tour(
     if case not in CASES:
         raise fail(ArbiterError(f"unknown case '{case}': use {' or '.join(CASES)}"))
     settings = settings_from(ctx)
+    # The demonstration makes dozens of requests inside this process: one log line for
+    # each would bury the steps it prints.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     if case == "consulting":
         steps, tenant = run(consulting_tour(settings, t)), CONSULTING_TENANT
         typer.echo(t.text("demo.consulting.intro"))

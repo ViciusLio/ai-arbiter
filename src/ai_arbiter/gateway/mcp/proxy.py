@@ -145,8 +145,12 @@ class McpProxy:
         not forwarded.
         """
         context = key.context
-        caller = Caller(context.tenant_id, context.project_id, context.ai_system_id)
         async with self._database.transaction() as session:
+            system = await self._systems.resolve(
+                session, context.tenant_id, context.ai_system_id, context.project_id
+            )
+            context = context.model_copy(update={"ai_system_id": system.ai_system_id})
+            caller = Caller(context.tenant_id, context.project_id, context.ai_system_id)
             server = await self._catalogue.find(session, context.tenant_id, server_key)
             granted = False
             visible: frozenset[str] | None = None
@@ -161,7 +165,6 @@ class McpProxy:
                 )
                 if granted and request.method == TOOL_LIST and self._settings.filter_tool_list:
                     visible = await self._catalogue.callable_tools(session, server, caller)
-            system = await self._systems.resolve(session, context.tenant_id, context.ai_system_id)
             declared = system.ai_system_id is not None
             facts: Facts = {
                 "server.known": server is not None,

@@ -42,6 +42,9 @@ class SystemDeclaration(_Model):
     purpose: str = Field(default="", max_length=2000)
     lifecycle: Lifecycle = Lifecycle.PRODUCTION
     owner_principal_id: UUID | None = None
+    # Projects of the gateway whose requests belong to the system (ADR-0059).
+    # ``project_id`` is the earlier way to name one and is still read.
+    project_ids: list[UUID] = Field(default_factory=list)
     project_id: UUID | None = None
     roles: list[RoleDeclaration] = Field(default_factory=list)
     models: list[ModelDeclaration] = Field(default_factory=list)
@@ -51,6 +54,11 @@ class SystemDeclaration(_Model):
     # Answers to the questions of the rule packs. An omitted fact is "not answered",
     # which is different from false.
     facts: dict[str, FactAnswer] = Field(default_factory=dict)
+
+    def projects(self) -> tuple[UUID, ...]:
+        """Every project the declaration names, once each, in a stable order."""
+        named = {*self.project_ids, *([self.project_id] if self.project_id else [])}
+        return tuple(sorted(named, key=str))
 
     def answered(self) -> dict[str, Any]:
         return {name: value for name, value in self.facts.items() if value is not None}

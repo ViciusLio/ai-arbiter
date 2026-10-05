@@ -16,7 +16,7 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
-from ai_arbiter.compliance.inventory.model import AISystem
+from ai_arbiter.compliance.inventory.model import AISystemProject
 from ai_arbiter.core.interaction import PII_CATEGORIES_AS_TEXT, Interaction, read_categories
 
 
@@ -63,8 +63,8 @@ class DiscoveredSystem:
 
 def _undeclared(tenant_id: UUID, since: datetime) -> tuple[ColumnElement[bool], ...]:
     """Interactions tied to no system, by their key or by the project a system names."""
-    declared_projects = select(AISystem.project_id).where(
-        AISystem.tenant_id == tenant_id, AISystem.project_id.is_not(None)
+    declared_projects = select(AISystemProject.project_id).where(
+        AISystemProject.tenant_id == tenant_id
     )
     return (
         Interaction.tenant_id == tenant_id,
@@ -188,5 +188,5 @@ def draft_declaration(candidate: DiscoveredSystem, name: str | None = None) -> d
         "facts": {},
     }
     if candidate.project_id is not None:
-        draft["project_id"] = str(candidate.project_id)
+        draft["project_ids"] = [str(candidate.project_id)]
     return draft

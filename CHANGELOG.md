@@ -108,6 +108,10 @@ Entries link to the decision record that motivated them, where one exists.
     `arbiter report audit --format pdf -o DIR`, with the optional extra `pdf`
     ([ADR-0057](docs/adr/0057-pdf-reports-as-an-optional-extra.md), which supersedes
     ADR-0044). The converter fetches nothing.
+  - A declaration may list several projects (`project_ids`), and a key tied to no
+    system belongs to the one system that names its project: its tier, budgets and
+    grants apply ([ADR-0059](docs/adr/0059-a-system-names-several-projects.md),
+    migration 0011).
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

@@ -201,12 +201,15 @@ arbiter systems apply -f drafts.yaml
 - A candidate is a proposal. Nothing is declared until a person completes a
   declaration, and a draft answers no question of the rule packs: the system it
   declares is `undetermined` until its facts are given.
-- A draft of a project names it (`project_id`). Once the system is declared, the
-  unattributed requests of that project count as the system's own in scans and reports,
-  and the candidate closes at the next scan.
-- For the gateway to apply the tier of the system (the policy on prohibited practices,
-  the routing constraints), its keys must be tied to it:
-  `arbiter keys create --name NAME --system KEY`.
+- A draft of a project names it (`project_ids`). A declaration may list several
+  projects (ADR-0059); the earlier `project_id` is still read. Once the system is
+  declared, the unattributed requests of those projects count as the system's own in
+  scans and reports, and the candidate closes at the next scan.
+- The gateway applies the tier of the system (the policy on prohibited practices, the
+  routing constraints) to the keys tied to it,
+  `arbiter keys create --name NAME --system KEY`, and to the keys of a project that
+  the system names, when no other declared system names that project. A project named
+  by two systems gives its keys no system: tie them one by one.
 - For imported records, add a mapping under `ingest.mappings` so that later imports are
   attributed to the system.
 - A scan pack from before `2026.10.1` keeps the earlier behaviour: all such traffic in
@@ -500,7 +503,7 @@ cut-off dates (ADR-0038).
   beyond Article 50.
 - Twenty-one scan rules. The local agent is planned for v0.1.x (ADR-0009).
 - A discovered candidate is as fine as its project: a project that runs several systems
-  shows as one. A candidate from imported records stays until those records leave the
+  shows as one, and its keys get a tier only when tied to a system one by one. A candidate from imported records stays until those records leave the
   30-day window, because imported records are attributed at import and not afterwards.
 - Reports are Markdown and HTML; PDF needs an optional extra and a system library, and
   exists on the command line only.

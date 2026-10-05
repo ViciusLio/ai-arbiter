@@ -200,7 +200,7 @@ async def test_declaring_the_project_closes_the_candidate_and_counts_its_traffic
     await declare(compliance, database, tenant_id, {parsed.key: parsed})
     await scan(compliance, database, tenant_id)
 
-    assert (parsed.project_id, parsed.facts, parsed.roles) == (HR, {}, [])
+    assert (parsed.projects(), parsed.facts, parsed.roles) == ((HR,), {}, [])
     assert [(m.provider, m.model) for m in parsed.models] == [("azure_openai", "other-model")]
     (finding,) = await candidate_findings(database, tenant_id)
     assert finding.status == "mitigated"

@@ -13,7 +13,7 @@ from ai_arbiter.compliance.classifier.service import ClassifierService
 from ai_arbiter.compliance.findings.model import ScanRun
 from ai_arbiter.compliance.findings.service import Evidence, FindingCandidate, FindingService
 from ai_arbiter.compliance.inventory.discovery import discover, ungrouped_requests
-from ai_arbiter.compliance.inventory.model import AISystem, AISystemRole
+from ai_arbiter.compliance.inventory.model import AISystem, AISystemProject, AISystemRole
 from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.domain.risk import ActorRole
 from ai_arbiter.core.domain.time import Clock, SystemClock
@@ -67,15 +67,13 @@ class ScannerService:
     ) -> dict[str, Any]:
         # The system's own keys, and keys of the project it names that are tied to no
         # system: declaring the project is enough for its traffic to count (ADR-0042).
-        own = Interaction.ai_system_id == system.id
-        if system.project_id is not None:
-            own = or_(
-                own,
-                and_(
-                    Interaction.ai_system_id.is_(None),
-                    Interaction.project_id == system.project_id,
-                ),
-            )
+        projects = select(AISystemProject.project_id).where(
+            AISystemProject.ai_system_id == system.id
+        )
+        own = or_(
+            Interaction.ai_system_id == system.id,
+            and_(Interaction.ai_system_id.is_(None), Interaction.project_id.in_(projects)),
+        )
         base = (
             Interaction.tenant_id == system.tenant_id,
             own,

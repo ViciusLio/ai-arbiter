@@ -185,8 +185,13 @@ class ChatService:
         async with self._database.session() as session:
             tenant = await session.get_one(Tenant, context.tenant_id)
             fail_mode = tenant_fail_mode(tenant, self._default_fail_mode)
+            system = await self._systems.resolve(
+                session, context.tenant_id, context.ai_system_id, context.project_id
+            )
+            # From here on the request belongs to the system that was found, also when
+            # the key named none and its project did (ADR-0059).
+            context = context.model_copy(update={"ai_system_id": system.ai_system_id})
             budget = await self._budgets.status(session, context)
-            system = await self._systems.resolve(session, context.tenant_id, context.ai_system_id)
 
         found = categories(
             [span for text in request.texts() for span in self._detector.detect(text)]

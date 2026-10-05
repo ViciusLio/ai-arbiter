@@ -77,7 +77,7 @@ async def test_candidates_are_listed_with_the_name_of_their_project_and_a_draft(
     assert (project["kind"], project["requests"], project["models"]) == ("project", 3, ["gpt-4o"])
     assert project["reference"] == f"project:{admin.project_id}"
     assert project["project"].endswith(" / assistant")
-    assert project["draft"]["project_id"] == str(admin.project_id)
+    assert project["draft"]["project_ids"] == [str(admin.project_id)]
     assert project["draft"]["facts"] == {}
     assert (source["reference"], source["project"]) == ("source:litellm:sales", None)
     assert "proposal" in body["note"]

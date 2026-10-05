@@ -123,8 +123,12 @@ class A2aProxy:
         not forwarded.
         """
         context = key.context
-        caller = Caller(context.tenant_id, context.project_id, context.ai_system_id)
         async with self._database.transaction() as session:
+            system = await self._systems.resolve(
+                session, context.tenant_id, context.ai_system_id, context.project_id
+            )
+            context = context.model_copy(update={"ai_system_id": system.ai_system_id})
+            caller = Caller(context.tenant_id, context.project_id, context.ai_system_id)
             agent = await self._registry.find(session, context.tenant_id, agent_key)
             granted = False
             interface_url: str | None = None
@@ -138,7 +142,6 @@ class A2aProxy:
                     ),
                     None,
                 )
-            system = await self._systems.resolve(session, context.tenant_id, context.ai_system_id)
             declared = system.ai_system_id is not None
             facts: Facts = {
                 "agent.known": agent is not None,

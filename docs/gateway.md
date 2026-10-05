@@ -127,7 +127,9 @@ router:
 
 `router.constraints` limits the deployments and regions that systems of a risk tier may
 use; see [the compliance toolkit](compliance.md). To attribute traffic to a declared
-system, issue its key with `arbiter keys create --system KEY`.
+system, issue its key with `arbiter keys create --system KEY`, or name the project of the
+key in the declaration of the system: a key tied to no system belongs to the one system
+that names its project (ADR-0059).
 
 A provider answer of 400 or 422 means the request itself is at fault: it is not retried
 and not sent elsewhere. For a stream, retry and fallback happen only until the first

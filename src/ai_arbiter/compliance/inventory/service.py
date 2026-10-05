@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ai_arbiter.compliance.inventory.declarations import SystemDeclaration
 from ai_arbiter.compliance.inventory.model import (
     AISystem,
+    AISystemProject,
     AISystemRole,
     Origin,
     SystemChanged,
@@ -94,7 +95,6 @@ class InventoryService:
             "purpose": declaration.purpose,
             "lifecycle": declaration.lifecycle.value,
             "owner_principal_id": declaration.owner_principal_id,
-            "project_id": declaration.project_id,
             "attributes": declaration.answered(),
             "models_used": [model.model_dump(mode="json") for model in declaration.models],
         }
@@ -121,8 +121,11 @@ class InventoryService:
             same_roles = {name: (role.basis, role.since) for name, role in existing.items()} == {
                 name: (item.basis, item.since) for name, item in roles.items()
             }
-            same = same_roles and all(
-                getattr(system, name) == value for name, value in values.items()
+            same_projects = await self.projects(session, system) == declaration.projects()
+            same = (
+                same_roles
+                and same_projects
+                and all(getattr(system, name) == value for name, value in values.items())
             )
             change = "unchanged" if same and system.origin == Origin.DECLARED.value else "changed"
             if change == "changed":
@@ -143,6 +146,15 @@ class InventoryService:
                         role=item.role.value,
                         basis=item.basis,
                         since=item.since,
+                    )
+                )
+            await session.execute(
+                delete(AISystemProject).where(AISystemProject.ai_system_id == system.id)
+            )
+            for project_id in declaration.projects():
+                session.add(
+                    AISystemProject(
+                        tenant_id=tenant_id, ai_system_id=system.id, project_id=project_id
                     )
                 )
             await session.flush()
@@ -171,6 +183,13 @@ class InventoryService:
                 .order_by(AISystemRole.role)
             )
         ).all()
+
+    async def projects(self, session: AsyncSession, system: AISystem) -> tuple[UUID, ...]:
+        """The projects whose requests belong to the system, in a stable order."""
+        found = await session.scalars(
+            select(AISystemProject.project_id).where(AISystemProject.ai_system_id == system.id)
+        )
+        return tuple(sorted(found.all(), key=str))
 
     async def role_names(self, session: AsyncSession, system: AISystem) -> frozenset[ActorRole]:
         return frozenset(ActorRole(role.role) for role in await self.roles(session, system))

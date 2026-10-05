@@ -40,7 +40,6 @@ class AISystem(Base):
     origin: Mapped[str] = mapped_column(String(20), default=Origin.DECLARED.value)
     lifecycle: Mapped[str] = mapped_column(String(20), default=Lifecycle.PRODUCTION.value)
     owner_principal_id: Mapped[UUID | None] = mapped_column(Uuid, default=None)
-    project_id: Mapped[UUID | None] = mapped_column(Uuid, default=None)
     # The facts declared about the system. Which facts exist is set by the rule packs,
     # not by columns, so a new pack can ask new questions without a migration.
     attributes: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
@@ -61,6 +60,21 @@ class AISystemRole(Base):
     role: Mapped[str] = mapped_column(String(40))
     basis: Mapped[str] = mapped_column(String(500), default="")
     since: Mapped[date | None] = mapped_column(Date, default=None)
+
+
+class AISystemProject(Base):
+    """A project of the gateway whose requests belong to a system (ADR-0059).
+
+    A system may name several projects, and a project may be named by several systems.
+    """
+
+    __tablename__ = "ai_system_project"
+    __table_args__ = (UniqueConstraint("ai_system_id", "project_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=new_id)
+    tenant_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("tenant.id"))
+    ai_system_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("ai_system.id"))
+    project_id: Mapped[UUID] = mapped_column(Uuid, index=True)
 
 
 class SystemDeclared(Event):

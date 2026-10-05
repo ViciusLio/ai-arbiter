@@ -18,7 +18,7 @@ from ai_arbiter.compliance.classifier.model import (
     ReviewDecision,
     SystemClassified,
 )
-from ai_arbiter.compliance.inventory.model import AISystem, AISystemRole
+from ai_arbiter.compliance.inventory.model import AISystem, AISystemProject, AISystemRole
 from ai_arbiter.core.audit import AuditRecord
 from ai_arbiter.core.domain.risk import ActorRole, RiskTier, SystemRiskProfile
 from ai_arbiter.core.domain.time import Clock, SystemClock
@@ -234,8 +234,27 @@ class InventorySystemDirectory:
         self._classifier = classifier
 
     async def resolve(
-        self, session: AsyncSession, tenant_id: UUID, ai_system_id: UUID | None
+        self,
+        session: AsyncSession,
+        tenant_id: UUID,
+        ai_system_id: UUID | None,
+        project_id: UUID | None = None,
     ) -> SystemRiskProfile:
+        if ai_system_id is None and project_id is not None:
+            # A key tied to no system belongs to the one system that names its project.
+            # With two or more the answer would be a guess, so there is none.
+            named = (
+                await session.scalars(
+                    select(AISystemProject.ai_system_id)
+                    .where(
+                        AISystemProject.tenant_id == tenant_id,
+                        AISystemProject.project_id == project_id,
+                    )
+                    .limit(2)
+                )
+            ).all()
+            if len(named) == 1:
+                ai_system_id = named[0]
         if ai_system_id is None:
             return SystemRiskProfile(ai_system_id=None)
         current = await self._classifier.current(session, tenant_id, ai_system_id)

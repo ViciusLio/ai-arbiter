@@ -68,10 +68,17 @@ class SystemDirectory(Protocol):
 
     Implemented by the inventory of the compliance toolkit. Without it the gateway uses
     ``NoSystemDirectory``, for which every system is undetermined.
+
+    A key tied to a system names it. A key tied to none belongs to the system that names
+    the key's project, when exactly one declared system does (ADR-0059).
     """
 
     async def resolve(
-        self, session: AsyncSession, tenant_id: UUID, ai_system_id: UUID | None
+        self,
+        session: AsyncSession,
+        tenant_id: UUID,
+        ai_system_id: UUID | None,
+        project_id: UUID | None = None,
     ) -> SystemRiskProfile: ...
 
 
@@ -79,7 +86,11 @@ class NoSystemDirectory:
     """The directory of a gateway that runs without the compliance toolkit."""
 
     async def resolve(
-        self, session: AsyncSession, tenant_id: UUID, ai_system_id: UUID | None
+        self,
+        session: AsyncSession,
+        tenant_id: UUID,
+        ai_system_id: UUID | None,
+        project_id: UUID | None = None,
     ) -> SystemRiskProfile:
         return SystemRiskProfile(ai_system_id=ai_system_id)
 
