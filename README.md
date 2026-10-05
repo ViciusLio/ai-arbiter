@@ -17,10 +17,12 @@ without the other.
 
 > Arbiter is a support tool. It does not provide legal advice.
 
-**New here, and not a developer?** Open the presentation, in
-[English](docs/presentation/arbiter.en.html) or in
-[Italian](docs/presentation/arbiter.it.html). Each is one self-contained file: download
-it and open it in a browser.
+**New here, and not a developer?** Open the presentation:
+
+- in English: <https://viciuslio.github.io/ai-arbiter/docs/presentation/arbiter.en.html>
+- in Italian: <https://viciuslio.github.io/ai-arbiter/docs/presentation/arbiter.it.html>
+
+Each is one self-contained file, also in [`docs/presentation/`](docs/presentation/).
 
 ## Where the project is
 
