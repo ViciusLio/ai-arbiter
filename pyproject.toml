@@ -71,7 +71,12 @@ a2a = [
 pii = [
     "presidio-analyzer>=2.2,<3",
 ]
-all = ["ai-arbiter[a2a,gateway,mcp,otel,pii]"]
+# Reports as PDF (ADR-0057). WeasyPrint also needs the Pango library of the operating
+# system: see docs/compliance.md.
+pdf = [
+    "weasyprint>=70,<71",
+]
+all = ["ai-arbiter[a2a,gateway,mcp,otel,pdf,pii]"]
 
 [project.scripts]
 arbiter = "ai_arbiter.cli.main:app"

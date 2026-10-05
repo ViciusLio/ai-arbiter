@@ -104,6 +104,10 @@ Entries link to the decision record that motivated them, where one exists.
     of its own, whose internal regulation is a policy pack on top of the default one;
     `docs/demo.md` is the script of a live session
     ([ADR-0056](docs/adr/0056-a-demonstration-for-an-it-consulting-firm.md)).
+  - Reports as PDF: `arbiter report system KEY --format pdf -o DIR` and
+    `arbiter report audit --format pdf -o DIR`, with the optional extra `pdf`
+    ([ADR-0057](docs/adr/0057-pdf-reports-as-an-optional-extra.md), which supersedes
+    ADR-0044). The converter fetches nothing.
 - **Improvements after Phase 4b.**
   - `GET /api/v1/candidates` and `POST /api/v1/digests/deliveries`: discovery and digest
     delivery over HTTP.

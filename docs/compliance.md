@@ -323,8 +323,13 @@ arbiter report audit --since 2026-09-01 --until 2026-09-30 --format html -o out/
   `--since` and `--until` are UTC days, both included.
 - A chain that verifies is internally consistent, not proven untouched: see
   [the audit log](audit.md).
-- There is no PDF output (ADR-0044). The HTML reports and the HTML digest carry a print
-  style sheet: open the file in a browser and print it to PDF.
+- PDF is an optional extra (ADR-0057): `--format pdf -o DIR` renders the HTML report
+  and converts it, fetching nothing. It needs the extra `pdf` (from a clone:
+  `uv sync --extra pdf`) and the Pango library of the operating system (on Debian or
+  Ubuntu: `apt install libpango-1.0-0 libpangoft2-1.0-0`). The container image does
+  not include it, and the HTTP API serves Markdown and HTML only. Without the extra,
+  the HTML reports and the HTML digest still carry a print style sheet: open the file
+  in a browser and print it. The digest has no PDF output.
 
 Over HTTP: `GET /api/v1/systems/{key}/report` and `GET /api/v1/audit/report`, with
 `format`, `locale` and, for the audit report, `days`. Both need the auditor or the admin
@@ -497,5 +502,6 @@ cut-off dates (ADR-0038).
 - A discovered candidate is as fine as its project: a project that runs several systems
   shows as one. A candidate from imported records stays until those records leave the
   30-day window, because imported records are attributed at import and not afterwards.
-- Reports are Markdown and HTML only: no PDF.
+- Reports are Markdown and HTML; PDF needs an optional extra and a system library, and
+  exists on the command line only.
 - Personal data in traffic is detected by format only (see [the gateway](gateway.md)).

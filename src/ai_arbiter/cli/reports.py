@@ -19,6 +19,7 @@ from ai_arbiter.cli.common import (
 from ai_arbiter.cli.systems import TenantSlug
 from ai_arbiter.compliance.digest.render import DigestFormat
 from ai_arbiter.compliance.reports.model import build_audit_report, build_system_report
+from ai_arbiter.compliance.reports.pdf import html_to_pdf
 from ai_arbiter.compliance.reports.render import render_audit_report, render_system_report
 from ai_arbiter.core.audit import DatabaseAuditLog
 from ai_arbiter.core.config.settings import Settings
@@ -30,13 +31,47 @@ from ai_arbiter.core.persistence.tenant import Tenant
 app = typer.Typer(help="Write reports for people outside the tool.", no_args_is_help=True)
 
 Locale = Annotated[str, typer.Option(help="Language: en, it or all.")]
-Format = Annotated[str, typer.Option("--format", help="markdown, html or both.")]
+Format = Annotated[
+    str,
+    typer.Option(
+        "--format",
+        help="markdown, html, both, or pdf (needs the pdf extra and --output-dir).",
+    ),
+]
 OutputDir = Annotated[
     Path | None,
     typer.Option("--output-dir", "-o", help="Directory to write to. Default: standard output."),
 ]
 
 Rendered = dict[tuple[str, DigestFormat], str]
+PDF = "pdf"
+
+
+def _choices(
+    locale: str, output_format: str, output_dir: Path | None
+) -> tuple[list[str], list[DigestFormat]]:
+    """The languages and formats to render. A PDF is made from the HTML report."""
+    if output_format != PDF:
+        return output_choices(locale, output_format, to_directory=output_dir is not None)
+    if output_dir is None:
+        raise fail(ArbiterError("a PDF is written to a file: --output-dir DIR"))
+    return output_choices(locale, "html", to_directory=True)
+
+
+def _write(rendered: Rendered, output_format: str, output_dir: Path | None, name: str) -> None:
+    if output_format != PDF or output_dir is None:
+        write_outputs(rendered, output_dir, name)
+        return
+    try:
+        documents = {language: html_to_pdf(html) for (language, _), html in rendered.items()}
+    except ArbiterError as error:
+        raise fail(error) from error
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stamp = utcnow().strftime("%Y-%m-%d")
+    for language, document in documents.items():
+        path = output_dir / f"{name}-{stamp}.{language}.pdf"
+        path.write_bytes(document)
+        typer.echo(f"Wrote {path}")
 
 
 async def _system(
@@ -68,9 +103,9 @@ def system_report(
     """Everything recorded about one system: declaration, indicative classification with
     its obligations and dates, review, findings and traffic of the last 30 days.
     """
-    locales, formats = output_choices(locale, output_format, to_directory=output_dir is not None)
+    locales, formats = _choices(locale, output_format, output_dir)
     rendered = run(_system(settings_from(ctx), tenant, key, locales, formats))
-    write_outputs(rendered, output_dir, f"report-system-{key}")
+    _write(rendered, output_format, output_dir, f"report-system-{key}")
 
 
 async def _audit(
@@ -122,10 +157,10 @@ def audit_report(
 
     The chain is always recomputed from its first entry, whatever the period.
     """
-    locales, formats = output_choices(locale, output_format, to_directory=output_dir is not None)
+    locales, formats = _choices(locale, output_format, output_dir)
     end = utcnow() if until is None else until.replace(tzinfo=UTC) + timedelta(days=1)
     start = end - timedelta(days=days) if since is None else since.replace(tzinfo=UTC)
     if start >= end:
         raise fail(ArbiterError("the period is empty: --since is after --until"))
     rendered = run(_audit(settings_from(ctx), tenant, start, end, locales, formats))
-    write_outputs(rendered, output_dir, "report-audit")
+    _write(rendered, output_format, output_dir, "report-audit")

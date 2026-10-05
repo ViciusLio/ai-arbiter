@@ -51,6 +51,13 @@ jobs:
           python-version: ${{ matrix.python }}
           enable-cache: true
           cache-suffix: test-${{ matrix.os }}-${{ matrix.python }}
+      # What rendering a report as PDF needs from the system (ADR-0057). Without it,
+      # as on Windows here, the tests that render a PDF are skipped.
+      - name: Install the Pango library
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0
       - run: uv sync --locked --all-extras --group pii-models
       # The coverage threshold is set in pyproject.toml.
       - run: uv run --group pii-models pytest --cov --cov-report=term --cov-report=xml

@@ -53,7 +53,7 @@ supersedes the old one.
 | [0041](0041-legal-review-before-0-1-0.md) | `0.1.0` only after a legal review of the AI Act rule pack | Accepted | 4b |
 | [0042](0042-discovered-systems-by-project.md) | A system discovered from traffic is identified by its project; a candidate is a proposal | Accepted | 4b |
 | [0043](0043-simulation-scenarios-as-data.md) | Simulation scenarios are YAML files loaded into a tenant of their own, checked by tests | Accepted | 4b |
-| [0044](0044-reports-without-pdf.md) | Reports in Markdown and HTML; PDF by printing the HTML | Accepted | 4b |
+| [0044](0044-reports-without-pdf.md) | Reports in Markdown and HTML; PDF by printing the HTML | Superseded by ADR-0057 | 4b |
 | [0045](0045-smtp-checked-against-the-compose-mail-catcher.md) | The SMTP notifier is checked against Mailpit in the Compose check | Accepted | 4b |
 | [0046](0046-mcp-proxy-speaks-the-modern-revision.md) | The MCP proxy speaks revision `2026-07-28` only | Accepted | 5 |
 | [0047](0047-mcp-proxy-as-a-gateway-module.md) | The MCP proxy is a module of the gateway application, switched on by a role | Accepted | 5 |
@@ -66,6 +66,7 @@ supersedes the old one.
 | [0054](0054-no-cache-of-key-lookups.md) | API keys and roles are read on every request, not cached | Accepted | 5 |
 | [0055](0055-semantic-pii-detection-as-an-optional-plugin.md) | Personal data written in words is detected by an optional local plugin (Presidio), with measured precision and recall | Accepted | 5 |
 | [0056](0056-a-demonstration-for-an-it-consulting-firm.md) | A demonstration built on an IT consulting firm, with its internal regulation as a policy pack, and a script for a live session | Accepted | 5 |
+| [0057](0057-pdf-reports-as-an-optional-extra.md) | Reports as PDF through an optional extra on WeasyPrint, rendered from the HTML report without fetching anything | Accepted | 5 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".
