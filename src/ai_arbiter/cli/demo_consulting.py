@@ -54,12 +54,40 @@ TEAM = "nordwind"
 BANK, RETAIL, STAFF, HR, LAB = "client-bank", "client-retail", "staff", "hr", "lab"
 
 
+# How each step ended for the person in it, in the words of the page of the run.
+VERDICTS = {
+    "approved_engine": "masked",
+    "other_engine": "blocked",
+    "second_tool": "both",
+    "credential": "blocked",
+    "high_risk": "review",
+    "high_risk_repeated": "allowed",
+    "prohibited": "blocked",
+    "budget": "blocked",
+    "tools": "both",
+    "shadow": "noted",
+}
+
+
 @dataclass(frozen=True)
 class DemoStep:
     key: str
     title: str
     ok: bool
     detail: str
+    # For the steps that are a scene of the day: when, who (a key of the cast), what the
+    # person does, how it ended and the rule that decided. Empty for the others.
+    when: str = ""
+    who: str = ""
+    story: str = ""
+    # What Arbiter did, told to someone who does not know its rules by name.
+    arbiter: str = ""
+    verdict: str = ""
+    rule: str = ""
+
+    @property
+    def is_scene(self) -> bool:
+        return bool(self.story)
 
 
 @dataclass(frozen=True)
@@ -141,12 +169,20 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
     steps: list[DemoStep] = []
 
     def step(key: str, ok: bool, **values: object) -> None:
+        scene = "high_risk" if key == "high_risk_repeated" else key
+        told = t.has(f"demo.story.{scene}.text")
         steps.append(
             DemoStep(
                 key,
                 t.text(f"demo.consulting.{key}.title"),
                 ok,
                 t.text(f"demo.consulting.{key}", **values),
+                when=t.text(f"demo.story.{scene}.when") if told else "",
+                who=t.text(f"demo.story.{scene}.who") if told else "",
+                story=t.text(f"demo.story.{scene}.text") if told else "",
+                arbiter=t.text(f"demo.story.{key}.arbiter", **values) if told else "",
+                verdict=VERDICTS.get(key, ""),
+                rule=str(values.get("rule", "")) if told else "",
             )
         )
 

@@ -144,6 +144,9 @@ def test_the_consulting_case_follows_a_firm_that_approved_one_family_of_models(
     assert first.startswith("<!DOCTYPE html>")
     assert '<html lang="en">' in first
     assert "13 of 13 steps went as expected" in first
+    # It tells the day as a story: who, when, what they did and what Arbiter did.
+    for told in ("A day at Nordwind", "Giulia Conti", "09:40", "Marco Rinaldi", "Stopped"):
+        assert told in first
     assert "http://" not in first
     assert "https://" not in first
     for expected in ("Kiro", "GitHub Copilot", "gpt-4o", "gemini-2.5-pro", "not approved"):
@@ -153,6 +156,8 @@ def test_the_consulting_case_follows_a_firm_that_approved_one_family_of_models(
     assert "3 went through" in first
     assert '<html lang="it">' in second
     assert "13 passi su 13 sono andati come previsto" in second
+    assert "Una giornata alla Nordwind" in second
+    assert "Fermata" in second
     assert "Nessuno strumento dichiarato" in second
     # No request text reaches the page: it holds what the gateway recorded, and no more.
     assert "anna.bianchi" not in first

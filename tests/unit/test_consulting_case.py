@@ -40,7 +40,18 @@ def test_the_page_of_a_run_escapes_what_it_shows_and_loads_nothing() -> None:
 
     run = DemoRun(
         steps=(
-            DemoStep("inventory", "A <b>title</b>", True, "</script><script>alert(1)</script>"),
+            DemoStep("inventory", "A <b>title</b>", True, "Counted"),
+            DemoStep(
+                "other_engine",
+                "Scene <b>title</b>",
+                True,
+                "</script><script>alert(1)</script>",
+                when="09:40",
+                who="giulia",
+                story="She pastes <img src=x onerror=alert(2)>",
+                verdict="blocked",
+                rule="POL-MODEL-NOT-ALLOWED",
+            ),
             DemoStep("audit", "Second", False, "It differs"),
         ),
         pack_version="1+test",
@@ -64,11 +75,16 @@ def test_the_page_of_a_run_escapes_what_it_shows_and_loads_nothing() -> None:
 
     page = render_demo_report(run, Translator("en"))
 
-    assert "1 of 2 steps went as expected" in page
+    assert "2 of 3 steps went as expected" in page
     assert "Kiro &lt;i&gt;IDE&lt;/i&gt;" in page
     assert "A finding &amp; more" in page
     assert "<script>alert(1)</script>" not in page
-    assert "\\u003c/script\\u003e" in page
+    assert "<img src=x" not in page
+    assert "Scene &lt;b&gt;title&lt;/b&gt;" in page
+    assert "09:40" in page
+    assert "Giulia Conti" in page
+    assert "Stopped" in page
+    assert "POL-MODEL-NOT-ALLOWED" in page
     assert "2 went through" in page
     assert "3 refused" in page
     assert "Confirmed by a person" in page

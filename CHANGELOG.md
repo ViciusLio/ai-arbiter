@@ -104,8 +104,10 @@ Entries link to the decision record that motivated them, where one exists.
     of its own, that approved one family of models. Its internal regulation is a
     policy pack on top of the default one; its declared tools are allowed on the
     approved model and refused on another engine. `--report FILE` writes the run as a
-    self-contained page: the steps, the tools with their tiers, tool by model with
-    what went through and what was refused, the findings and the audit chain.
+    self-contained page that tells it as the story of one day: the rule, the people,
+    one scene on each screen with what the person does and what Arbiter does, then
+    tool by model with what went through and what was refused, the findings and
+    the audit chain.
     `docs/demo.md` is the script of a live session
     ([ADR-0056](docs/adr/0056-a-demonstration-for-an-it-consulting-firm.md),
     [ADR-0060](docs/adr/0060-the-consulting-case-around-one-approved-model.md)).

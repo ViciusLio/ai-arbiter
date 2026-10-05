@@ -78,20 +78,24 @@ already reviewed, and the step says so. A fresh directory shows the refusal agai
 ## The page
 
 `--report FILE` writes the run as one self-contained HTML file: nothing is loaded from
-anywhere, so it can be opened from disk, sent, or shown without a connection. It is a
-deck read from left to right:
+anywhere, so it can be opened from disk, sent, or shown without a connection. It tells
+the run as the story of one day at the firm, a deck read from left to right:
 
-1. the outcome of the run;
-2. the rule of the firm and the approved models;
-3. the declared tools with their indicative tiers;
-4. the steps, to click through or to play;
-5. tool by engine: who asked which model, how many requests went through and how many
-   were refused;
-6. the findings, and the use nobody declared;
-7. the audit chain, and what the demonstration does not prove.
+1. the premise, and the outcome of the run;
+2. the rule of the firm in one sentence, and the approved models;
+3. the people of the story: who they are and what they work with;
+4. the declared tools with their indicative tiers;
+5. one scene on each screen, with its time of day and its person: what the person does,
+   what Arbiter does about it in plain words, and the rule that decided;
+6. the day in one table: each tool, each engine it asked for, what went through and
+   what was stopped;
+7. what the head of the AI committee finds at the end of the day: the findings that
+   matter, and a count of the smaller notes;
+8. what stays on record, and what the story does not prove.
 
-Every figure comes from the run and from what the tenant holds. The page contains no
-text of any request. It prints as a document, one section after the other.
+The people are invented, like the firm. Every outcome and every figure comes from the
+run and from what the tenant holds: the story around them is fixed text. The page
+contains no text of any request. It prints as a document, one section after the other.
 
 ## Live, step by step
 

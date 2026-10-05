@@ -1,13 +1,10 @@
-"""The run of a demonstration as one page to show: a deck of what happened (ADR-0060).
+"""The run of a demonstration as one page to show: the story of a day, as a deck (ADR-0060).
 
 The page is self-contained: no script, style or font is loaded from anywhere. Every
 figure on it comes from the run it is given.
 """
 
-import json
 from typing import Any
-
-from markupsafe import Markup
 
 from ai_arbiter.cli.demo_consulting import DemoRun, ToolUse
 from ai_arbiter.compliance.digest.render import environment
@@ -16,14 +13,21 @@ from ai_arbiter.core.i18n import Translator
 _TEMPLATE = "demo-report.html.j2"
 _TIER_TONE = {"prohibited": "no", "high_risk": "warn", "transparency": "info", "minimal": "ok"}
 _SEVERITY_TONE = {"critical": "no", "high": "no", "medium": "warn", "low": "info", "info": "info"}
+_VERDICT_TONE = {
+    "allowed": "ok",
+    "masked": "ok",
+    "blocked": "no",
+    "both": "warn",
+    "review": "warn",
+    "noted": "info",
+}
+# The people of the story, in the order the page introduces them.
+_CAST = ("elena", "giulia", "marco", "sara", "luca", "lab", "vendor")
 
 
-def _script(value: Any) -> Markup:
-    """A value as a JavaScript literal that is safe inside a script element."""
-    text = json.dumps(value, ensure_ascii=False)
-    for unsafe, safe in (("<", "\\u003c"), (">", "\\u003e"), ("&", "\\u0026")):
-        text = text.replace(unsafe, safe)
-    return Markup(text)  # noqa: S704
+def _initials(name: str) -> str:
+    words = [word for word in name.split() if word[:1].isalpha()]
+    return "".join(word[0] for word in words[-2:]).upper() or "?"
 
 
 def _matrix(
@@ -61,6 +65,7 @@ def render_demo_report(run: DemoRun, translator: Translator) -> str:
         )
     findings = [
         {
+            "level": str(item.get("severity", "info")),
             "severity": t("severity." + str(item.get("severity", "info"))),
             "tone": _SEVERITY_TONE.get(str(item.get("severity")), "info"),
             "system": item.get("system", ""),
@@ -69,13 +74,27 @@ def render_demo_report(run: DemoRun, translator: Translator) -> str:
         for item in run.findings
     ]
     models, matrix = _matrix(run.usage)
-    labels = {
-        "expected": t("demo.as_expected"),
-        "differs": t("demo.differs"),
-        "play": t("demo.report.steps.play"),
-        "pause": t("demo.report.steps.pause"),
-        "step": t("demo.report.steps.step"),
-    }
+    cast = [
+        {
+            "key": key,
+            "name": t(f"demo.story.cast.{key}"),
+            "role": t(f"demo.story.cast.{key}.role"),
+            "initials": _initials(t(f"demo.story.cast.{key}")),
+        }
+        for key in _CAST
+    ]
+    people = {person["key"]: person for person in cast}
+    scenes = [
+        {
+            "step": step,
+            "person": people.get(step.who, {"name": "", "role": "", "initials": "?"}),
+            "verdict": t("demo.story.verdict." + step.verdict) if step.verdict else "",
+            "tone": _VERDICT_TONE.get(step.verdict, "info"),
+        }
+        for step in run.steps
+        if step.is_scene
+    ]
+    major = [item for item in findings if item["level"] in ("critical", "high", "medium")]
     return (
         environment()
         .get_template(_TEMPLATE)
@@ -85,12 +104,11 @@ def render_demo_report(run: DemoRun, translator: Translator) -> str:
             locale=translator.locale,
             passed=sum(1 for step in run.steps if step.ok),
             systems=systems,
-            findings=findings,
+            findings=major,
+            minor_findings=len(findings) - len(major),
             models=models,
             matrix=matrix,
-            steps_json=_script(
-                [{"title": step.title, "detail": step.detail, "ok": step.ok} for step in run.steps]
-            ),
-            labels_json=_script(labels),
+            cast=cast,
+            scenes=scenes,
         )
     )
