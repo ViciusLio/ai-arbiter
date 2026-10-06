@@ -15,8 +15,9 @@ Entries link to the decision record that motivated them, where one exists.
 
 - The install instructions told people to run `pip install --pre`, which also takes
   pre-releases of every dependency: with `httpx` 1.0.dev6 the gateway, the proxies and
-  the demonstrations failed. The instructions now name the version, and `httpx` is
-  bound below 1. Found by installing `0.1.0a1` from PyPI in a clean environment; the
+  the demonstrations failed. The instructions now say
+  `pip install "ai-arbiter[...]>=0.1.0a1"`, which takes pre-releases of Arbiter only,
+  and `httpx` is bound below 1. Found by installing `0.1.0a1` from PyPI in a clean environment; the
   code of `0.1.0a1` itself works when installed as `pip install "ai-arbiter==0.1.0a1"`.
 - The message of a missing extra no longer says the package is not published.
 
