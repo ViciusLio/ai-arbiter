@@ -95,7 +95,7 @@ agent, the remaining scanner rules. Only when the owner asks.
 
 Not verified: the legal correctness of the rule pack; the quoted articles on EUR-Lex
 itself; the `azure_openai` adapter against a real endpoint; hosted OpenAI-compatible
-services; the release workflow. The README table "Release improvement tracking" lists
+services; the release workflow. The table "Improvements" of `docs/status.md` lists
 every open improvement.
 
 ### Step 5: Phase 5 (A2A and MCP, v0.2)
@@ -270,8 +270,8 @@ migrations differ.
 - At the end of each phase: phase summary in `docs/phases/`, ADR index and open questions,
   `CHANGELOG.md`, and this file's "Resume here" section.
 - When a phase is nearly done, list for the owner what is good and what is weak about
-  where it stands and the possible improvements, and record them in the "Release
-  improvement tracking" table of `README.md`. Update the status of earlier rows.
+  where it stands and the possible improvements, and record them under "Release
+  improvement tracking" in `docs/status.md`. Update the status of earlier rows.
 
 ### Session rules (set by the owner on 2026-10-02)
 
@@ -287,13 +287,19 @@ migrations differ.
 - Never use the em-dash character (U+2014), anywhere: code, comments, documentation,
   commit messages, generated outputs and conversation. Use a colon, a comma, brackets or
   two sentences. `scripts/check.sh` and CI fail when a tracked file contains one.
-- Every commit and push brings the whole `README.md` up to date, not only one section:
-  the status at the top, "Where the project is" (phases, the steps in progress, the
-  date), the capability tables, the commands, the limits, the roadmap and the tracking
-  tables. Read it through before each commit and fix what the change made stale. Commit
-  and push them together (asked again by the owner on 2026-10-02).
+- Every commit and push brings the `README.md` and the pages it points to up to date,
+  not only one section. Since 2026-10-06 the README is short and modular, as the owner
+  asked for the first release: the status, the tables of what is inside, the roadmap
+  summary and the links. What it used to hold lives in `docs/status.md` ("Where the
+  project is", the phases, the roadmap, "Where each phase stands" and the table
+  "Improvements"), `docs/scope-and-limits.md` (limits, what was and was not verified),
+  `docs/questions.md` (objections and answers) and `docs/getting-started.md` (install,
+  first steps, configuration, development). Read them through before each commit and
+  fix what the change made stale; commit and push them together. The README is also
+  the page of the project on PyPI: its links are absolute, and it must stay true for
+  someone who never opens the repository.
 - When the owner asks for improvements and optimisations, make the ones that need no
-  decision and declare each in the README table "Release improvement tracking", with
+  decision and declare each in the table "Improvements" of `docs/status.md`, with
   what was measured or verified. Bring the ones that need a decision as option tables.
   When a weakness recorded for an earlier phase stops being true, say so in the column
   "What changed since" of the table "Where each phase stands"; the first two columns of

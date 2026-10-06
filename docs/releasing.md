@@ -8,6 +8,21 @@ Publishing is always triggered by the project owner (ADR-0005). The first releas
 `0.1.0a1` (ADR-0032); nothing has been published yet. Nothing in CI publishes
 on its own.
 
+## Checked before the first release
+
+On 2026-10-06, on the code of `main`:
+
+| Check | Result |
+|---|---|
+| The name `ai-arbiter` on PyPI | Free: `https://pypi.org/pypi/ai-arbiter/json` answers 404 |
+| `uv build` | A wheel and a source distribution of `0.1.0a1` |
+| The description PyPI will show | `twine check` passes; the README uses absolute links |
+| The wheel alone, in a clean environment | `arbiter --version`, `init`, `systems apply`, `demo run --all` |
+| The wheel with the extras `gateway`, `mcp`, `a2a` | Both guided demonstrations run from the installed package |
+| A missing extra | The command names the extra to install |
+
+Not checked: the release workflow itself, which has never run, and the upload.
+
 ## One-time setup
 
 Done by the project owner, before the first release.
@@ -63,6 +78,19 @@ published after the date of the pack. The script ends by saying so.
 5. The workflow checks that the tag matches the version, builds the distributions,
    installs the wheel in a clean environment and runs it, then waits for approval of the
    `pypi` environment and publishes.
+
+## After the first release
+
+1. Open <https://pypi.org/project/ai-arbiter/> and read the page as a stranger would.
+2. In a clean environment: `pip install --pre "ai-arbiter[gateway,mcp]"`, then
+   `arbiter init` and `arbiter demo tour --case consulting`.
+3. Only then change the texts that say nothing is published: the status box and "Status
+   and roadmap" in `README.md`, "Install" in `docs/getting-started.md`, and the message of
+   a missing extra in `src/ai_arbiter/core/errors.py`.
+4. On GitHub, create a release from the tag with the entries of the changelog.
+
+A file uploaded to PyPI can be yanked but never replaced: a mistake is fixed by a new
+version, `0.1.0a2`.
 
 ## About the first release
 

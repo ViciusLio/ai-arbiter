@@ -5,17 +5,29 @@ build-backend = "hatchling.build"
 [project]
 name = "ai-arbiter"
 version = "0.1.0a1"
-description = "Arbiter: an AI governance gateway and EU AI Act compliance toolkit"
+description = "AI governance gateway and EU AI Act compliance toolkit: links the AI systems you declare with what their traffic shows"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "ViciusLio" }]
-keywords = ["ai-governance", "ai-act", "compliance", "llm-gateway", "finops", "audit"]
+keywords = [
+    "ai-governance",
+    "ai-act",
+    "eu-ai-act",
+    "compliance",
+    "llm-gateway",
+    "mcp",
+    "a2a",
+    "finops",
+    "audit",
+    "pii-redaction",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
+    "Intended Audience :: Legal Industry",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
@@ -40,6 +52,7 @@ dependencies = [
 ]
 
 [project.urls]
+Homepage = "https://viciuslio.github.io/ai-arbiter/"
 Repository = "https://github.com/ViciusLio/ai-arbiter"
 Documentation = "https://github.com/ViciusLio/ai-arbiter/tree/main/docs"
 Changelog = "https://github.com/ViciusLio/ai-arbiter/blob/main/CHANGELOG.md"

@@ -9,6 +9,13 @@ Entries link to the decision record that motivated them, where one exists.
 
 ## [Unreleased]
 
+### Changed
+
+- The README is short and modular: the problem, what Arbiter does and does not, a
+  two-minute trial and links. Status and tracking moved to `docs/status.md`; new pages
+  `docs/scope-and-limits.md`, `docs/questions.md` and `docs/getting-started.md`.
+  `SECURITY.md` and `CONTRIBUTING.md` added.
+
 ### Added
 
 - **Deferrable items of v0.1** (Phase 4b,
