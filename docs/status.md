@@ -41,9 +41,9 @@ Phase 5, step by step:
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
-EUR-Lex (ADR-0034). No release has been published.
+EUR-Lex (ADR-0034). The first pre-release, `0.1.0a1`, was published on PyPI on 2026-10-06.
 
-Nothing is published yet. The name of this project on PyPI will be **`ai-arbiter`**. It
+The name of this project on PyPI is **`ai-arbiter`**. It
 is not related to `arbiter-ai` or `arbiter`, which are different projects by other
 authors and are already on PyPI.
 
@@ -51,8 +51,8 @@ authors and are already on PyPI.
 
 | Version | Content |
 |---|---|
-| 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI), with importers, discovery, reports, e-mail delivery and scenarios: **built, not released**. `0.1.0` waits for a legal review of the rule pack |
-| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo, and a demonstration told as the story of a day: **built, not released**. The proxies were tested against stand-ins and, for MCP, the official SDK; not against real servers or agents on a network |
+| 0.1 | Gateway MVP (OpenAI-compatible proxy, FinOps metering, policy, audit log) and compliance MVP (inventory, AI Act classifier, findings, daily digest, CLI), with importers, discovery, reports, e-mail delivery and scenarios: **built, on PyPI as a pre-release**. `0.1.0` waits for a legal review of the rule pack |
+| 0.2 | A2A and MCP: agent registry with verified cards, governed MCP catalogue and proxy, multi-agent demo, and a demonstration told as the story of a day: **built, part of the same pre-release**. The proxies were tested against stand-ins and, for MCP, the official SDK; not against real servers or agents on a network |
 | 0.3 | Azure: Bicep, Container Apps, Entra ID, observability, hardening |
 | 1.0 | Documentation, quickstart, demo scenarios |
 
@@ -88,7 +88,7 @@ written. The last column says what has changed since, as of 2026-10-05.
 | I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Done: both documents list where the code differs |
 | I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Done in Phase 5 with another choice than Presidio alone: precision and recall are published in `docs/pii-evaluation.md`, and Presidio is offered as the optional plugin `presidio`, added to the built-in detectors (ADR-0055) |
 | I-05 | 1 | Anchor the audit chain head outside the database, then sign checkpoints | A full rewrite of the chain is otherwise undetectable | 0.1.x, then 0.3 | Open |
-| I-06 | 2 | Publish the first release, `0.1.0a1`, and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | When the owner decides | Open: `0.0.1` is skipped (ADR-0032) |
+| I-06 | 2 | Publish the first release, `0.1.0a1`, and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | When the owner decides | Done on 2026-10-06: `0.1.0a1` was published through the release workflow with Trusted Publishing, which passed at its first run. Installed from PyPI in a clean environment, it ran both demonstrations when its version was named. Found: `pip install --pre`, which the README told people to use, also takes pre-releases of the dependencies, and `httpx` 1.0.dev6 breaks the proxies. Fixed for `0.1.0a2`: the instructions name the version, and `httpx` is bound below 1 |
 | I-07 | 2 | Set the PostgreSQL test URL in the CI job that tests the base install | That job missed a defect the dev container found | Phase 3 | Done |
 | I-08 | 2 | Review the CodeQL alert list | The workflow passes, the alerts were never read | Phase 3 | Open |
 | I-09 | 2 | Give each CI job its own uv cache key; pin the runner image | Jobs race to save one cache; `ubuntu-latest` changes on 19 October 2026 | Phase 3 | Done: `ubuntu-24.04`, one cache per job |
@@ -133,3 +133,4 @@ written. The last column says what has changed since, as of 2026-10-05.
 | I-48 | 5 | Network and SASE: read the logs of a secure web gateway or a CASB to find AI use that does not pass through Arbiter, and export the approved and the refused AI destinations for the network to enforce | Arbiter sees only what goes through its gateway or is imported; a firm with a SASE already has the other half of the picture | Wish of the owner (2026-10-05); after 0.3 | Prepared and decided on 2026-10-05 (ADR-0058): inbound only, one generic source with mappings for the vendors as data, the person dropped at import, a file given to `arbiter ingest`; to be built after 0.3. The preparation holds what the logs of four vendors contain, read on their documentation. Nothing was run against a real log, and no code exists |
 | I-49 | 5 | Report on an organisation's internal rules in the scan, the digest and the reports, apart from the AI Act | The internal regulation of the consulting case is enforced on requests and audited, but gives no findings (ADR-0056, option R2) | When asked for | Open |
 | I-50 | 5 | Connect a real coding tool to the gateway and record which products can be pointed at it, and how | The consulting demonstration makes the requests of each tool itself; no real product was connected, and whether a product accepts another endpoint was not checked | Before the demonstration is shown as more than an example | Partly done on 2026-10-06: the documentation of two products was read (`docs/scope-and-limits.md`): one accepts an OpenAI-compatible endpoint of the user's choice, the other documents none. The demonstration now uses generic tools (ADR-0061). Open: connect a real tool, which also needs tool calling through the gateway to be tested |
+| I-51 | 5 | Test the published package in CI as a user installs it: from the built wheel, in a clean environment, with its extras, running a demonstration | The release workflow checks `--version` and `init` only; the broken install command was found by hand after publishing | 0.1.x | Done for the release workflow on 2026-10-06: before publishing it installs the wheel with the extras `gateway`, `mcp` and `a2a` in a clean environment and runs both demonstrations. Open: the same in CI at every push |

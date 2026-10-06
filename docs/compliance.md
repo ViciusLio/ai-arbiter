@@ -10,15 +10,15 @@ command line, on SQLite, with or without the gateway.
 > it is a proposal until a named person confirms or overrides it. An output with no
 > findings says "no findings", never that a system satisfies the Regulation.
 
-Status: `0.1.0a1`, not published. The rule pack was written from the Official Journal
+Status: alpha, on PyPI as a pre-release. The rule pack was written from the Official Journal
 texts retrieved from the Publications Office of the EU; **its comparison with EUR-Lex by
 the project owner is still pending**, and every output says so until it is done
 (ADR-0034).
 
 ## Quickstart
 
-Nothing is published on PyPI yet: from a clone, run `uv sync --all-extras` once and put
-`uv run` in front of each command.
+From PyPI: `pip install "ai-arbiter==0.1.0a2"`. From a clone, run `uv sync --all-extras`
+once and put `uv run` in front of each command.
 
 ```bash
 arbiter init

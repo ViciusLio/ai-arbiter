@@ -37,6 +37,17 @@ jobs:
           cd "$(mktemp -d)"
           /tmp/release-check/bin/arbiter --version
           /tmp/release-check/bin/arbiter init
+      # As a user installs it: the wheel with its extras, in a clean environment, running
+      # the demonstrations. `0.1.0a1` was published without this, and its install
+      # instructions were found broken by hand afterwards.
+      - name: The wheel with its extras runs the demonstrations
+        run: |
+          uv venv /tmp/release-extras
+          uv pip install --python /tmp/release-extras/bin/python "$(ls dist/*.whl)[gateway,mcp,a2a]"
+          cd "$(mktemp -d)"
+          /tmp/release-extras/bin/arbiter init
+          /tmp/release-extras/bin/arbiter demo tour
+          /tmp/release-extras/bin/arbiter demo tour --case consulting
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist

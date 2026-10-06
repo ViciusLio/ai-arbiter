@@ -44,7 +44,7 @@ TEXTS: list[tuple[str, str]] = [
         "Arbiter links two things that usually stay apart: what an organisation <strong>declares</strong> about its artificial intelligence systems and what their <strong>real traffic</strong> shows. Its reference is the European AI Act.",
     ),
     ("Versione alpha", "Alpha version"),
-    ("Non ancora pubblicato</span>", "Not published yet</span>"),
+    ("Prima versione di prova su PyPI</span>", "First pre-release on PyPI</span>"),
     ("Licenza Apache 2.0", "Apache 2.0 licence"),
     (
         "Vai avanti con <kbd>→</kbd>, torna indietro con <kbd>←</kbd>, oppure usa i pulsanti ai lati. Molti riquadri si possono toccare.",
@@ -276,10 +276,12 @@ TEXTS: list[tuple[str, str]] = [
         "Una manomissione parziale si vede. Chi può riscrivere tutto il database può riscrivere tutta la catena: serve una copia esterna dell'ultima impronta.",
         "A partial tampering shows. Whoever can rewrite the whole database can rewrite the whole chain: a copy of the last fingerprint has to be kept elsewhere.",
     ),
-    ("Non ancora pubblicato</h3>", "Not published yet</h3>"),
+    ("Versione di prova</h3>", "A pre-release</h3>"),
     (
-        "Nessuna versione è stata rilasciata. Diverse parti sono state provate solo con controparti simulate.",
-        "No version has been released. Several parts were tested only against simulated counterparts.",
+        "Su PyPI c'è una prima versione alpha. Nessuno la usa in produzione, e diverse parti "
+        "sono state provate solo con controparti simulate.",
+        "A first alpha is on PyPI. Nobody runs it in production, and several parts were "
+        "tested only against simulated counterparts.",
     ),
     ("A che punto siamo</div>", "Where we are</div>"),
     ("Il percorso, fase per fase", "The road, phase by phase"),

@@ -15,16 +15,19 @@ and compliance first (ADR-0054: no cache of key lookups). The version is `0.1.0a
 published (ADR-0032). `0.1.0` waits for a legal review of the AI Act rule pack
 (ADR-0041).
 
-**Release in preparation, 2026-10-06.** The owner decided to publish `0.1.0a1` now as an
-alpha (D1: 1) and left the names in the demonstration to the implementer (ADR-0061:
-generic tools). The README was made short and modular; `docs/status.md`,
-`docs/scope-and-limits.md`, `docs/questions.md`, `docs/getting-started.md`,
-`SECURITY.md` and `CONTRIBUTING.md` are new. The changelog has the section `0.1.0a1`.
-The owner said the PyPI account with its pending trusted publisher and the GitHub
-environment `pypi` are set up; the environment was seen through the API, with required
-reviewers, and the publisher on PyPI cannot be seen from here. NEVER create or push the
-tag `v0.1.0a1` without the owner's explicit word in that session: a file on PyPI cannot
-be replaced. Steps and what to do afterwards: `docs/releasing.md`.
+**`0.1.0a1` is on PyPI since 2026-10-06** (<https://pypi.org/project/ai-arbiter/>): the
+owner decided to publish an alpha now (D1: 1), set up the trusted publisher and the
+GitHub environment `pypi`, said "via" and approved the deployment; the release workflow
+passed at its first run. Installed from PyPI by naming its version, it ran both
+demonstrations. Found afterwards: the README told people to run `pip install --pre`,
+which takes pre-releases of every dependency, and `httpx` 1.0.dev6 breaks the proxies.
+`0.1.0a2` is prepared on `main` with the fix (instructions name the version, `httpx`
+below 1) and waits for the owner's word to be tagged. NEVER create or push a release tag
+without the owner's explicit word in that session: a file on PyPI cannot be replaced.
+Before the release the README was made short and modular; `docs/status.md`,
+`docs/scope-and-limits.md`, `docs/questions.md`, `docs/getting-started.md`, `SECURITY.md`
+and `CONTRIBUTING.md` are new, and the demonstration uses generic tools (ADR-0061).
+Steps of a release, and what to change after one: `docs/releasing.md`.
 
 **Session closed by the owner on 2026-10-05.** After Phase 5 the owner asked for the
 open improvements and for a demonstration; row 8 of the table below lists what was done
@@ -125,8 +128,8 @@ facts read on the official sources are in `docs/phases/phase-5-preparation.md`.
 | Author | ViciusLio |
 
 Unrelated to `arbiter-ai` on PyPI. Always write the full distribution name in install
-instructions. Version in `pyproject.toml`: `0.1.0a1`, the first release (ADR-0032);
-nothing is published yet and the owner publishes (`docs/releasing.md`).
+instructions. The first release was `0.1.0a1` (ADR-0032); the owner publishes
+(`docs/releasing.md`).
 
 ## Git
 
@@ -273,9 +276,10 @@ migrations differ.
 - No Azure resources before Phase 6 (ADR-0008).
 - Say what was verified and what was not. Never report something as tested if it only
   exists.
-- Never write that the project is published, released or available on PyPI until the
-  owner has published it. Install instructions with `pip` say "once published" and give
-  the way from a clone.
+- Only pre-releases are on PyPI (`0.1.0a1` since 2026-10-06). Never write that a version
+  is published before the owner has published it. Install instructions name the
+  version, `pip install "ai-arbiter[...]==VERSION"`, never `--pre`, and give the way
+  from a clone.
 - Publishing to PyPI or any other outward-facing action is prepared, then triggered by
   the owner.
 - At the end of each phase: phase summary in `docs/phases/`, ADR index and open questions,

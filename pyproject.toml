@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ai-arbiter"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "AI governance gateway and EU AI Act compliance toolkit: links the AI systems you declare with what their traffic shows"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -62,7 +62,8 @@ Issues = "https://github.com/ViciusLio/ai-arbiter/issues"
 gateway = [
     "asyncpg>=0.30",
     "fastapi>=0.115",
-    "httpx>=0.28",
+    # Below 1: the pre-releases of 1.0 are another library, without what the proxies use.
+    "httpx>=0.28,<1",
     "uvicorn>=0.32",
 ]
 otel = [

@@ -10,8 +10,10 @@ links what an organisation *declares* about its AI systems with what their traff
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![Licence Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-green)
 ![Status alpha](https://img.shields.io/badge/status-alpha-orange)
+[![PyPI](https://img.shields.io/pypi/v/ai-arbiter?include_prereleases&label=PyPI)](https://pypi.org/project/ai-arbiter/)
 
-> **Alpha.** Not released yet, never run in production, and not legal advice: every
+> **Alpha.** A first pre-release is on PyPI. It has never run in production, and it is
+> not legal advice: every
 > classification is indicative until a person reviews it, and the AI Act rule pack has
 > not been reviewed by a person with legal training. Read
 > [scope and limits](https://github.com/ViciusLio/ai-arbiter/blob/main/docs/scope-and-limits.md) first.
@@ -65,24 +67,22 @@ More, and what was and was not verified: [scope and limits](https://github.com/V
 
 ## Try it in two minutes
 
-No Docker, no cloud account, no real model: a mock answers in its place.
+No Docker, no cloud account, no real model: a mock answers in its place. Needs Python
+3.12 or newer.
 
 ```bash
-git clone https://github.com/ViciusLio/ai-arbiter && cd ai-arbiter
-uv sync --all-extras                       # needs Python 3.12+ and uv
-uv run arbiter init                        # a local workspace on SQLite
-uv run arbiter demo tour --case consulting --report out/demo.html
+pip install "ai-arbiter[gateway,mcp]==0.1.0a2"
+arbiter init                               # a local workspace on SQLite
+arbiter demo tour --case consulting --report out/demo.html
 ```
 
 The last command follows an invented firm that approved one family of models: it prints
 thirteen steps and writes the day as [a page like this one](https://viciuslio.github.io/ai-arbiter/demo.en.html).
 
-Once the first release is published, the same without a clone:
+Name the version, as above, and do not use `pip install --pre`: that flag also takes
+pre-releases of every dependency, and one of them breaks the demonstration.
 
-```bash
-pip install --pre "ai-arbiter[gateway,mcp]"   # --pre: the first release is an alpha
-arbiter init && arbiter demo tour --case consulting --report out/demo.html
-```
+From a clone instead: `uv sync --all-extras`, then put `uv run` in front of each command.
 
 Your own systems, the gateway as a service, and a live session in front of people:
 [getting started](https://github.com/ViciusLio/ai-arbiter/blob/main/docs/getting-started.md) and
@@ -127,12 +127,12 @@ The base install is the toolkit and the command line on SQLite. The rest is opti
 
 | Version | Content | State |
 |---|---|---|
-| 0.1 | Gateway, compliance toolkit, importers, discovery, reports | Built. First release: `0.1.0a1`, an alpha. `0.1.0` waits for a legal review of the rule pack |
+| 0.1 | Gateway, compliance toolkit, importers, discovery, reports | Built. On PyPI as a pre-release, `0.1.0a2`. `0.1.0` waits for a legal review of the rule pack |
 | 0.2 | Tools (MCP) and agents (A2A), the demonstrations | Built, part of the same alpha |
 | 0.3 | Deployment on Azure, observability, hardening | Not started |
 | 1.0 | Documentation and packaging for adopters | Not started |
 
-Nothing is published on PyPI yet. Phase by phase, with what each one left open and every
+Only pre-releases are on PyPI. Phase by phase, with what each one left open and every
 improvement that was noted: [status and tracking](https://github.com/ViciusLio/ai-arbiter/blob/main/docs/status.md).
 
 ## Hard questions

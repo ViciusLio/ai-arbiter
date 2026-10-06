@@ -25,7 +25,7 @@ class MissingExtraError(ArbiterError):
         self.feature = feature
         super().__init__(
             f"{feature} needs the '{extra}' extra. From a clone: uv sync --extra {extra}. "
-            f'Once ai-arbiter is published: pip install "ai-arbiter[{extra}]"'
+            f'From PyPI: pip install "ai-arbiter[{extra}]"'
         )
 
 

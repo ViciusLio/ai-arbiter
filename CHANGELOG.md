@@ -9,6 +9,17 @@ Entries link to the decision record that motivated them, where one exists.
 
 ## [Unreleased]
 
+## [0.1.0a2] - 2026-10-06
+
+### Fixed
+
+- The install instructions told people to run `pip install --pre`, which also takes
+  pre-releases of every dependency: with `httpx` 1.0.dev6 the gateway, the proxies and
+  the demonstrations failed. The instructions now name the version, and `httpx` is
+  bound below 1. Found by installing `0.1.0a1` from PyPI in a clean environment; the
+  code of `0.1.0a1` itself works when installed as `pip install "ai-arbiter==0.1.0a1"`.
+- The message of a missing extra no longer says the package is not published.
+
 ## [0.1.0a1] - 2026-10-06
 
 The first release, an alpha. It holds everything built so far: the gateway, the
@@ -370,5 +381,6 @@ verified is in [scope and limits](docs/scope-and-limits.md).
 - PostgreSQL tests ran, and failed, in an environment without the PostgreSQL driver when
   a test database URL was set, as it is in the dev container. They are now skipped there.
 
-[Unreleased]: https://github.com/ViciusLio/ai-arbiter/compare/v0.1.0a1...HEAD
+[Unreleased]: https://github.com/ViciusLio/ai-arbiter/compare/v0.1.0a2...HEAD
+[0.1.0a2]: https://github.com/ViciusLio/ai-arbiter/releases/tag/v0.1.0a2
 [0.1.0a1]: https://github.com/ViciusLio/ai-arbiter/releases/tag/v0.1.0a1

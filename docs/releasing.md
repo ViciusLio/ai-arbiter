@@ -4,9 +4,8 @@ Releases are published to PyPI by `.github/workflows/release.yml` using
 [Trusted Publishing](https://docs.pypi.org/trusted-publishers/): GitHub proves its
 identity to PyPI with a short-lived token, so no API token is stored in the repository.
 
-Publishing is always triggered by the project owner (ADR-0005). The first release is
-`0.1.0a1` (ADR-0032); nothing has been published yet. Nothing in CI publishes
-on its own.
+Publishing is always triggered by the project owner (ADR-0005). The first release was
+`0.1.0a1` (ADR-0032), on 2026-10-06. Nothing in CI publishes on its own.
 
 ## Checked before the first release
 
@@ -21,7 +20,7 @@ On 2026-10-06, on the code of `main`:
 | The wheel with the extras `gateway`, `mcp`, `a2a` | Both guided demonstrations run from the installed package |
 | A missing extra | The command names the extra to install |
 
-Not checked: the release workflow itself, which has never run, and the upload.
+The release workflow ran for the first time on 2026-10-06 and published `0.1.0a1`.
 
 ## One-time setup
 
@@ -82,24 +81,22 @@ published after the date of the pack. The script ends by saying so.
 ## After the first release
 
 1. Open <https://pypi.org/project/ai-arbiter/> and read the page as a stranger would.
-2. In a clean environment: `pip install --pre "ai-arbiter[gateway,mcp]"`, then
+2. In a clean environment: `pip install "ai-arbiter[gateway,mcp]==VERSION"`, then
    `arbiter init` and `arbiter demo tour --case consulting`.
-3. Only then change the texts that say nothing is published: the status box and "Status
-   and roadmap" in `README.md`, "Install" in `docs/getting-started.md`, and the message of
-   a missing extra in `src/ai_arbiter/core/errors.py`.
+3. Only then change the version in the install commands of `README.md`,
+   `docs/getting-started.md`, `docs/gateway.md` and `docs/compliance.md`.
 4. On GitHub, create a release from the tag with the entries of the changelog.
 
 A file uploaded to PyPI can be yanked but never replaced: a mistake is fixed by a new
 version, `0.1.0a2`.
 
-## About the first release
+## About pre-releases
 
-The first release takes the name `ai-arbiter` on PyPI. There is no separate
-name-reserving release: ADR-0032 replaced the `0.0.1` planned by ADR-0005 with
-`0.1.0a1`.
-
-- Before publishing, check that the name is still free:
-  <https://pypi.org/project/ai-arbiter/> must return "not found".
-- `0.1.0a1` is a pre-release. `pip install ai-arbiter` does not pick it: users install it
-  with `pip install --pre ai-arbiter` or `pip install ai-arbiter==0.1.0a1`.
-- The release workflow has never run. Expect to fix something the first time.
+- `pip install ai-arbiter` does not pick a pre-release. Users name the version:
+  `pip install "ai-arbiter==0.1.0a2"`.
+- Never tell users to run `pip install --pre`: it takes pre-releases of every dependency
+  too. On 2026-10-06 that installed `httpx` 1.0.dev6, another library under the same
+  name, and the proxies failed. The instructions of `0.1.0a1` had this mistake; it is
+  why `0.1.0a2` exists.
+- `0.1.0a1` took the name `ai-arbiter` on PyPI (ADR-0032 replaced the `0.0.1` planned by
+  ADR-0005).

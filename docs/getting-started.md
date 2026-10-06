@@ -8,31 +8,33 @@ place of a real model.
 
 ## Install
 
-Not on PyPI yet. Once the first release, `0.1.0a1`, is published:
+Needs Python 3.12 or newer. The releases so far are pre-releases, so name the version:
 
 ```bash
-pip install --pre ai-arbiter      # --pre until 0.1.0: the first release will be an alpha
+pip install "ai-arbiter==0.1.0a2"                 # the toolkit and the command line, on SQLite
+pip install "ai-arbiter[gateway,mcp]==0.1.0a2"    # with the HTTP gateway and the MCP proxy
 ```
+
+Do not use `pip install --pre`. That flag takes pre-releases of every dependency too,
+not only of Arbiter, and a pre-release of one of them is a different library that breaks
+the proxies.
 
 Or run it without installing:
 
 ```bash
-uvx ai-arbiter@0.1.0a1 --version
+uvx ai-arbiter@0.1.0a2 --version
 ```
 
-Until then, install from a clone: `uv sync --all-extras`, then `uv run arbiter`.
+From a clone: `uv sync --all-extras`, then `uv run arbiter`.
 
-The base install is the offline toolkit and CLI, on SQLite. The HTTP gateway is an extra
-(from a clone, `uv sync --all-extras` already includes it):
-
-```bash
-pip install --pre "ai-arbiter[gateway]"   # once published
-```
+The base install is the offline toolkit and CLI, on SQLite. The HTTP gateway, the
+proxies, the detection of names, PDF and tracing are extras: `gateway`, `mcp`, `a2a`,
+`pii`, `pdf`, `otel`, or `all`.
 
 ## First steps
 
-From a clone, put `uv run` in front of each command below: until the first release there
-is no installed `arbiter` command. No Docker and no cloud account needed. The mock
+From a clone, put `uv run` in front of each command below. No Docker and no cloud
+account needed. The mock
 provider answers in place of a real
 model.
 
