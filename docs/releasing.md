@@ -83,8 +83,10 @@ published after the date of the pack. The script ends by saying so.
 1. Open <https://pypi.org/project/ai-arbiter/> and read the page as a stranger would.
 2. In a clean environment: `pip install "ai-arbiter[gateway,mcp]==VERSION"`, then
    `arbiter init` and `arbiter demo tour --case consulting`.
-3. Only then change the version in the install commands of `README.md`,
-   `docs/getting-started.md`, `docs/gateway.md` and `docs/compliance.md`.
+3. The install commands in `README.md` and the guides say `>=0.1.0a1`, which is true for
+   every later version: they are not edited at a release. Never write the number of a
+   version that is not on PyPI yet: on 2026-10-06 the README said `==0.1.0a2` for an
+   hour before that version existed, and the command failed.
 4. On GitHub, create a release from the tag with the entries of the changelog.
 
 A file uploaded to PyPI can be yanked but never replaced: a mistake is fixed by a new
@@ -92,8 +94,8 @@ version, `0.1.0a2`.
 
 ## About pre-releases
 
-- `pip install ai-arbiter` does not pick a pre-release. Users name the version:
-  `pip install "ai-arbiter==0.1.0a2"`.
+- `pip install ai-arbiter` does not pick a pre-release. A requirement that names one
+  does, for Arbiter only: `pip install "ai-arbiter>=0.1.0a1"`.
 - Never tell users to run `pip install --pre`: it takes pre-releases of every dependency
   too. On 2026-10-06 that installed `httpx` 1.0.dev6, another library under the same
   name, and the proxies failed. The instructions of `0.1.0a1` had this mistake; it is

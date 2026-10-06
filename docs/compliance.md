@@ -17,7 +17,7 @@ the project owner is still pending**, and every output says so until it is done
 
 ## Quickstart
 
-From PyPI: `pip install "ai-arbiter==0.1.0a2"`. From a clone, run `uv sync --all-extras`
+From PyPI: `pip install "ai-arbiter>=0.1.0a1"`. From a clone, run `uv sync --all-extras`
 once and put `uv run` in front of each command.
 
 ```bash

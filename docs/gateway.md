@@ -17,7 +17,7 @@ No container, no cloud account. Needs the `gateway` extra. From a clone, run
 `uv sync --all-extras` once and put `uv run` in front of each `arbiter` command.
 
 ```bash
-pip install "ai-arbiter[gateway]==0.1.0a2"     # name the version; do not use --pre
+pip install "ai-arbiter[gateway]>=0.1.0a1"     # written like this; do not use --pre
 
 arbiter init                                   # arbiter.yaml, a SQLite database, secrets in .env
 arbiter keys create --name demo --role admin   # prints the API key once
@@ -261,7 +261,7 @@ none is kept. It adds to the built-in detectors and does not replace them.
 
 ```bash
 uv sync --all-extras --group pii-models     # from a clone: the extra and two models
-# from PyPI: pip install "ai-arbiter[pii]==0.1.0a2", then the models for your languages:
+# from PyPI: pip install "ai-arbiter[pii]>=0.1.0a1", then the models for your languages:
 #   python -m spacy download en_core_web_md
 #   python -m spacy download it_core_news_md
 ```

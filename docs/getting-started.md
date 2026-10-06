@@ -8,11 +8,12 @@ place of a real model.
 
 ## Install
 
-Needs Python 3.12 or newer. The releases so far are pre-releases, so name the version:
+Needs Python 3.12 or newer. The releases so far are pre-releases, which `pip` skips
+unless the requirement names one:
 
 ```bash
-pip install "ai-arbiter==0.1.0a2"                 # the toolkit and the command line, on SQLite
-pip install "ai-arbiter[gateway,mcp]==0.1.0a2"    # with the HTTP gateway and the MCP proxy
+pip install "ai-arbiter>=0.1.0a1"                 # the toolkit and the command line, on SQLite
+pip install "ai-arbiter[gateway,mcp]>=0.1.0a1"    # with the HTTP gateway and the MCP proxy
 ```
 
 Do not use `pip install --pre`. That flag takes pre-releases of every dependency too,
@@ -22,7 +23,7 @@ the proxies.
 Or run it without installing:
 
 ```bash
-uvx ai-arbiter@0.1.0a2 --version
+uvx --from "ai-arbiter>=0.1.0a1" arbiter --version
 ```
 
 From a clone: `uv sync --all-extras`, then `uv run arbiter`.

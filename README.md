@@ -71,7 +71,7 @@ No Docker, no cloud account, no real model: a mock answers in its place. Needs P
 3.12 or newer.
 
 ```bash
-pip install "ai-arbiter[gateway,mcp]==0.1.0a2"
+pip install "ai-arbiter[gateway,mcp]>=0.1.0a1"
 arbiter init                               # a local workspace on SQLite
 arbiter demo tour --case consulting --report out/demo.html
 ```
@@ -79,7 +79,8 @@ arbiter demo tour --case consulting --report out/demo.html
 The last command follows an invented firm that approved one family of models: it prints
 thirteen steps and writes the day as [a page like this one](https://viciuslio.github.io/ai-arbiter/demo.en.html).
 
-Name the version, as above, and do not use `pip install --pre`: that flag also takes
+Write the command as above: the releases so far are pre-releases, and `>=0.1.0a1` lets
+`pip` take them for Arbiter only. Do not use `pip install --pre`: that flag also takes
 pre-releases of every dependency, and one of them breaks the demonstration.
 
 From a clone instead: `uv sync --all-extras`, then put `uv run` in front of each command.
@@ -127,7 +128,7 @@ The base install is the toolkit and the command line on SQLite. The rest is opti
 
 | Version | Content | State |
 |---|---|---|
-| 0.1 | Gateway, compliance toolkit, importers, discovery, reports | Built. On PyPI as a pre-release, `0.1.0a2`. `0.1.0` waits for a legal review of the rule pack |
+| 0.1 | Gateway, compliance toolkit, importers, discovery, reports | Built. On PyPI as a pre-release. `0.1.0` waits for a legal review of the rule pack |
 | 0.2 | Tools (MCP) and agents (A2A), the demonstrations | Built, part of the same alpha |
 | 0.3 | Deployment on Azure, observability, hardening | Not started |
 | 1.0 | Documentation and packaging for adopters | Not started |

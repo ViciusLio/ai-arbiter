@@ -277,9 +277,10 @@ migrations differ.
 - Say what was verified and what was not. Never report something as tested if it only
   exists.
 - Only pre-releases are on PyPI (`0.1.0a1` since 2026-10-06). Never write that a version
-  is published before the owner has published it. Install instructions name the
-  version, `pip install "ai-arbiter[...]==VERSION"`, never `--pre`, and give the way
-  from a clone.
+  is published before the owner has published it, and never put the number of an
+  unpublished version in an install command (it happened on 2026-10-06, and the owner
+  caught it). Install instructions say `pip install "ai-arbiter[...]>=0.1.0a1"`, true
+  for every later version, never `--pre`, and give the way from a clone.
 - Publishing to PyPI or any other outward-facing action is prepared, then triggered by
   the owner.
 - At the end of each phase: phase summary in `docs/phases/`, ADR index and open questions,
