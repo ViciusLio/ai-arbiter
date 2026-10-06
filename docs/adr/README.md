@@ -70,6 +70,7 @@ supersedes the old one.
 | [0058](0058-network-logs-as-a-source-of-discovery.md) | Network and SASE logs as a source of discovery: inbound only, a generic source with mappings as data, no person stored, a file given to the importer; after 0.3 | Accepted | 5 |
 | [0059](0059-a-system-names-several-projects.md) | A system names several projects, and a key tied to no system belongs to the one system that names its project | Accepted | 5 |
 | [0060](0060-the-consulting-case-around-one-approved-model.md) | The consulting demonstration is built around one approved family of models and declared tools, and a run can be written as a self-contained page | Accepted | 5 |
+| [0061](0061-generic-tools-in-the-demonstration.md) | The demonstration uses generic tools; a page records what two vendors document about pointing a product at a gateway | Accepted | 5 |
 
 "Amended" means the project owner changed the proposal when accepting it; the ADR text
 marks each change with "at acceptance".

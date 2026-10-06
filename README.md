@@ -150,7 +150,8 @@ vulnerability privately: [security policy](https://github.com/ViciusLio/ai-arbit
 
 Apache-2.0: see [LICENSE](https://github.com/ViciusLio/ai-arbiter/blob/main/LICENSE). The distribution is `ai-arbiter`, the command is
 `arbiter`. It is not related to `arbiter-ai` or `arbiter` on PyPI, which are other
-projects by other authors. Product names used in the demonstration are trademarks of
-their owners, who have no relation to this project.
+projects by other authors. Model and product names that appear in
+examples and documents are trademarks of their owners, who have no relation to this
+project.
 
 *Arbiter is a support tool. It does not provide legal advice.*

@@ -38,8 +38,8 @@ _FILES = ("scenarios", "consulting")
 # The indicative tier the demonstration expects of each declared system.
 EXPECTED_TIERS = {
     "claude-assistant": "transparency",
-    "kiro-ide": "minimal",
-    "github-copilot": "minimal",
+    "coding-ide": "minimal",
+    "code-assistant": "minimal",
     "cv-screening": "high_risk",
     "meeting-mood-analyser": "prohibited",
 }
@@ -239,8 +239,8 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
                     return {"Authorization": f"Bearer {value}"}
 
                 admin = await key_for(HR, None)
-                kiro = await key_for(BANK, "kiro-ide")
-                copilot = await key_for(BANK, "github-copilot")
+                ide = await key_for(BANK, "coding-ide")
+                assistant = await key_for(BANK, "code-assistant")
                 sales = await key_for(RETAIL, "claude-assistant")
                 recruiter = await key_for(HR, "cv-screening")
                 mood = await key_for(HR, "meeting-mood-analyser")
@@ -278,9 +278,9 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
                 models=", ".join(APPROVED_MODELS),
             )
 
-            # 3. Kiro on the approved engine, with personal data of the client's customers.
+            # 3. The coding IDE on the approved engine, with a customer's personal data.
             asked = await ask(
-                kiro,
+                ide,
                 "Why does the transfer of anna.bianchi@example.com to "
                 "IT60X0542811101000000123456 fail in this function?",
             )
@@ -293,7 +293,7 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
             )
 
             # 4. The same tool, switched to another engine.
-            switched = await ask(kiro, "Refactor this module.", OTHER_ENGINES[0])
+            switched = await ask(ide, "Refactor this module.", OTHER_ENGINES[0])
             step(
                 "other_engine",
                 switched.status_code == 403,
@@ -301,9 +301,9 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
                 rule=_rule(switched),
             )
 
-            # 5. The rule is about the model, not about the tool: Copilot too.
-            with_claude = await ask(copilot, "Complete this unit test.")
-            with_other = await ask(copilot, "Complete this unit test.", OTHER_ENGINES[1])
+            # 5. The rule is about the model, not about the tool: the code assistant too.
+            with_claude = await ask(assistant, "Complete this unit test.")
+            with_other = await ask(assistant, "Complete this unit test.", OTHER_ENGINES[1])
             step(
                 "second_tool",
                 (with_claude.status_code, with_other.status_code) == (200, 403),
@@ -314,7 +314,7 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
 
             # 6. A consultant pastes a token of the client's repository.
             token = "gh" + "p_" + "Demo" * 9  # shaped like a token, and not one
-            leaked = await ask(kiro, f"The pipeline fails with the token {token}, what is wrong?")
+            leaked = await ask(ide, f"The pipeline fails with the token {token}, what is wrong?")
             step("credential", leaked.status_code == 403, rule=_rule(leaked))
 
             # 7. A high-risk system waits for a person, then works.
@@ -374,7 +374,7 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
                     "key": "client-repository",
                     "name": "Repository of the client",
                     "url": DEMO_MCP_URL,
-                    "ai_system": "kiro-ide",
+                    "ai_system": "coding-ide",
                 },
                 headers=admin,
             )
@@ -385,7 +385,7 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
                 "/api/v1/mcp/servers/client-repository/grants",
                 json={
                     "scope_type": "ai_system",
-                    "scope_id": str(system_ids["kiro-ide"]),
+                    "scope_id": str(system_ids["coding-ide"]),
                     "tool": GRANTED_TOOL,
                 },
                 headers=admin,
@@ -394,7 +394,7 @@ async def consulting_tour(settings: Settings, t: Translator) -> DemoRun:
             async def tool(method: str, name: str | None = None) -> Any:
                 body, headers = mcp_request(method, name)
                 return await client.post(
-                    "/mcp/client-repository", content=body, headers={**headers, **kiro}
+                    "/mcp/client-repository", content=body, headers={**headers, **ide}
                 )
 
             shown = await tool("tools/list")

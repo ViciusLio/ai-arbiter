@@ -57,17 +57,17 @@ def test_the_page_of_a_run_escapes_what_it_shows_and_loads_nothing() -> None:
         pack_version="1+test",
         systems=(
             {
-                "key": "kiro-ide",
-                "name": "Kiro <i>IDE</i>",
+                "key": "coding-ide",
+                "name": "Coding <i>IDE</i>",
                 "purpose": "Code",
                 "classification": {"tier": "minimal", "status": "confirmed"},
             },
         ),
         usage=(
-            ToolUse("Kiro", "claude-sonnet-5-5", True, 2, 0),
-            ToolUse("Kiro", "gpt-4o", False, 0, 3),
+            ToolUse("Coding IDE", "claude-sonnet-5-5", True, 2, 0),
+            ToolUse("Coding IDE", "gpt-4o", False, 0, 3),
         ),
-        findings=({"severity": "critical", "text": "A finding & more", "system": "Kiro"},),
+        findings=({"severity": "critical", "text": "A finding & more", "system": "Coding IDE"},),
         candidates=("nordwind / lab",),
         audit_entries=7,
         audit_head="abc123",
@@ -76,7 +76,7 @@ def test_the_page_of_a_run_escapes_what_it_shows_and_loads_nothing() -> None:
     page = render_demo_report(run, Translator("en"))
 
     assert "2 of 3 steps went as expected" in page
-    assert "Kiro &lt;i&gt;IDE&lt;/i&gt;" in page
+    assert "Coding &lt;i&gt;IDE&lt;/i&gt;" in page
     assert "A finding &amp; more" in page
     assert "<script>alert(1)</script>" not in page
     assert "<img src=x" not in page

@@ -26,8 +26,8 @@ tools are declared in
 | System | What it is | Indicative tier |
 |---|---|---|
 | `claude-assistant` | The chat assistant every employee may use | Transparency obligations |
-| `kiro-ide` | A coding environment, on a client's repository | Minimal |
-| `github-copilot` | Code completion and chat in the editor | Minimal |
+| `coding-ide` | An AI coding environment, on a client's repository | Minimal |
+| `code-assistant` | Code completion and chat in the editor | Minimal |
 | `cv-screening` | Ranks applications for the recruiters | High-risk (Annex III, employment) |
 | `meeting-mood-analyser` | Nobody uses it: a vendor proposed it | Prohibited practice (Article 5) |
 
@@ -47,9 +47,9 @@ a budget per engagement and grants on tools.
 
 What to say plainly while showing it:
 
-- The product names are examples of how a firm labels its tools. Which engines a
-  product offers, and whether it can be pointed at a gateway, is for each organisation
-  to check with the vendor: nothing in Arbiter states it.
+- The tools have generic names on purpose. Whether a real product can be put behind a
+  gateway differs from product to product, and no real product was connected: what was
+  read on two vendors' documentation is in [scope and limits](scope-and-limits.md).
 - Arbiter governs what passes through it. A request a tool sends straight to its
   vendor, or a service opened in a browser, is not seen: that is what reading the logs
   of the company network is for, which is planned and not built (ADR-0058).
@@ -65,8 +65,9 @@ arbiter demo tour --case consulting --report out/demo.html
 ```
 
 Thirteen steps, each marked as expected or not: the inventory and its tiers, the
-internal regulation, Kiro on the approved engine with personal data masked, the same
-tool refused on another engine, Copilot allowed and refused in the same way, a refused
+internal regulation, the coding IDE on the approved engine with personal data masked,
+the same tool refused on another engine, the code assistant allowed and refused in the
+same way, a refused
 credential, the high-risk system before and after a review, the prohibited practice
 refused even on an approved model, the budget of an engagement, the tools on the
 client's repository, the use nobody declared, the findings, and the audit chain.
@@ -135,14 +136,14 @@ arbiter serve
 ```
 
 **4. A consultant at work.** In a second terminal, in the same directory, create a key
-for Kiro on the bank engagement. It is printed once.
+for the coding IDE on the bank engagement. It is printed once.
 
 ```bash
 arbiter keys create --tenant demo-consulting --name live --role developer \
-  --team nordwind --project client-bank --system kiro-ide
+  --team nordwind --project client-bank --system coding-ide
 ```
 
-Kiro on the approved engine, with an e-mail address in the question:
+The coding IDE on the approved engine, with an e-mail address in the question:
 
 ```bash
 curl -i http://127.0.0.1:8080/v1/chat/completions \

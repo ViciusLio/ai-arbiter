@@ -143,7 +143,7 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
     <h1>Una giornata alla Nordwind</h1>
     <p class="premise">Nordwind Consulting (invented) è una società di consulenza informatica. Sull&#39;IA ha deciso una cosa sola: le sue persone possono usare Claude, e nient&#39;altro. Però non usano Claude direttamente: usano strumenti, e alcuni di questi possono passare a un altro motore con un clic. Ecco che cosa succede in una giornata qualunque, con Arbiter in mezzo.</p>
     <p><span class="pill ok">13 passi su 13 sono andati come previsto</span></p>
-    <p class="muted small">Esecuzione del 2026-10-05 14:35 UTC, nel tenant demo-consulting</p>
+    <p class="muted small">Esecuzione del 2026-10-06 06:54 UTC, nel tenant demo-consulting</p>
     <p class="hint">Vai avanti con la freccia destra, indietro con la sinistra, oppure usa i pulsanti ai lati.</p>
   </div>
 </section>
@@ -174,11 +174,11 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       </div>
       <div class="card person">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in un ambiente di sviluppo con IA.</span></div>
       </div>
       <div class="card person">
         <div class="avatar" aria-hidden="true">MR</div>
-        <div><b>Marco Rinaldi</b><span class="muted small">Sviluppatore sulla stessa commessa. Lavora con GitHub Copilot.</span></div>
+        <div><b>Marco Rinaldi</b><span class="muted small">Sviluppatore sulla stessa commessa. Lavora con un assistente di codice.</span></div>
       </div>
       <div class="card person">
         <div class="avatar" aria-hidden="true">SV</div>
@@ -219,22 +219,22 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
             <td class="small">In attesa di revisione</td>
           </tr>
           <tr>
+            <td><strong>Code assistant</strong></td>
+            <td class="small">Code completion and chat in the editor. Approved models only.</td>
+            <td><span class="pill ok">Minimo</span></td>
+            <td class="small">In attesa di revisione</td>
+          </tr>
+          <tr>
+            <td><strong>Coding IDE</strong></td>
+            <td class="small">AI coding environment used by consultants on a client&#39;s repository. Approved models only.</td>
+            <td><span class="pill ok">Minimo</span></td>
+            <td class="small">In attesa di revisione</td>
+          </tr>
+          <tr>
             <td><strong>CV screening</strong></td>
             <td class="small">Ranks the applications of candidates for the recruiters of the firm.</td>
             <td><span class="pill warn">Alto rischio</span></td>
             <td class="small">Confermato da una persona</td>
-          </tr>
-          <tr>
-            <td><strong>GitHub Copilot</strong></td>
-            <td class="small">Code completion and chat in the editor. Claude engine only.</td>
-            <td><span class="pill ok">Minimo</span></td>
-            <td class="small">In attesa di revisione</td>
-          </tr>
-          <tr>
-            <td><strong>Kiro</strong></td>
-            <td class="small">Coding environment used by consultants on a client&#39;s repository. Claude engine only.</td>
-            <td><span class="pill ok">Minimo</span></td>
-            <td class="small">In attesa di revisione</td>
           </tr>
           <tr>
             <td><strong>Meeting mood analyser</strong></td>
@@ -254,14 +254,14 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">09:10</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in un ambiente di sviluppo con IA.</span></div>
       </div>
     </div>
-    <h2>Kiro con il motore approvato</h2>
+    <h2>L&#39;ambiente di sviluppo con il motore approvato</h2>
     <div class="cols">
       <div>
         <div class="label">Che cosa succede</div>
-        <p class="tale">Giulia sta cercando un errore nel codice dei bonifici della banca. Per spiegarlo incolla in Kiro un caso reale: l&#39;indirizzo e-mail e l&#39;IBAN di un cliente della banca. Kiro è impostato su Claude, il motore approvato.</p>
+        <p class="tale">Giulia sta cercando un errore nel codice dei bonifici della banca. Per spiegarlo incolla nel suo ambiente di sviluppo un caso reale: l&#39;indirizzo e-mail e l&#39;IBAN di un cliente della banca. Lo strumento è impostato su Claude, il motore approvato.</p>
       </div>
       <div class="card outcome ok">
         <div class="label">Che cosa fa Arbiter</div>
@@ -277,19 +277,19 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">09:40</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in un ambiente di sviluppo con IA.</span></div>
       </div>
     </div>
     <h2>Lo stesso strumento con un altro motore</h2>
     <div class="cols">
       <div>
         <div class="label">Che cosa succede</div>
-        <p class="tale">Un collega le ha detto che un altro motore è più veloce nel riscrivere il codice. Giulia cambia motore dalle impostazioni di Kiro e riprova. Non sta facendo nulla di strano: lo strumento glielo permette.</p>
+        <p class="tale">Un collega le ha detto che un altro motore è più veloce nel riscrivere il codice. Giulia cambia motore dalle impostazioni dello strumento e riprova. Non sta facendo nulla di strano: lo strumento glielo permette.</p>
       </div>
       <div class="card outcome no">
         <div class="label">Che cosa fa Arbiter</div>
         <div class="verdict no">Fermata</div>
-        <p class="tale">Ferma la richiesta prima che esca. Kiro è uno strumento dichiarato, ma gpt-4o non è tra i modelli approvati. Giulia riceve un messaggio che spiega il motivo.</p>
+        <p class="tale">Ferma la richiesta prima che esca. L&#39;ambiente di sviluppo è uno strumento dichiarato, ma gpt-4o non è tra i modelli approvati. Giulia riceve un messaggio che spiega il motivo.</p>
         <div class="ruleid">Regola: <span class="mono">POL-MODEL-NOT-ALLOWED</span></div>
       </div>
     </div>
@@ -301,14 +301,14 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">10:15</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">MR</div>
-        <div><b>Marco Rinaldi</b><span class="muted small">Sviluppatore sulla stessa commessa. Lavora con GitHub Copilot.</span></div>
+        <div><b>Marco Rinaldi</b><span class="muted small">Sviluppatore sulla stessa commessa. Lavora con un assistente di codice.</span></div>
       </div>
     </div>
     <h2>La regola riguarda il modello, non lo strumento</h2>
     <div class="cols">
       <div>
         <div class="label">Che cosa succede</div>
-        <p class="tale">Marco lavora sullo stesso progetto con GitHub Copilot. Prima chiede a Claude di completare un test; poi, per curiosità, prova lo stesso con un altro motore.</p>
+        <p class="tale">Marco lavora sullo stesso progetto con un assistente di codice. Prima chiede a Claude di completare un test; poi, per curiosità, prova lo stesso con un altro motore.</p>
       </div>
       <div class="card outcome warn">
         <div class="label">Che cosa fa Arbiter</div>
@@ -325,14 +325,14 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">11:30</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in un ambiente di sviluppo con IA.</span></div>
       </div>
     </div>
     <h2>Una credenziale del cliente non esce affatto</h2>
     <div class="cols">
       <div>
         <div class="label">Che cosa succede</div>
-        <p class="tale">La pipeline di rilascio si è bloccata. Giulia copia il messaggio di errore così com&#39;è e lo incolla in Kiro per farsi aiutare. Dentro c&#39;è un token di accesso al repository della banca.</p>
+        <p class="tale">La pipeline di rilascio si è bloccata. Giulia copia il messaggio di errore così com&#39;è e lo incolla nell&#39;ambiente di sviluppo per farsi aiutare. Dentro c&#39;è un token di accesso al repository della banca.</p>
       </div>
       <div class="card outcome no">
         <div class="label">Che cosa fa Arbiter</div>
@@ -421,19 +421,19 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">16:45</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consulente sulla commessa della banca. Lavora in un ambiente di sviluppo con IA.</span></div>
       </div>
     </div>
     <h2>Strumenti sul repository del cliente</h2>
     <div class="cols">
       <div>
         <div class="label">Che cosa succede</div>
-        <p class="tale">Kiro può anche agire sul repository della banca attraverso un server di strumenti: leggere file, aprire richieste di modifica, cancellare rami. La società ha concesso a Kiro una sola di queste azioni.</p>
+        <p class="tale">L&#39;ambiente di sviluppo può anche agire sul repository della banca attraverso un server di strumenti: leggere file, aprire richieste di modifica, cancellare rami. La società gli ha concesso una sola di queste azioni.</p>
       </div>
       <div class="card outcome warn">
         <div class="label">Che cosa fa Arbiter</div>
         <div class="verdict warn">In parte passata, in parte fermata</div>
-        <p class="tale">A Kiro mostra solo l&#39;azione concessa (read_file), delle tre che il server offre. Leggere un file riesce; il tentativo di cancellare un ramo viene fermato.</p>
+        <p class="tale">All&#39;ambiente di sviluppo mostra solo l&#39;azione concessa (read_file), delle tre che il server offre. Leggere un file riesce; il tentativo di cancellare un ramo viene fermato.</p>
         <div class="ruleid">Regola: <span class="mono">MCP-CALL-NOT-GRANTED</span></div>
       </div>
     </div>
@@ -495,7 +495,7 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
             <td class="cell muted">·</td>
           </tr>
           <tr>
-            <td><strong>GitHub Copilot</strong></td>
+            <td><strong>Code assistant</strong></td>
             <td class="cell muted">·</td>
             <td class="cell go">
 <span class="n go">1 passate</span>            </td>
@@ -504,7 +504,7 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
             <td class="cell muted">·</td>
           </tr>
           <tr>
-            <td><strong>Kiro</strong></td>
+            <td><strong>Coding IDE</strong></td>
             <td class="cell muted">·</td>
             <td class="cell ">
 <span class="n go">1 passate</span><span class="n stop">1 rifiutate</span>            </td>
@@ -553,12 +553,12 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
           </tr>
           <tr>
             <td><span class="pill warn">Media</span></td>
-            <td>GitHub Copilot</td>
+            <td>Code assistant</td>
             <td>Il traffico del sistema ha raggiunto un modello che la sua dichiarazione non elenca.</td>
           </tr>
           <tr>
             <td><span class="pill warn">Media</span></td>
-            <td>Kiro</td>
+            <td>Coding IDE</td>
             <td>Il traffico del sistema ha raggiunto un modello che la sua dichiarazione non elenca.</td>
           </tr>
           <tr>
@@ -587,13 +587,13 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
     <div class="grid g2" style="margin-top:1rem">
       <div class="card">
         <p>54 voci nella catena di audit, ricalcolata senza anelli rotti. Non contiene prompt, argomenti o risposte.</p>
-        <p class="muted small">Impronta dell&#39;ultima voce:<br><span class="mono" style="word-break:break-all">74d76ddeedd4dbe099136e1048f227408ccb2164eb18f0c11c0d0196b2cfcebe</span></p>
+        <p class="muted small">Impronta dell&#39;ultima voce:<br><span class="mono" style="word-break:break-all">9bb7727e8b0461513db64457f2a378fc7510ec9024f4ecf84446d345cb947b13</span></p>
       </div>
       <div class="card">
         <h3>Detto chiaramente</h3>
         <ul class="plain small">
           <li>Il modello e il server di strumenti sono sostituti dentro un solo processo. Nessun fornitore vero e nessuno strumento vero è stato chiamato.</li>
-          <li>I nomi dei prodotti sono esempi di come una società etichetta i propri strumenti. Quali motori offre un prodotto, e se può essere puntato a un gateway, lo verifica ogni organizzazione con il fornitore.</li>
+          <li>Gli strumenti hanno nomi generici di proposito. Se un prodotto reale può essere messo dietro un gateway, e quali motori offre, cambia da prodotto a prodotto: lo verifica ogni organizzazione con il fornitore.</li>
           <li>Arbiter vede ciò che passa da lui. Un servizio aperto nel browser no: leggere i log della rete aziendale è tra i desiderata.</li>
           <li>Le classificazioni sono indicative, e il pacchetto di regole non è stato rivisto da una persona con formazione giuridica.</li>
         </ul>

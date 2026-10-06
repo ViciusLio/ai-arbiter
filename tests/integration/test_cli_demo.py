@@ -119,19 +119,19 @@ def test_the_consulting_case_follows_a_firm_that_approved_one_family_of_models(
 
     assert "DIFFERS" not in output
     assert output.count("[as the scenario expects]") == 13
-    assert "kiro-ide: Minimal" in output
+    assert "coding-ide: Minimal" in output
     assert "cv-screening: High-risk" in output
     assert "Approved models: claude-sonnet-5-5, claude-haiku-4-5." in output
     assert "set to claude-sonnet-5-5" in output
     assert "masked before the model saw the prompt: email, iban." in output
-    assert "switched Kiro to gpt-4o." in output
+    assert "switched the coding IDE to gpt-4o." in output
     assert "the model is not approved: denied by POL-MODEL-NOT-ALLOWED." in output
     assert "with gemini-2.5-pro it was denied by POL-MODEL-NOT-ALLOWED." in output
     assert "The internal rule IR-CREDENTIAL-IN-PROMPT refused the request" in output
     assert "Before a review the internal rule IR-HIGH-RISK-NOT-REVIEWED denied it" in output
     assert "an approved model. It is classified as a prohibited practice" in output
     assert "client-retail has a hard budget" in output
-    assert "Kiro is shown only read_file" in output
+    assert "The coding IDE is shown only read_file" in output
     assert "deleting a branch was denied by MCP-CALL-NOT-GRANTED." in output
     assert "nordwind / lab" in output
     assert "no broken link" in output
@@ -149,7 +149,7 @@ def test_the_consulting_case_follows_a_firm_that_approved_one_family_of_models(
         assert told in first
     assert "http://" not in first
     assert "https://" not in first
-    for expected in ("Kiro", "GitHub Copilot", "gpt-4o", "gemini-2.5-pro", "not approved"):
+    for expected in ("Coding IDE", "Code assistant", "gpt-4o", "gemini-2.5-pro", "not approved"):
         assert expected in first
     assert "No declared tool" in first
     assert "1 refused" in first
@@ -164,7 +164,7 @@ def test_the_consulting_case_follows_a_firm_that_approved_one_family_of_models(
     assert "IT60X" not in first
     # The firm has a tenant of its own: nothing of it is in the others.
     assert "No AI system is declared." in arbiter("systems", "list")
-    assert "kiro-ide" in arbiter("systems", "list", "--tenant", "demo-consulting")
+    assert "coding-ide" in arbiter("systems", "list", "--tenant", "demo-consulting")
     assert "Error: " in arbiter("demo", "tour", "--case", "nope", ok=False)
     assert "Error: --report is for the consulting case" in arbiter(
         "demo", "tour", "--report", str(page), ok=False

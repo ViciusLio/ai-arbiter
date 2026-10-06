@@ -125,5 +125,22 @@ machine with SQLite, or as a service with PostgreSQL.
 | Use in production | None that the project knows of |
 | An independent security review | None |
 
+## Real coding tools and a gateway
+
+The demonstration uses generic tools, "a coding IDE" and "a code assistant", because
+whether a product can be put behind a gateway is a fact about each product. Two were
+looked up on their vendors' documentation on 2026-10-06. Neither was connected to
+Arbiter.
+
+| Product | What its documentation says | What follows |
+|---|---|---|
+| GitHub Copilot CLI | It can use "any other OpenAI Chat Completions API-compatible endpoint" through `COPILOT_PROVIDER_BASE_URL`, with `COPILOT_MODEL`; the model must support tool calling and streaming ([docs.github.com](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-byok-models)) | It could be pointed at Arbiter's gateway. Not tried: tool calling through the gateway is untested |
+| Kiro | It offers models of several providers, chosen in the tool; in Kiro Enterprise an administrator selects which models are available to users ([kiro.dev](https://kiro.dev/docs/enterprise/governance/model/)). No setting for another endpoint was found | Its requests would not pass through a gateway. The choice of models is governed in the product; Arbiter would see its use only through network logs, which are planned and not built |
+
+So a rule such as "approved models only" is enforced in different places for different
+tools: at a gateway for those that accept one, in the product's own administration for
+the others. Arbiter covers the first case and, with the inventory, records the second as
+a declared system whose traffic it does not see.
+
 Everything that was noted as weak, and what was done about it, is in
 [the status page](status.md).

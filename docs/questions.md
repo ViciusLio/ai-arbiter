@@ -40,14 +40,16 @@ directly, or a service used in a browser, stays invisible until network logs can
 read, which is decided and not built
 ([ADR-0058](adr/0058-network-logs-as-a-source-of-discovery.md)).
 
-## "The demonstration names real products. Do they work with it?"
+## "Would my coding tool really go through it?"
 
-The demonstration is an invented firm that labels its tools with names a reader
-recognises. No real product was connected: the demonstration makes each tool's requests
-itself. Whether a given product can be pointed at a gateway, and which models it offers,
-is for each organisation to check with the vendor; the data, the page and the guide say
-so, and the check is an open item (I-50 in [the status page](status.md)). The products
-named are trademarks of their owners, who have no relation to this project.
+It depends on the tool, and the demonstration does not pretend otherwise: its tools are
+"a coding IDE" and "a code assistant", and the demonstration makes their requests itself.
+A product that accepts an OpenAI-compatible endpoint of your choice can be pointed at
+the gateway; one that does not cannot, and its use is governed in the product's own
+administration and, for Arbiter, visible only through network logs, which are planned.
+What two vendors document, read on 2026-10-06, is in
+[scope and limits](scope-and-limits.md#real-coding-tools-and-a-gateway). No real product
+has been connected yet (I-50 in [the status page](status.md)).
 
 ## "Why is Claude the approved model in the example?"
 

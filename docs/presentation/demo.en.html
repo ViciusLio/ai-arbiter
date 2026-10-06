@@ -143,7 +143,7 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
     <h1>A day at Nordwind</h1>
     <p class="premise">Nordwind Consulting (invented) is an IT consulting firm. It decided one thing about AI: its people may use Claude, and nothing else. But they do not use Claude directly: they use tools, and some of those tools can switch to other engines with one click. This is what happens on an ordinary day, with Arbiter in between.</p>
     <p><span class="pill ok">13 of 13 steps went as expected</span></p>
-    <p class="muted small">Run of 2026-10-05 14:35 UTC, in the tenant demo-consulting</p>
+    <p class="muted small">Run of 2026-10-06 06:55 UTC, in the tenant demo-consulting</p>
     <p class="hint">Go forward with the right arrow, back with the left one, or use the buttons at the sides.</p>
   </div>
 </section>
@@ -174,11 +174,11 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       </div>
       <div class="card person">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in an AI coding IDE.</span></div>
       </div>
       <div class="card person">
         <div class="avatar" aria-hidden="true">MR</div>
-        <div><b>Marco Rinaldi</b><span class="muted small">Developer on the same engagement. He works with GitHub Copilot.</span></div>
+        <div><b>Marco Rinaldi</b><span class="muted small">Developer on the same engagement. He works with a code assistant.</span></div>
       </div>
       <div class="card person">
         <div class="avatar" aria-hidden="true">SV</div>
@@ -219,22 +219,22 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
             <td class="small">Awaiting review</td>
           </tr>
           <tr>
+            <td><strong>Code assistant</strong></td>
+            <td class="small">Code completion and chat in the editor. Approved models only.</td>
+            <td><span class="pill ok">Minimal</span></td>
+            <td class="small">Awaiting review</td>
+          </tr>
+          <tr>
+            <td><strong>Coding IDE</strong></td>
+            <td class="small">AI coding environment used by consultants on a client&#39;s repository. Approved models only.</td>
+            <td><span class="pill ok">Minimal</span></td>
+            <td class="small">Awaiting review</td>
+          </tr>
+          <tr>
             <td><strong>CV screening</strong></td>
             <td class="small">Ranks the applications of candidates for the recruiters of the firm.</td>
             <td><span class="pill warn">High-risk</span></td>
             <td class="small">Confirmed by a person</td>
-          </tr>
-          <tr>
-            <td><strong>GitHub Copilot</strong></td>
-            <td class="small">Code completion and chat in the editor. Claude engine only.</td>
-            <td><span class="pill ok">Minimal</span></td>
-            <td class="small">Awaiting review</td>
-          </tr>
-          <tr>
-            <td><strong>Kiro</strong></td>
-            <td class="small">Coding environment used by consultants on a client&#39;s repository. Claude engine only.</td>
-            <td><span class="pill ok">Minimal</span></td>
-            <td class="small">Awaiting review</td>
           </tr>
           <tr>
             <td><strong>Meeting mood analyser</strong></td>
@@ -254,14 +254,14 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">09:10</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in an AI coding IDE.</span></div>
       </div>
     </div>
-    <h2>Kiro on the approved engine</h2>
+    <h2>The coding IDE on the approved engine</h2>
     <div class="cols">
       <div>
         <div class="label">What happens</div>
-        <p class="tale">Giulia is chasing a bug in the bank&#39;s transfer code. To explain it she pastes a real case into Kiro: the e-mail address and the IBAN of one of the bank&#39;s customers. Kiro is set to Claude, the approved engine.</p>
+        <p class="tale">Giulia is chasing a bug in the bank&#39;s transfer code. To explain it she pastes a real case into her coding IDE: the e-mail address and the IBAN of one of the bank&#39;s customers. The tool is set to Claude, the approved engine.</p>
       </div>
       <div class="card outcome ok">
         <div class="label">What Arbiter does</div>
@@ -277,19 +277,19 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">09:40</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in an AI coding IDE.</span></div>
       </div>
     </div>
     <h2>The same tool on another engine</h2>
     <div class="cols">
       <div>
         <div class="label">What happens</div>
-        <p class="tale">A colleague told her another engine is quicker at rewriting code. Giulia changes the engine in Kiro&#39;s settings and tries again. She is doing nothing odd: the tool lets her.</p>
+        <p class="tale">A colleague told her another engine is quicker at rewriting code. Giulia changes the engine in the tool&#39;s settings and tries again. She is doing nothing odd: the tool lets her.</p>
       </div>
       <div class="card outcome no">
         <div class="label">What Arbiter does</div>
         <div class="verdict no">Stopped</div>
-        <p class="tale">It stops the request before it leaves. Kiro is a declared tool, but gpt-4o is not among the approved models. Giulia gets a message that says why.</p>
+        <p class="tale">It stops the request before it leaves. The coding IDE is a declared tool, but gpt-4o is not among the approved models. Giulia gets a message that says why.</p>
         <div class="ruleid">Rule: <span class="mono">POL-MODEL-NOT-ALLOWED</span></div>
       </div>
     </div>
@@ -301,14 +301,14 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">10:15</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">MR</div>
-        <div><b>Marco Rinaldi</b><span class="muted small">Developer on the same engagement. He works with GitHub Copilot.</span></div>
+        <div><b>Marco Rinaldi</b><span class="muted small">Developer on the same engagement. He works with a code assistant.</span></div>
       </div>
     </div>
     <h2>The rule is about the model, not the tool</h2>
     <div class="cols">
       <div>
         <div class="label">What happens</div>
-        <p class="tale">Marco works on the same project with GitHub Copilot. First he asks Claude to complete a test; then, out of curiosity, he tries the same with another engine.</p>
+        <p class="tale">Marco works on the same project with a code assistant. First he asks Claude to complete a test; then, out of curiosity, he tries the same with another engine.</p>
       </div>
       <div class="card outcome warn">
         <div class="label">What Arbiter does</div>
@@ -325,14 +325,14 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">11:30</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in an AI coding IDE.</span></div>
       </div>
     </div>
     <h2>A credential of the client does not leave at all</h2>
     <div class="cols">
       <div>
         <div class="label">What happens</div>
-        <p class="tale">The release pipeline is stuck. Giulia copies the error message as it is and pastes it into Kiro to get help. Inside it there is an access token of the bank&#39;s repository.</p>
+        <p class="tale">The release pipeline is stuck. Giulia copies the error message as it is and pastes it into the coding IDE to get help. Inside it there is an access token of the bank&#39;s repository.</p>
       </div>
       <div class="card outcome no">
         <div class="label">What Arbiter does</div>
@@ -421,19 +421,19 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
       <div class="clock">16:45</div>
       <div class="person who">
         <div class="avatar" aria-hidden="true">GC</div>
-        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in Kiro.</span></div>
+        <div><b>Giulia Conti</b><span class="muted small">Consultant on the bank engagement. She works in an AI coding IDE.</span></div>
       </div>
     </div>
     <h2>Tools on the client&#39;s repository</h2>
     <div class="cols">
       <div>
         <div class="label">What happens</div>
-        <p class="tale">Kiro can also act on the bank&#39;s repository through a tool server: read files, open pull requests, delete branches. The firm granted Kiro one of these actions only.</p>
+        <p class="tale">The coding IDE can also act on the bank&#39;s repository through a tool server: read files, open pull requests, delete branches. The firm granted it one of these actions only.</p>
       </div>
       <div class="card outcome warn">
         <div class="label">What Arbiter does</div>
         <div class="verdict warn">Partly through, partly stopped</div>
-        <p class="tale">It shows Kiro only the action that was granted (read_file), of the three the server offers. Reading a file works; the attempt to delete a branch is stopped.</p>
+        <p class="tale">It shows the coding IDE only the action that was granted (read_file), of the three the server offers. Reading a file works; the attempt to delete a branch is stopped.</p>
         <div class="ruleid">Rule: <span class="mono">MCP-CALL-NOT-GRANTED</span></div>
       </div>
     </div>
@@ -495,7 +495,7 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
             <td class="cell muted">·</td>
           </tr>
           <tr>
-            <td><strong>GitHub Copilot</strong></td>
+            <td><strong>Code assistant</strong></td>
             <td class="cell muted">·</td>
             <td class="cell go">
 <span class="n go">1 went through</span>            </td>
@@ -504,7 +504,7 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
             <td class="cell muted">·</td>
           </tr>
           <tr>
-            <td><strong>Kiro</strong></td>
+            <td><strong>Coding IDE</strong></td>
             <td class="cell muted">·</td>
             <td class="cell ">
 <span class="n go">1 went through</span><span class="n stop">1 refused</span>            </td>
@@ -553,12 +553,12 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
           </tr>
           <tr>
             <td><span class="pill warn">Medium</span></td>
-            <td>GitHub Copilot</td>
+            <td>Code assistant</td>
             <td>Traffic of the system reached a model that its declaration does not list.</td>
           </tr>
           <tr>
             <td><span class="pill warn">Medium</span></td>
-            <td>Kiro</td>
+            <td>Coding IDE</td>
             <td>Traffic of the system reached a model that its declaration does not list.</td>
           </tr>
           <tr>
@@ -587,13 +587,13 @@ ul.plain { margin: 0; padding-left: 1.1rem; } ul.plain li { margin-bottom: .5rem
     <div class="grid g2" style="margin-top:1rem">
       <div class="card">
         <p>54 entries in the audit chain, recomputed with no broken link. No prompt, argument or answer is stored.</p>
-        <p class="muted small">Fingerprint of the last entry:<br><span class="mono" style="word-break:break-all">b263b72ad7a252634aac663b38ba35837705fb8891b8a450f026ca10a25423f2</span></p>
+        <p class="muted small">Fingerprint of the last entry:<br><span class="mono" style="word-break:break-all">017b9c6c76dad5a5a5e19c11e57966b28fa619a009d60e3dd6f7c5a0302991f0</span></p>
       </div>
       <div class="card">
         <h3>Said plainly</h3>
         <ul class="plain small">
           <li>The model and the tool server are stand-ins inside one process. No real provider and no real tool was called.</li>
-          <li>The product names are examples of how a firm labels its tools. Which engines a product offers, and whether it can be pointed at a gateway, is for each organisation to check with the vendor.</li>
+          <li>The tools have generic names on purpose. Whether a real product can be put behind a gateway, and which engines it offers, differs from product to product: each organisation checks it with the vendor.</li>
           <li>Arbiter sees what passes through it. A service opened in a browser does not: reading the logs of the company network is on the wish list.</li>
           <li>Classifications are indicative, and the rule pack has not been reviewed by a person with legal training.</li>
         </ul>

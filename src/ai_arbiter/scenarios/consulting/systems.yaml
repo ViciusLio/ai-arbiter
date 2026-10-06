@@ -6,11 +6,9 @@
 # through: a chat assistant, two coding tools that can run on several engines, and a
 # screening tool of HR. A vendor proposed a tool that reads the mood of a meeting.
 #
-# The product names are examples of how a firm would label its own tools. Which
-# engines a product offers, and whether it can be pointed at a gateway, is for each
-# organisation to check with the vendor: nothing here states it.
-#
-# Arbiter is a support tool. It does not provide legal advice.
+# The tools have generic names on purpose. Whether a real product can be put behind a
+# gateway, and which engines it offers, differs from product to product: see
+# docs/scope-and-limits.md for what was read on two vendors' documentation.
 
 fact_sets:
   in_scope:
@@ -67,9 +65,9 @@ systems:
       controls.transparency_notice: true
       data.personal_data_processed: true
 
-  - key: kiro-ide
-    name: Kiro
-    purpose: Coding environment used by consultants on a client's repository. Claude engine only.
+  - key: coding-ide
+    name: Coding IDE
+    purpose: AI coding environment used by consultants on a client's repository. Approved models only.
     roles:
       - { role: deployer, basis: "Licences for the delivery teams" }
     models:
@@ -78,9 +76,9 @@ systems:
     facts:
       data.personal_data_processed: true
 
-  - key: github-copilot
-    name: GitHub Copilot
-    purpose: Code completion and chat in the editor. Claude engine only.
+  - key: code-assistant
+    name: Code assistant
+    purpose: Code completion and chat in the editor. Approved models only.
     roles:
       - { role: deployer, basis: "Licences for the delivery teams" }
     models:
