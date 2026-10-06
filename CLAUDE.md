@@ -31,24 +31,31 @@ Before the release the README was made short and modular; `docs/status.md`,
 and `CONTRIBUTING.md` are new, and the demonstration uses generic tools (ADR-0061).
 Steps of a release, and what to change after one: `docs/releasing.md`.
 
-**Session closed by the owner on 2026-10-05.** After Phase 5 the owner asked for the
-open improvements and for a demonstration; row 8 of the table below lists what was done
-(I-45, the filter of `tools/list`, I-33, PDF reports, the decisions on network logs, the
-consulting demonstration told as a story and published on the site). The owner tried the
-demonstration, saw its page and approved it.
+**Session closed by the owner on 2026-10-06**, after the publication. The CI run on the
+published commit, `91aedcb`, was green on every job, Windows included; the full local
+check with containers passed on the code before the release (1178 tests, 97% coverage).
 
 On "riprendi":
 
-1. Check the CI run of the last commit (`gh run list --workflow ci.yml --limit 1`). The
-   closing push started it and nobody read its result. The last run read to the end and
-   green was on `ff4ac46`; the later ones were cancelled by the pushes that followed, and
-   every job that finished in them had passed. The full suite last passed locally after
-   I-33 (`e302c03`: 1177 passed, 5 skipped, 96% coverage); after the demonstration was
-   rebuilt only the unit, demo and report tests were run locally.
-2. Ask the owner which improvement to start with. Waiting, needing no decision: I-14,
-   I-15, I-31, I-32, I-42, I-46, I-11, one at a time. Then Phase 6 (Azure), which needs a
-   subscription and a budget.
-3. Not seen by anyone: the English page of the demonstration in a browser.
+1. Check the CI run of the last commit (`gh run list --workflow ci.yml --limit 1`): the
+   closing pushes were documentation only and nobody read their result.
+2. Ask the owner what was done of the optional steps left to them: yank `0.1.0a1` on
+   PyPI; description, website and topics of the repository; "Private vulnerability
+   reporting" in the repository settings, which `SECURITY.md` points to and which does
+   not work until it is switched on.
+3. Offered and not answered: a GitHub release from the tag `v0.1.0a2` with the entries of
+   the changelog (it creates a resource: ask first), and a text to announce the project,
+   in Italian and English, that says "alpha", what it does and does not, and links the
+   story page.
+4. Then the improvements that need no decision, one at a time, starting from the one the
+   owner chooses: I-14, I-15, I-31, I-32, I-42, I-46, I-11; I-50 (connect a real coding
+   tool) and I-51 (the wheel tested in CI at every push) matter most for a public alpha.
+   Then Phase 6 (Azure), which needs a subscription and a budget.
+5. Not seen by anyone in a browser: the English page of the demonstration and the page
+   of the project on PyPI.
+
+The demonstration scripts written for the owner are in `~/demo-arbiter` (outside the
+repository; they survived a restart, not necessarily a rebuild).
 
 Read first: `docs/phases/phase-4b-deferrable-items.md` (what was built, verified and not
 verified), then `docs/compliance.md`, `docs/gateway.md` and `docs/audit.md`.
