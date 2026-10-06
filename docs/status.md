@@ -41,7 +41,7 @@ Phase 5, step by step:
 
 Before `0.1.0`, and not in the hands of the code: a review of the AI Act rule pack by a
 person with legal training (ADR-0041), and a comparison of the quoted articles with
-EUR-Lex (ADR-0034). The first pre-release, `0.1.0a1`, was published on PyPI on 2026-10-06.
+EUR-Lex (ADR-0034). Two pre-releases were published on PyPI on 2026-10-06: `0.1.0a1`, and `0.1.0a2`, which corrects its install instructions.
 
 The name of this project on PyPI is **`ai-arbiter`**. It
 is not related to `arbiter-ai` or `arbiter`, which are different projects by other
@@ -88,7 +88,7 @@ written. The last column says what has changed since, as of 2026-10-05.
 | I-03 | 1 | Revise `interfaces.md` and `data-model.md` against the code at the end of Phase 3 | The design was never prototyped and will drift | End of Phase 3 | Done: both documents list where the code differs |
 | I-04 | 1 | Publish precision and recall of each PII detector; offer Presidio as a plugin | Users must see what the default detection misses | 0.1.x | Done in Phase 5 with another choice than Presidio alone: precision and recall are published in `docs/pii-evaluation.md`, and Presidio is offered as the optional plugin `presidio`, added to the built-in detectors (ADR-0055) |
 | I-05 | 1 | Anchor the audit chain head outside the database, then sign checkpoints | A full rewrite of the chain is otherwise undetectable | 0.1.x, then 0.3 | Open |
-| I-06 | 2 | Publish the first release, `0.1.0a1`, and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | When the owner decides | Done on 2026-10-06: `0.1.0a1` was published through the release workflow with Trusted Publishing, which passed at its first run. Installed from PyPI in a clean environment, it ran both demonstrations when its version was named. Found: `pip install --pre`, which the README told people to use, also takes pre-releases of the dependencies, and `httpx` 1.0.dev6 breaks the proxies. Fixed for `0.1.0a2`: the instructions name the version, and `httpx` is bound below 1 |
+| I-06 | 2 | Publish the first release, `0.1.0a1`, and exercise the release workflow | Reserves the name on PyPI; the workflow is unverified | When the owner decides | Done on 2026-10-06: `0.1.0a1` was published through the release workflow with Trusted Publishing, which passed at its first run. Installed from PyPI in a clean environment, it ran both demonstrations when its version was named. Found: `pip install --pre`, which the README told people to use, also takes pre-releases of the dependencies, and `httpx` 1.0.dev6 breaks the proxies. Fixed for `0.1.0a2`: the instructions say `>=0.1.0a1`, and `httpx` is bound below 1. `0.1.0a2` was published the same day and installed from PyPI with `pip`, both with the command of the README and with `--pre`: both demonstrations ran |
 | I-07 | 2 | Set the PostgreSQL test URL in the CI job that tests the base install | That job missed a defect the dev container found | Phase 3 | Done |
 | I-08 | 2 | Review the CodeQL alert list | The workflow passes, the alerts were never read | Phase 3 | Open |
 | I-09 | 2 | Give each CI job its own uv cache key; pin the runner image | Jobs race to save one cache; `ubuntu-latest` changes on 19 October 2026 | Phase 3 | Done: `ubuntu-24.04`, one cache per job |

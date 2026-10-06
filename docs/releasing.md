@@ -20,7 +20,9 @@ On 2026-10-06, on the code of `main`:
 | The wheel with the extras `gateway`, `mcp`, `a2a` | Both guided demonstrations run from the installed package |
 | A missing extra | The command names the extra to install |
 
-The release workflow ran for the first time on 2026-10-06 and published `0.1.0a1`.
+The release workflow ran for the first time on 2026-10-06 and published `0.1.0a1`. `0.1.0a2`
+followed the same day. Right after a release the index may still offer the earlier
+version for a minute: the first install tried after `0.1.0a2` took `0.1.0a1`.
 
 ## One-time setup
 

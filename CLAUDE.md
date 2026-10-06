@@ -21,8 +21,10 @@ GitHub environment `pypi`, said "via" and approved the deployment; the release w
 passed at its first run. Installed from PyPI by naming its version, it ran both
 demonstrations. Found afterwards: the README told people to run `pip install --pre`,
 which takes pre-releases of every dependency, and `httpx` 1.0.dev6 breaks the proxies.
-`0.1.0a2` is prepared on `main` with the fix (instructions name the version, `httpx`
-below 1) and waits for the owner's word to be tagged. NEVER create or push a release tag
+`0.1.0a2` fixed it (instructions say `>=0.1.0a1`, `httpx` below 1, and the release
+workflow now runs the demonstrations from the wheel with its extras) and was published
+the same day, on the owner's word; installed from PyPI with `pip`, it ran both
+demonstrations. The owner may yank `0.1.0a1` on PyPI. Next version: `0.1.0a3`. NEVER create or push a release tag
 without the owner's explicit word in that session: a file on PyPI cannot be replaced.
 Before the release the README was made short and modular; `docs/status.md`,
 `docs/scope-and-limits.md`, `docs/questions.md`, `docs/getting-started.md`, `SECURITY.md`
