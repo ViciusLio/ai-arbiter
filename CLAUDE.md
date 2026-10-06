@@ -15,6 +15,17 @@ and compliance first (ADR-0054: no cache of key lookups). The version is `0.1.0a
 published (ADR-0032). `0.1.0` waits for a legal review of the AI Act rule pack
 (ADR-0041).
 
+**Release in preparation, 2026-10-06.** The owner decided to publish `0.1.0a1` now as an
+alpha (D1: 1) and left the names in the demonstration to the implementer (ADR-0061:
+generic tools). The README was made short and modular; `docs/status.md`,
+`docs/scope-and-limits.md`, `docs/questions.md`, `docs/getting-started.md`,
+`SECURITY.md` and `CONTRIBUTING.md` are new. The changelog has the section `0.1.0a1`.
+The owner said the PyPI account with its pending trusted publisher and the GitHub
+environment `pypi` are set up; the environment was seen through the API, with required
+reviewers, and the publisher on PyPI cannot be seen from here. NEVER create or push the
+tag `v0.1.0a1` without the owner's explicit word in that session: a file on PyPI cannot
+be replaced. Steps and what to do afterwards: `docs/releasing.md`.
+
 **Session closed by the owner on 2026-10-05.** After Phase 5 the owner asked for the
 open improvements and for a demonstration; row 8 of the table below lists what was done
 (I-45, the filter of `tools/list`, I-33, PDF reports, the decisions on network logs, the

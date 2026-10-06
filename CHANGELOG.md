@@ -9,6 +9,15 @@ Entries link to the decision record that motivated them, where one exists.
 
 ## [Unreleased]
 
+## [0.1.0a1] - 2026-10-06
+
+The first release, an alpha. It holds everything built so far: the gateway, the
+compliance toolkit, the MCP and A2A proxies and the demonstrations. The AI Act rule
+pack has not been reviewed by a person with legal training, and every output says so;
+`0.1.0` waits for that review
+([ADR-0041](docs/adr/0041-legal-review-before-0-1-0.md)). What was and was not
+verified is in [scope and limits](docs/scope-and-limits.md).
+
 ### Changed
 
 - The README is short and modular: the problem, what Arbiter does and does not, a
@@ -360,3 +369,6 @@ Entries link to the decision record that motivated them, where one exists.
   ([ADR-0010](docs/adr/0010-single-distribution-with-enforced-boundaries.md)).
 - PostgreSQL tests ran, and failed, in an environment without the PostgreSQL driver when
   a test database URL was set, as it is in the dev container. They are now skipped there.
+
+[Unreleased]: https://github.com/ViciusLio/ai-arbiter/compare/v0.1.0a1...HEAD
+[0.1.0a1]: https://github.com/ViciusLio/ai-arbiter/releases/tag/v0.1.0a1
