@@ -5,7 +5,7 @@
 #
 # Not built on the development machine (ADR-0025): CI builds and smoke-tests this image.
 
-FROM python:3.12-slim AS build
+FROM python:3.14-slim AS build
 
 COPY --from=ghcr.io/astral-sh/uv:0.12 /uv /usr/local/bin/uv
 
@@ -28,7 +28,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --no-editable --extra a2a --extra gateway --extra mcp --extra otel
 
 
-FROM python:3.12-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 RUN groupadd --system --gid 10001 arbiter \
     && useradd --system --uid 10001 --gid arbiter --create-home --home-dir /home/arbiter arbiter
